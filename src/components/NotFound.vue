@@ -1,0 +1,21 @@
+<template>
+  <v-container fluid mt-5>
+    <v-flex lg12>
+      <img class="img-fluid" src="static/img/404.png" />
+      <p>Your request got lost in outer space...</p>
+      <router-link to="/">
+        <v-btn color="primary text-lg-center"><icon name="home" class="gray--text"></icon>&nbsp;Go to Homepage</v-btn>
+      </router-link>
+    </v-flex>
+  </v-container>
+</template>
+
+<style scoped>
+a {
+  text-decoration: none;
+}
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+</style>

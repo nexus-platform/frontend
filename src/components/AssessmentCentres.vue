@@ -31,7 +31,7 @@
             </template>
 
             <v-tooltip v-else bottom color="info">
-              <v-btn :to="`/${props.item.route}/signup`" small flat slot="activator" class="btn-sm" color="info">
+              <v-btn :to="`/${props.item.route}/signup/st`" small flat slot="activator" class="btn-sm" color="info">
                 <icon name="sign-in-alt" class="fa"></icon>
               </v-btn>
               <span>Visit this Centre</span>

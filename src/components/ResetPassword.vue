@@ -33,7 +33,7 @@
           </v-card-actions>
 
           <v-container>
-            <icon v-if="loadingVerification" name="circle-notch" scale=3 spin style="color: gray;"></icon>
+            <icon v-if="loadingVerification" name="circle-notch" scale=2 spin style="color: gray;"></icon>
             <v-alert v-model="alert" :value="true" :type="operationMessageType" dismissible transition="fade-transition" icon="warning">
               {{operationMessage}}
             </v-alert>

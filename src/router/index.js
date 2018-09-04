@@ -20,6 +20,7 @@ import QRCodeScanner from '@/components/QRCodeScanner';
 import NotAllowed from '@/components/NotAllowed';
 import AssessmentCentres from '@/components/AssessmentCentres';
 import AssessmentCentre from '@/components/AssessmentCentre';
+import AcceptInvitation from '@/components/AcceptInvitation';
 import store from '../store';
 
 Vue.use(Router);
@@ -176,9 +177,14 @@ const routes = [{
     }
   },
   {
-    path: '/assessment-centre/:slug/:action?',
+    path: '/assessment-centre/:slug/:action/:role',
     name: 'AssessmentCentre',
     component: AssessmentCentre
+  },
+  {
+    path: '/accept-invitation/:token',
+    name: 'AcceptInvitation',
+    component: AcceptInvitation
   }
 ];
 

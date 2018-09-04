@@ -9,7 +9,7 @@
       </v-flex>
       <v-flex xs12 v-else>
         <v-flex>
-          <label>{{file.name}}</label>
+          <h3>{{file.name}}</h3><br/>
           <v-divider></v-divider>
         </v-flex>
         <v-flex>

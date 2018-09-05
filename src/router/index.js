@@ -177,7 +177,7 @@ const routes = [{
     }
   },
   {
-    path: '/assessment-centre/:slug/:action/:role',
+    path: '/assessment-centre/:slug/:action/:token?',
     name: 'AssessmentCentre',
     component: AssessmentCentre
   },

@@ -124,12 +124,12 @@
               </v-list>
             </v-menu>
 
-            <v-menu v-if="isAC" offset-y transition="fade-transition" bottom>
+            <v-menu v-if="isAC || isNA" offset-y transition="fade-transition" bottom>
               <v-btn class="white--text" flat slot="activator">
                 <v-icon class="menu-icon">assessment</v-icon><span class="white--text">My Assessment Centres</span>
               </v-btn>
               <v-list>
-                <v-list-tile v-for="(ac, acIndex) in this.$store.state.payload.acs" :key="`ac-${acIndex}`" :to="'/assessment-centre/' + ac.slug + '/index/ac'" class="dropdown-menu-item">
+                <v-list-tile v-for="(ac, acIndex) in this.$store.state.payload.acs" :key="`ac-${acIndex}`" :to="'/assessment-centre/' + ac.slug + '/index/'" class="dropdown-menu-item">
                   <span class="text-xs-left" style="max-width: 400px; font-size: 14px;">{{ac.name}}</span>
                 </v-list-tile>
               </v-list>
@@ -700,6 +700,9 @@ export default {
     },
     isAC() {
       return this.$store.state.payload.roles.includes("ac");
+    },
+    isNA() {
+      return this.$store.state.payload.roles.includes("na");
     },
     isGuest() {
       return this.$store.state.payload.is_guest;

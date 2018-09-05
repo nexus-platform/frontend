@@ -38,7 +38,7 @@
                   <v-text-field :disabled="!isGuest" v-model="ac.user_data.email" prepend-icon="email" name="email" label="Email" id="email" type="email" :rules="emailRules"></v-text-field>
                   <v-text-field :disabled="!isGuest" v-model="ac.user_data.password" prepend-icon="lock" name="password" label="Password" id="password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
                   <v-text-field :disabled="!isGuest" v-model="ac.user_data.password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" id="passwordConfirm" :rules="passwordConfirmRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
-                  <v-text-field v-if="acRole === 'st'" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDialog = true" @click:append="() => (uploadDialog = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
+                  <v-text-field v-if="acRole === 'student'" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDialog = true" @click:append="() => (uploadDialog = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
                 </v-flex>
               </v-layout>
               <v-layout row wrap mt-5>
@@ -292,6 +292,7 @@ export default {
         phone: null,
         admin: null
       },
+      invitationToken: null,
       studentsHeaders: [{ text: "Name", value: "name" }]
     };
   },
@@ -324,29 +325,16 @@ export default {
     setInitialData() {
       this.acSlug = this.$route.params.slug;
       this.acAction = this.$route.params.action;
-      if (this.$store.state.payload.is_guest) {
-        this.acRole = this.$route.params.role;
-      }
-      else {
-        if (this.$store.state.payload.roles.includes("student")) {
-          this.acRole = 'st';
-        }
-        else if (this.$store.state.payload.roles.includes("ac")) {
-          this.acRole = 'ac';
-        }
-        else if (this.$store.state.payload.roles.includes("na")) {
-          this.acRole = 'na';
-        }
-      }
+      this.invitationToken = this.$route.params.token;
       
       this.getAC().then(data => {
         if (data.item.data) {
           this.ac = data.item.data;
+          this.acRole = this.ac.role;
           if (this.ac.registered && this.acAction === "signup") {
-            this.$router.push("/assessment-centre/" + this.acSlug + this.acSlug + "/index/" + this.acRole);
+            this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
           } else if (!this.ac.registered && this.acAction === "index") {
-            this.$router.push("/assessment-centre/" + this.acSlug + "/signup/" + this.acRole);
-          } else {
+            this.$router.push("/assessment-centre/" + this.acSlug + "/signup/" + this.invitationToken);
           }
         } else {
           this.$router.push("/not-found");
@@ -376,7 +364,7 @@ export default {
           ac_id: this.ac.id,
           url: window.location.href.replace(
             this.$route.path,
-            "/assessment-centre/" + this.ac.token + '/signup/na'
+            "/assessment-centre/" + this.ac.token + '/signup/'
           )
         };
 
@@ -504,6 +492,7 @@ export default {
         formData.append("ac", JSON.stringify(this.ac));
         formData.append("url", this.activationUrl);
         formData.append("role", this.acRole);
+        formData.append("invitation_token", this.invitationToken,);
 
         var that = this;
         axios
@@ -522,7 +511,7 @@ export default {
               that.ac.registered = true;
               if (that.isGuest) {
                 that.$store.state.authRouteRequested =
-                  "/assessment-centre/" + that.acSlug;
+                  "/assessment-centre/" + that.acSlug + "/index";
                 setTimeout(function() {
                   that.$router.push("/login");
                 }, 5000);
@@ -551,6 +540,7 @@ export default {
           },
           params: {
             slug: this.acSlug,
+            invitation_token: this.invitationToken,
             XDEBUG_SESSION_START: "netbeans-xdebug"
           }
         };

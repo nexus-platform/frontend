@@ -72,13 +72,26 @@
         </template>
 
         <template v-else-if="ac.registered && !ac.is_admin && !isGuest">
-          <v-container>
+          <v-container v-if="!showBooking">
             <v-layout row wrap>
+              <v-flex>
+                <v-btn color="success" @click="showBooking = true"><icon class="fa" name="calendar-alt"></icon> Book an appointment</v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn color="primary"><icon class="fa" name="upload"></icon> Update my DSA Letter</v-btn>
+              </v-flex>
               <v-flex>
                 <v-btn color="error" @click="cancelRegistrationDialog = true"><icon class="fa" name="times"></icon> Cancel Registration</v-btn>
               </v-flex>
             </v-layout>
           </v-container>
+          
+          <v-container v-else>
+            <v-layout row wrap class="animated fadeIn">
+              Select a provider
+            </v-layout>
+          </v-container>
+
           <v-dialog width="500" v-model="cancelRegistrationDialog" persistent>
             <v-card>
               <v-card-title class="headline grey lighten-2">
@@ -156,6 +169,12 @@
                           <td class="text-xs-left">{{ props.item.name }}</td>
                           <td class="text-xs-left">{{ props.item.email }}</td>
                           <td class="text-xs-left">
+                            <v-tooltip bottom color="black">
+                              <v-btn @click="showNAServices(props.index, props.item)" small flat slot="activator" class="btn-sm" color="primary">
+                                <icon class="fa" name="user-clock"></icon>
+                              </v-btn>
+                              <span>Assign services</span>
+                            </v-tooltip>
                             <v-tooltip bottom color="black">
                               <v-btn @click="setCurrentUser(props.index, props.item, 'needs_assessor')" small flat slot="activator" class="btn-sm" color="error">
                                 <icon class="fa" name="user-times"></icon>
@@ -246,6 +265,7 @@ export default {
     return {
       tabs: null,
       e1: true,
+      showBooking: false,
       uploadDialog: false,
       cancelRegistrationDialog: false,
       cancelUserRegDialog: false,
@@ -516,7 +536,7 @@ export default {
                   that.$router.push("/login");
                 }, 5000);
               } else {
-                that.$router.push("/assessment-centre/" + that.acSlug);
+                that.$router.push("/assessment-centre/" + that.acSlug + '/index');
               }
             }
           })

@@ -15,26 +15,11 @@
           <td class="text-xs-left">{{ props.item.address }}</td>
           <td class="text-xs-left">{{ props.item.manager }}</td>
           <td class="text-xs-left">
-            <template v-if="props.item.registered">
-              <v-tooltip bottom color="error">
-                <v-btn @click="showCancelRegDialog(props.item.id, props.index)" small flat slot="activator" class="btn-sm" color="error">
-                  <icon name="ban" class="fa"></icon>
-                </v-btn>
-                <span>Cancel registration</span>
-              </v-tooltip>
-              <v-tooltip bottom color="primary">
-                <v-btn :to="props.item.route" small flat slot="activator" class="btn-sm" color="primary">
-                  <icon name="arrow-circle-right" class="fa"></icon>
-                </v-btn>
-                <span>Open page</span>
-              </v-tooltip>
-            </template>
-
-            <v-tooltip v-else bottom color="info">
-              <v-btn :to="`/${props.item.route}/signup`" small flat slot="activator" class="btn-sm" color="info">
-                <icon name="sign-in-alt" class="fa"></icon>
+            <v-tooltip bottom color="primary">
+              <v-btn :to="props.item.route + '/signup'" small flat slot="activator" class="btn-sm" color="primary">
+                <icon name="arrow-circle-right" class="fa"></icon>
               </v-btn>
-              <span>Visit this Centre</span>
+              <span>Open page</span>
             </v-tooltip>
           </td>
         </template>
@@ -50,26 +35,6 @@
           </v-alert>
         </template>
       </v-data-table>
-
-      <v-dialog width="500" v-model="cancelRegDialog" persistent>
-        <v-card>
-          <v-card-title class="headline grey lighten-2">
-            Cancel registration
-            <v-spacer></v-spacer>
-            <a @click="cancelRegDialog = false"><icon name="times" class="fa"></icon></a>
-          </v-card-title>
-          <v-container>
-            <h3>Are you sure you want to cancel your<br />registration with this Assessment Center?</h3>
-            <v-btn :disabled="cancelling" @click="cancelRegistrationWithAC()" color="error">
-              <icon v-if="!cancelling" class="fa" name="check"></icon>
-              <icon v-if="cancelling" class="fa" name="circle-notch" spin></icon>Yes
-            </v-btn>
-            <v-btn @click="cancelRegDialog = false" color="info">
-              <icon class="fa" name="times"></icon>No
-            </v-btn>
-          </v-container>
-        </v-card>
-      </v-dialog>
 
       <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
         <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
@@ -138,84 +103,6 @@ export default {
     }
   },
   methods: {
-    cancelRegistrationWithAC() {
-      if (!this.cancelling && this.acId) {
-        this.cancelling = true;
-        var requestConfig = {
-          headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
-        };
-        var requestParams = {
-          ac_id: this.acId
-        };
-        var that = this;
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "cancel-reg-with-ac?XDEBUG_SESSION_START=netbeans-xdebug",
-            requestParams,
-            requestConfig
-          )
-          .then(function(response) {
-            that.cancelling = false;
-            that.operationMessage = response.data.msg;
-            that.operationMessageType = response.data.code;
-            that.snackbar = true;
-            if (response.data.code === "success") {
-              that.items[that.acIndex].registered = response.data.data;
-              that.cancelRegDialog = false;
-            }
-          })
-          .catch(function(error) {
-            that.cancelling = false;
-            that.operationMessage =
-              "There was an error on the remote endpoint. Try again later.";
-            that.operationMessageType = "error";
-            that.snackbar = true;
-          });
-      }
-    },
-    goToACSignupPage(url) {
-      this.$router.push(url + '/signup');
-      /*if (!this.registering && this.acId) {
-        this.registering = true;
-        var requestConfig = {
-          headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
-        };
-        var requestParams = {
-          ac_id: this.acId
-        };
-        var that = this;
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "register-with-ac?XDEBUG_SESSION_START=netbeans-xdebug",
-            requestParams,
-            requestConfig
-          )
-          .then(function(response) {
-            that.registering = false;
-            that.operationMessage = response.data.msg;
-            that.operationMessageType = response.data.code;
-            that.snackbar = true;
-            if (response.data.code === "success") {
-              that.items[that.acIndex].registered = response.data.data;
-              that.registerDialog = false;
-            }
-          })
-          .catch(function(error) {
-            that.registering = false;
-            that.operationMessage =
-              "There was an error on the remote endpoint. Try again later.";
-            that.operationMessageType = "error";
-            that.snackbar = true;
-          });
-      }*/
-    },
-    showCancelRegDialog(id, index) {
-      this.acId = id;
-      this.acIndex = index;
-      this.cancelRegDialog = true;
-    },
     searchItems() {
       if (!this.loading) {
         this.getDataFromApi().then(data => {

@@ -38,7 +38,7 @@
                   <v-text-field :disabled="!isGuest" v-model="ac.user_data.email" prepend-icon="email" name="email" label="Email" id="email" type="email" :rules="emailRules"></v-text-field>
                   <v-text-field :disabled="!isGuest" v-model="ac.user_data.password" prepend-icon="lock" name="password" label="Password" id="password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
                   <v-text-field :disabled="!isGuest" v-model="ac.user_data.password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" id="passwordConfirm" :rules="passwordConfirmRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
-                  <v-text-field v-if="acRole === 'student'" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDialog = true" @click:append="() => (uploadDialog = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
+                  <v-text-field v-if="acRole === 'student'" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDlg = true" @click:append="() => (uploadDlg = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
                 </v-flex>
               </v-layout>
               <v-layout row wrap mt-5>
@@ -57,12 +57,12 @@
             </v-form>
           </v-container>
 
-          <v-dialog width="500" v-model="uploadDialog" persistent>
+          <v-dialog width="500" v-model="uploadDlg" persistent>
             <v-card>
               <v-card-title class="headline grey lighten-2">
                 Upload file
                 <v-spacer></v-spacer>
-                <a @click="uploadDialog = false"><icon name="times" class="fa"></icon></a>
+                <a @click="uploadDlg = false"><icon name="times" class="fa"></icon></a>
               </v-card-title>
               <v-container>
                 <file-upload v-on:set-file="setDSALetter($event)"></file-upload>
@@ -81,7 +81,7 @@
                 <v-btn color="primary"><icon class="fa" name="upload"></icon> Update my DSA Letter</v-btn>
               </v-flex>
               <v-flex>
-                <v-btn color="error" @click="cancelRegistrationDialog = true"><icon class="fa" name="times"></icon> Cancel Registration</v-btn>
+                <v-btn color="error" @click="cancelRegistrationDlg = true"><icon class="fa" name="times"></icon> Cancel Registration</v-btn>
               </v-flex>
             </v-layout>
           </v-container>
@@ -92,12 +92,12 @@
             </v-layout>
           </v-container>
 
-          <v-dialog width="500" v-model="cancelRegistrationDialog" persistent>
+          <v-dialog width="500" v-model="cancelRegistrationDlg" persistent>
             <v-card>
               <v-card-title class="headline grey lighten-2">
                 Cancel Registration
                 <v-spacer></v-spacer>
-                <a @click="cancelRegistrationDialog = false"><icon name="times" class="fa"></icon></a>
+                <a @click="cancelRegistrationDlg = false"><icon name="times" class="fa"></icon></a>
               </v-card-title>
               <v-container>
                 <h3>Are you sure you want to cancel your registration with this Centre?</h3>
@@ -105,7 +105,7 @@
                   <icon v-if="!loading" class="fa" name="check"></icon>
                   <icon v-else class="fa" name="circle-notch" spin></icon> Yes
                 </v-btn>
-                <v-btn color="info" @click="cancelRegistrationDialog = false"><icon class="fa" name="times"></icon> No</v-btn>
+                <v-btn color="info" @click="cancelRegistrationDlg = false"><icon class="fa" name="times"></icon> No</v-btn>
               </v-container>
             </v-card>
           </v-dialog>
@@ -123,6 +123,9 @@
                   </v-tab>
                   <v-tab href="#tab-needs-assessors" class="primary--text">
                     <v-icon>assignment_ind</v-icon> Assessors
+                  </v-tab>
+                  <v-tab href="#tab-services" class="primary--text">
+                    <v-icon>assessment</v-icon> Services
                   </v-tab>
                 </v-tabs>
 
@@ -156,7 +159,7 @@
                     <v-card>
                       <v-layout row class="mt-3 mb-2">
                         <v-spacer></v-spacer>
-                        <v-btn @click="inviteUsersDialog = true" color="info"><icon class="fa" name="envelope"></icon> Invite Assessors</v-btn>
+                        <v-btn @click="inviteUsersDlg = true" color="info"><icon class="fa" name="envelope"></icon> Invite Assessors</v-btn>
                       </v-layout>
                       <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.needs_assessors" class="elevation-1">
                         <template slot="headerCell" slot-scope="props">
@@ -185,12 +188,12 @@
                         </template>
                       </v-data-table>
                     </v-card>
-                    <v-dialog width="500" v-model="inviteUsersDialog" persistent>
+                    <v-dialog width="500" v-model="inviteUsersDlg" persistent>
                       <v-card>
                         <v-card-title class="headline grey lighten-2">
                           Invite user
                           <v-spacer></v-spacer>
-                          <a @click="inviteUsersDialog = false"><icon name="times" class="fa"></icon></a>
+                          <a @click="inviteUsersDlg = false"><icon name="times" class="fa"></icon></a>
                         </v-card-title>
                         <v-container>
                           <v-form ref="inviteForm">
@@ -215,14 +218,93 @@
                       </v-card>
                     </v-dialog>
                   </v-tab-item>
+
+                  <v-tab-item id='tab-services'>
+                    <v-card>
+                      <v-layout row class="mt-3 mb-2">
+                        <v-spacer></v-spacer>
+                        <v-btn @click="showUpdateServiceForm(-1, {id: -1, currency: 'GBP'}, 'Add service')" color="info"><icon class="fa" name="server"></icon> Add Service</v-btn>
+                      </v-layout>
+                      <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Description', value: 'description' }, { text: 'Duration', value: 'duration' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.services" class="elevation-1">
+                        <template slot="headerCell" slot-scope="props">
+                          <v-tooltip bottom>
+                            <span slot="activator">{{ props.header.text }}</span>
+                            <span>{{ props.header.text }}</span>
+                          </v-tooltip>
+                        </template>
+                        <template slot="items" slot-scope="props">
+                          <td class="text-xs-left">{{ props.item.name }}</td>
+                          <td class="text-xs-left">{{ props.item.description }}</td>
+                          <td class="text-xs-left">{{ props.item.duration }}</td>
+                          <td class="text-xs-left">
+                            <v-tooltip bottom color="black">
+                              <v-btn @click="showUpdateServiceForm(props.index, props.item, 'Update service')" small flat slot="activator" class="btn-sm" color="success">
+                                <icon class="fa" name="edit"></icon>
+                              </v-btn>
+                              <span>Update</span>
+                            </v-tooltip>
+                            <v-tooltip bottom color="black">
+                              <v-btn @click="showUpdateServiceForm(props.index, props.item, 'Delete service')" small flat slot="activator" class="btn-sm" color="error">
+                                <icon class="fa" name="trash-alt"></icon>
+                              </v-btn>
+                              <span>Delete</span>
+                            </v-tooltip>
+                          </td>
+                        </template>
+                      </v-data-table>
+                    </v-card>
+                    <v-dialog width="500" v-model="updateServiceDlg" persistent>
+                      <v-card>
+                        <v-card-title class="headline grey lighten-2">
+                          {{currentServiceAction}}
+                          <v-spacer></v-spacer>
+                          <a @click="updateServiceDlg = false"><icon name="times" class="fa"></icon></a>
+                        </v-card-title>
+                        <v-container>
+                          <v-form ref="updateServiceForm">
+                            <template v-if="currentServiceAction !== 'Delete service'">
+                              <v-layout row>  
+                                <v-flex><v-text-field v-model="currentService.name" :rules="nameRules" max="50" ref="currentServiceName" outline v-on:keyup.enter="updateService()" append-icon="room_service" label="Name" type="text" required></v-text-field></v-flex>
+                              </v-layout>
+                              <v-layout row>
+                                <v-flex><v-textarea v-model="currentService.description" :counter="250" :no-resize="true" maxlength="250" rows="3" outline v-on:keyup.enter="updateService()" append-icon="edit" label="Description" type="text"></v-textarea></v-flex>
+                              </v-layout>
+                              <v-layout row>
+                                <v-flex sm6><v-text-field v-model="currentService.duration" :rules="nameRules" min="1" max="480" outline v-on:keyup.enter="updateService()" append-icon="access_time" label="Duration" type="number" required></v-text-field></v-flex>
+                                <v-flex sm6><v-text-field v-model="currentService.attendants_number" :rules="nameRules" min="1" outline v-on:keyup.enter="updateService()" append-icon="group" label="Attendants number" type="number" required></v-text-field></v-flex>
+                              </v-layout>
+                              <v-layout row>
+                                <v-flex sm6><v-text-field v-model="currentService.price" min="1" :rules="nameRules" outline v-on:keyup.enter="updateService()" append-icon="attach_money" label="Price" type="number" required></v-text-field></v-flex>
+                                <v-flex sm6><v-text-field v-model="currentService.currency" :disabled="true" outline append-icon="trending_up" label="Currency" type="text" required></v-text-field></v-flex>
+                              </v-layout>
+                            </template>
+                            <template v-else>
+                              <v-layout row>
+                                <v-flex>
+                                  <h3>Are you sure you want to delete the service <a>{{currentService.name}}</a>?</h3>
+                                </v-flex>
+                              </v-layout>
+                            </template>
+                            <v-layout row>
+                              <v-spacer></v-spacer>
+                              <v-btn :disabled="loading" @click="updateService()" :class="{ error: currentServiceAction === 'Delete service', success: currentServiceAction === 'Update service', info: currentServiceAction === 'Add service'}">
+                                <icon v-if="loading" class="fa" name="circle-notch" spin></icon> {{currentServiceAction}}
+                              </v-btn>
+                            </v-layout>
+                          </v-form>
+                        </v-container>
+                      </v-card>
+                    </v-dialog>
+                  </v-tab-item>
+
                 </v-tabs-items>
 
-                <v-dialog width="500" v-model="cancelUserRegDialog" persistent>
+                <v-dialog width="500" v-model="cancelUserRegDlg" persistent>
                   <v-card>
                     <v-card-title class="headline grey lighten-2">
                       Cancel user registration
                       <v-spacer></v-spacer>
-                      <a @click="cancelUserRegDialog = false"><icon name="times" class="fa"></icon></a>
+                      <a @click="cancelUserRegDlg = false"><icon name="times" class="fa"></icon></a>
                     </v-card-title>
                     <v-container>
                       <v-layout row>
@@ -235,7 +317,7 @@
                           <icon v-if="!loading" class="fa" name="check"></icon>
                           <icon v-else class="fa" name="circle-notch" spin></icon> Yes
                         </v-btn>
-                        <v-btn color="info" @click="cancelUserRegDialog = false"><icon class="fa" name="times"></icon> No</v-btn>
+                        <v-btn color="info" @click="cancelUserRegDlg = false"><icon class="fa" name="times"></icon> No</v-btn>
                       </v-layout>
                     </v-container>
                   </v-card>
@@ -266,10 +348,11 @@ export default {
       tabs: null,
       e1: true,
       showBooking: false,
-      uploadDialog: false,
-      cancelRegistrationDialog: false,
-      cancelUserRegDialog: false,
-      inviteUsersDialog: false,
+      uploadDlg: false,
+      cancelRegistrationDlg: false,
+      updateServiceDlg: false,
+      cancelUserRegDlg: false,
+      inviteUsersDlg: false,
       validationStatus: false,
       loadingInitialElements: true,
       currentUser: { name: "" },
@@ -312,8 +395,10 @@ export default {
         phone: null,
         admin: null
       },
+      currentServiceIndex: -1,
+      currentService: {},
       invitationToken: null,
-      studentsHeaders: [{ text: "Name", value: "name" }]
+      currentServiceAction: ""
     };
   },
   created() {
@@ -336,17 +421,77 @@ export default {
     }
   },
   methods: {
+    updateService() {
+      if (this.$refs.updateServiceForm.validate()) {
+        this.loading = true;
+        var requestConfig = {
+          headers: {
+            Authorization: "Bearer " + this.$store.state.payload.jwt
+          }
+        };
+        var requestParams = {
+          ac_id: this.ac.id,
+          item: this.currentService,
+          action: this.currentServiceAction
+        };
+
+        var that = this;
+        axios
+          .post(
+            this.$store.state.baseUrl +
+              "update-ac-service?XDEBUG_SESSION_START=netbeans-xdebug",
+            requestParams,
+            requestConfig
+          )
+          .then(function(response) {
+            that.loading = false;
+            that.operationMessage = response.data.msg;
+            that.operationMessageType = response.data.code;
+            that.snackbar = true;
+            if (response.data.code === "success") {
+              if (that.currentServiceAction === 'Add service') {
+                that.currentService.id = response.data.data;
+                that.ac.services.push(that.currentService);
+                that.currentService = {id: -1, currency: 'GBP'};
+                that.$nextTick(that.$refs.currentServiceName.focus);
+              } else if (that.currentServiceAction === 'Update service') {
+                that.ac.services.splice(that.currentServiceIndex, 1, that.currentService);
+                that.$nextTick(that.$refs.currentServiceName.focus);
+              } else if (that.currentServiceAction === 'Delete service') {
+                that.ac.services.splice(that.currentServiceIndex, 1);
+                that.updateServiceDlg = false;
+              }
+            }
+          })
+          .catch(function(error) {
+            that.loading = false;
+            that.operationMessage =
+              "There was an error on the remote endpoint. Try again later.";
+            that.operationMessageType = "error";
+            that.snackbar = true;
+          });
+      }
+    },
+    showUpdateServiceForm(index, item, mode) {
+      this.currentServiceIndex = index;
+      this.currentService = JSON.parse(JSON.stringify(item));
+      this.currentServiceAction = mode;
+      this.updateServiceDlg = true;
+      if (mode !== 'Delete service') {
+        this.$nextTick(this.$refs.currentServiceName.focus);
+      }
+    },
     setCurrentUser(index, user, userType) {
       this.currentUserIndex = index;
       this.currentUser = user;
       this.currentUserType = userType;
-      this.cancelUserRegDialog = true;
+      this.cancelUserRegDlg = true;
     },
     setInitialData() {
       this.acSlug = this.$route.params.slug;
       this.acAction = this.$route.params.action;
       this.invitationToken = this.$route.params.token;
-      
+
       this.getAC().then(data => {
         if (data.item.data) {
           this.ac = data.item.data;
@@ -354,7 +499,12 @@ export default {
           if (this.ac.registered && this.acAction === "signup") {
             this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
           } else if (!this.ac.registered && this.acAction === "index") {
-            this.$router.push("/assessment-centre/" + this.acSlug + "/signup/" + this.invitationToken);
+            this.$router.push(
+              "/assessment-centre/" +
+                this.acSlug +
+                "/signup/" +
+                this.invitationToken
+            );
           }
         } else {
           this.$router.push("/not-found");
@@ -366,7 +516,7 @@ export default {
       this.ac.user_data.dsa_letter = event;
       if (event) {
         this.dsaLetterName = event.name;
-        this.uploadDialog = false;
+        this.uploadDlg = false;
       } else {
         this.dsaLetterName = "";
       }
@@ -384,7 +534,7 @@ export default {
           ac_id: this.ac.id,
           url: window.location.href.replace(
             this.$route.path,
-            "/assessment-centre/" + this.ac.token + '/signup/'
+            "/assessment-centre/" + this.ac.token + "/signup/"
           )
         };
 
@@ -450,7 +600,7 @@ export default {
             } else {
               that.ac.needs_assessors.splice(that.currentUserIndex, 1);
             }
-            that.cancelUserRegDialog = false;
+            that.cancelUserRegDlg = false;
           }
         })
         .catch(function(error) {
@@ -487,7 +637,7 @@ export default {
           that.snackbar = true;
           if (response.data.code === "success") {
             that.ac.registered = false;
-            that.cancelRegistrationDialog = false;
+            that.cancelRegistrationDlg = false;
           }
         })
         .catch(function(error) {
@@ -512,7 +662,7 @@ export default {
         formData.append("ac", JSON.stringify(this.ac));
         formData.append("url", this.activationUrl);
         formData.append("role", this.acRole);
-        formData.append("invitation_token", this.invitationToken,);
+        formData.append("invitation_token", this.invitationToken);
 
         var that = this;
         axios
@@ -536,7 +686,9 @@ export default {
                   that.$router.push("/login");
                 }, 5000);
               } else {
-                that.$router.push("/assessment-centre/" + that.acSlug + '/index');
+                that.$router.push(
+                  "/assessment-centre/" + that.acSlug + "/index"
+                );
               }
             }
           })
@@ -583,3 +735,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.v-input {
+  margin-right: 5px !important;
+}
+</style>

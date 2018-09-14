@@ -3,7 +3,7 @@
     <v-card class="pb-4">
       <v-layout row wrap mb-3>
         <v-flex xs12 sm8 offset-sm2 mt-4>
-          <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''"><v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.name}}</h3>
+          <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''"><v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.settings.name}}</h3>
         </v-flex>
       </v-layout>
       <v-layout row v-if="loadingInitialElements" wrap mt-2>
@@ -16,10 +16,10 @@
           <h3><v-icon color="primary">business_center</v-icon> <b>Manager:</b> {{ac.admin}}</h3>
         </v-flex>
         <v-flex xs12>
-          <h3><v-icon color="primary">phone</v-icon> <b>Telephone:</b> {{ac.phone}}</h3>
+          <h3><v-icon color="primary">phone</v-icon> <b>Telephone:</b> {{ac.settings.telephone}}</h3>
         </v-flex>
         <v-flex xs12>
-          <h3><v-icon color="primary">location_on</v-icon> <b>Address:</b> {{ac.address}}</h3>
+          <h3><v-icon color="primary">location_on</v-icon> <b>Address:</b> {{ac.settings.address}}</h3>
         </v-flex>
       </v-layout>
 
@@ -78,9 +78,6 @@
                 <v-btn color="success" @click="showBooking = true"><icon class="fa" name="calendar-alt"></icon> Book an appointment</v-btn>
               </v-flex>
               <v-flex>
-                <v-btn color="primary"><icon class="fa" name="upload"></icon> Update my DSA Letter</v-btn>
-              </v-flex>
-              <v-flex>
                 <v-btn color="error" @click="cancelRegistrationDlg = true"><icon class="fa" name="times"></icon> Cancel Registration</v-btn>
               </v-flex>
             </v-layout>
@@ -92,7 +89,7 @@
             </v-layout>
           </v-container>
 
-          <v-dialog width="500" v-model="cancelRegistrationDlg" persistent>
+          <v-dialog width="350" v-model="cancelRegistrationDlg" persistent>
             <v-card>
               <v-card-title class="headline grey lighten-2">
                 Cancel Registration
@@ -126,6 +123,9 @@
                   </v-tab>
                   <v-tab href="#tab-services" class="primary--text">
                     <v-icon>assessment</v-icon> Services
+                  </v-tab>
+                  <v-tab href="#tab-settings" class="primary--text">
+                    <v-icon>settings</v-icon> Settings
                   </v-tab>
                 </v-tabs>
 
@@ -173,8 +173,8 @@
                           <td class="text-xs-left">{{ props.item.email }}</td>
                           <td class="text-xs-left">
                             <v-tooltip bottom color="black">
-                              <v-btn @click="showNAServices(props.index, props.item)" small flat slot="activator" class="btn-sm" color="primary">
-                                <icon class="fa" name="user-clock"></icon>
+                              <v-btn :disabled="ac.services.length < 1" @click="showNAServices(props.index, props.item)" small flat slot="activator" class="btn-sm" color="primary">
+                                <icon class="fa" name="user-cog"></icon>
                               </v-btn>
                               <span>Assign services</span>
                             </v-tooltip>
@@ -187,36 +187,69 @@
                           </td>
                         </template>
                       </v-data-table>
-                    </v-card>
-                    <v-dialog width="500" v-model="inviteUsersDlg" persistent>
-                      <v-card>
-                        <v-card-title class="headline grey lighten-2">
-                          Invite user
-                          <v-spacer></v-spacer>
-                          <a @click="inviteUsersDlg = false"><icon name="times" class="fa"></icon></a>
-                        </v-card-title>
-                        <v-container>
-                          <v-form ref="inviteForm">
-                            <v-layout row>
-                              <v-text-field max="50" outline v-on:keyup.enter="inviteUser()" ref="invitationName" v-model="invitation.name" append-icon="person" label="Name" type="text" required :rules="nameRules" hint="Enter the assessor's name"></v-text-field>
-                            </v-layout>
-                            <v-layout row>
-                              <v-text-field max="150" outline v-on:keyup.enter="inviteUser()" v-model="invitation.email" append-icon="mail" label="Email" type="text" required :rules="emailRules" hint="Enter the email address"></v-text-field>
-                            </v-layout>
-                            <v-layout row>
-                              <v-textarea outline v-model="invitation.text" append-icon="edit" label="Custom message" type="text" required hint="Enter a custom message"></v-textarea>
-                            </v-layout>
+
+                      <v-dialog width="500" v-model="naServicesDlg" persistent>
+                        <v-card>
+                          <v-card-title class="headline grey lighten-2">
+                            Available services
+                            <v-spacer></v-spacer>
+                            <a @click="naServicesDlg = false"><icon name="times" class="fa"></icon></a>
+                          </v-card-title>
+                          <v-container>
+                            <v-data-table ref="tblNAServices" :headers="[{ text: 'Name', value: 'name' }, { text: 'Description', value: 'description' }]" :items="ac.services" v-model="selectedServices" item-key="id" select-all>
+                              <template slot="headerCell" slot-scope="props">
+                                <v-tooltip bottom>
+                                  <span slot="activator">{{ props.header.text }}</span>
+                                  <span>{{ props.header.text }}</span>
+                                </v-tooltip>
+                              </template>
+                              <template slot="items" slot-scope="props">
+                                <td><v-checkbox v-model="props.selected" primary hide-details></v-checkbox></td>
+                                <td class="text-xs-left">{{ props.item.name }}</td>
+                                <td class="text-xs-left">{{ props.item.description }}</td>
+                              </template>
+                            </v-data-table>
                             <v-layout row>
                               <v-spacer></v-spacer>
-                              <v-btn :disabled="loading" color="info" @click="inviteUser()">
-                                <icon v-if="!loading" class="fa" name="envelope"></icon>
-                                <icon v-else class="fa" name="circle-notch" spin></icon> Send invitation
+                              <v-btn :disabled="loading" color="info" @click="updateNAServices()">
+                                <icon v-if="!loading" class="fa" name="check"></icon>
+                                <icon v-else class="fa" name="circle-notch" spin></icon> Update services
                               </v-btn>
                             </v-layout>
-                          </v-form>
-                        </v-container>
-                      </v-card>
-                    </v-dialog>
+                          </v-container>
+                        </v-card>
+                      </v-dialog>
+
+                      <v-dialog width="500" v-model="inviteUsersDlg" persistent>
+                        <v-card>
+                          <v-card-title class="headline grey lighten-2">
+                            Invite user
+                            <v-spacer></v-spacer>
+                            <a @click="inviteUsersDlg = false"><icon name="times" class="fa"></icon></a>
+                          </v-card-title>
+                          <v-container>
+                            <v-form ref="inviteForm">
+                              <v-layout row>
+                                <v-text-field max="50" outline v-on:keyup.enter="inviteUser()" ref="invitationName" v-model="invitation.name" append-icon="person" label="Name" type="text" required :rules="nameRules" hint="Enter the assessor's name"></v-text-field>
+                              </v-layout>
+                              <v-layout row>
+                                <v-text-field max="150" outline v-on:keyup.enter="inviteUser()" v-model="invitation.email" append-icon="mail" label="Email" type="text" required :rules="emailRules" hint="Enter the email address"></v-text-field>
+                              </v-layout>
+                              <v-layout row>
+                                <v-textarea outline v-model="invitation.text" append-icon="edit" label="Custom message" type="text" required hint="Enter a custom message"></v-textarea>
+                              </v-layout>
+                              <v-layout row>
+                                <v-spacer></v-spacer>
+                                <v-btn :disabled="loading" color="info" @click="inviteUser()">
+                                  <icon v-if="!loading" class="fa" name="envelope"></icon>
+                                  <icon v-else class="fa" name="circle-notch" spin></icon> Send invitation
+                                </v-btn>
+                              </v-layout>
+                            </v-form>
+                          </v-container>
+                        </v-card>
+                      </v-dialog>
+                    </v-card>
                   </v-tab-item>
 
                   <v-tab-item id='tab-services'>
@@ -297,6 +330,45 @@
                     </v-dialog>
                   </v-tab-item>
 
+                  <v-tab-item id='tab-settings'>
+                    <v-card>
+                      <v-container>
+                        <v-form ref="settingsForm" v-model="settingsValidationStatus">
+                          <v-layout row wrap>
+                            <v-flex xs12 sm6 d-flex>
+                              <v-text-field v-model="ac.settings.name" :rules="nameRules" label="Name" outline></v-text-field>
+                            </v-flex>
+                            <v-flex xs12 sm6 d-flex>
+                              <v-text-field v-model="ac.settings.token" :rules="nameRules" label="Slug" outline></v-text-field>
+                            </v-flex>
+                          </v-layout>
+                          <v-layout row wrap>
+                            <v-flex xs12 sm4 d-flex>
+                              <v-text-field v-model="ac.settings.telephone" :rules="nameRules" label="Telephone" outline></v-text-field>
+                            </v-flex>
+                            <v-flex xs12 sm4 d-flex>
+                              <v-text-field v-model="ac.settings.address" :rules="nameRules" label="Address" outline></v-text-field>
+                            </v-flex>
+                            <v-flex xs12 sm4 d-flex>
+                              <v-select v-model="ac.settings.availability_type" :rules="nameRules" :items="['Combined', 'Single']" label="Availability type" outline></v-select>
+                            </v-flex>
+                          </v-layout>
+                          <v-layout row wrap>
+                            <v-tooltip bottom :color="validationColor">
+                              <v-btn :disabled="loading" v-on:click="updateACSettings()" class="white--text" :class="{ red: !settingsValidationStatus, indigo: settingsValidationStatus }" slot="activator">
+                                <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
+                                <v-icon size="22" v-if="!loading && settingsValidationStatus">done</v-icon>
+                                <v-icon size="22" v-if="!loading && !settingsValidationStatus">error_outline</v-icon>
+                                &nbsp;Update settings
+                              </v-btn>
+                              <span>{{validationMessage}}</span>
+                            </v-tooltip>
+                          </v-layout>
+                        </v-form>
+                      </v-container>
+                    </v-card>
+                  </v-tab-item>
+
                 </v-tabs-items>
 
                 <v-dialog width="500" v-model="cancelUserRegDlg" persistent>
@@ -347,13 +419,16 @@ export default {
     return {
       tabs: null,
       e1: true,
+      selectedServices: [],
       showBooking: false,
       uploadDlg: false,
+      naServicesDlg: false,
       cancelRegistrationDlg: false,
       updateServiceDlg: false,
       cancelUserRegDlg: false,
       inviteUsersDlg: false,
       validationStatus: false,
+      settingsValidationStatus: false,
       loadingInitialElements: true,
       currentUser: { name: "" },
       acSlug: null,
@@ -390,10 +465,10 @@ export default {
       },
       ac: {
         id: null,
-        name: "Loading Assessment Centre information",
-        address: null,
-        phone: null,
-        admin: null
+        settings: {
+          name: "Loading Assessment Centre information",
+          admin: null
+        }
       },
       currentServiceIndex: -1,
       currentService: {},
@@ -421,6 +496,87 @@ export default {
     }
   },
   methods: {
+    updateACSettings() {
+      if (this.$refs.settingsForm.validate()) {
+        this.loading = true;
+        var requestConfig = {
+          headers: {
+            Authorization: "Bearer " + this.$store.state.payload.jwt
+          }
+        };
+        var requestParams = {
+          ac_id: this.ac.id,
+          settings: this.ac.settings
+        };
+
+        var that = this;
+        axios
+          .post(
+            this.$store.state.baseUrl +
+              "update-ac-settings?XDEBUG_SESSION_START=netbeans-xdebug",
+            requestParams,
+            requestConfig
+          )
+          .then(function(response) {
+            that.loading = false;
+            that.operationMessage = response.data.msg;
+            that.operationMessageType = response.data.code;
+            that.snackbar = true;
+          })
+          .catch(function(error) {
+            that.loading = false;
+            that.operationMessage =
+              "There was an error on the remote endpoint. Try again later.";
+            that.operationMessageType = "error";
+            that.snackbar = true;
+          });
+      }
+    },
+    updateNAServices() {
+      this.loading = true;
+      var requestConfig = {
+        headers: {
+          Authorization: "Bearer " + this.$store.state.payload.jwt
+        }
+      };
+      var requestParams = {
+        ac_id: this.ac.id,
+        user_id: this.currentNA.id,
+        services: this.selectedServices
+      };
+
+      var that = this;
+      axios
+        .post(
+          this.$store.state.baseUrl +
+            "update-na-services?XDEBUG_SESSION_START=netbeans-xdebug",
+          requestParams,
+          requestConfig
+        )
+        .then(function(response) {
+          that.loading = false;
+          that.operationMessage = response.data.msg;
+          that.operationMessageType = response.data.code;
+          that.snackbar = true;
+          if (response.data.code === "success") {
+            that.ac.needs_assessors[that.currentNAIndex].services =
+              that.selectedServices;
+          }
+        })
+        .catch(function(error) {
+          that.loading = false;
+          that.operationMessage =
+            "There was an error on the remote endpoint. Try again later.";
+          that.operationMessageType = "error";
+          that.snackbar = true;
+        });
+    },
+    showNAServices(index, item) {
+      this.currentNAIndex = index;
+      this.currentNA = item;
+      this.selectedServices = this.currentNA.services;
+      this.naServicesDlg = true;
+    },
     updateService() {
       if (this.$refs.updateServiceForm.validate()) {
         this.loading = true;
@@ -449,15 +605,19 @@ export default {
             that.operationMessageType = response.data.code;
             that.snackbar = true;
             if (response.data.code === "success") {
-              if (that.currentServiceAction === 'Add service') {
+              if (that.currentServiceAction === "Add service") {
                 that.currentService.id = response.data.data;
                 that.ac.services.push(that.currentService);
-                that.currentService = {id: -1, currency: 'GBP'};
+                that.currentService = { id: -1, currency: "GBP" };
                 that.$nextTick(that.$refs.currentServiceName.focus);
-              } else if (that.currentServiceAction === 'Update service') {
-                that.ac.services.splice(that.currentServiceIndex, 1, that.currentService);
+              } else if (that.currentServiceAction === "Update service") {
+                that.ac.services.splice(
+                  that.currentServiceIndex,
+                  1,
+                  that.currentService
+                );
                 that.$nextTick(that.$refs.currentServiceName.focus);
-              } else if (that.currentServiceAction === 'Delete service') {
+              } else if (that.currentServiceAction === "Delete service") {
                 that.ac.services.splice(that.currentServiceIndex, 1);
                 that.updateServiceDlg = false;
               }
@@ -477,7 +637,7 @@ export default {
       this.currentService = JSON.parse(JSON.stringify(item));
       this.currentServiceAction = mode;
       this.updateServiceDlg = true;
-      if (mode !== 'Delete service') {
+      if (mode !== "Delete service") {
         this.$nextTick(this.$refs.currentServiceName.focus);
       }
     },
@@ -534,7 +694,7 @@ export default {
           ac_id: this.ac.id,
           url: window.location.href.replace(
             this.$route.path,
-            "/assessment-centre/" + this.ac.token + "/signup/"
+            "/assessment-centre/" + this.ac.settings.token + "/signup/"
           )
         };
 

@@ -923,9 +923,6 @@ label {
   margin-bottom: 20px;
   margin-top: 15px;
 }
-.v-input {
-  margin-right: 5px !important;
-}
 .comments-list {
   padding: 0 7px 0;
   font-size: 12px;

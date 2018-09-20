@@ -122,7 +122,7 @@
                           
                           <v-layout row wrap>
                             <v-flex md8 offset-md2 lg6 offset-lg3 v-if="ac.services.length > 0">
-                              <v-autocomplete no-data-text="No services available" readonly clearable v-model="newAppointment.service" return-object required item-text="name" outline :rules="nameRules" append-icon="assessment" :items="assessorServices" label="Service">
+                              <v-autocomplete no-data-text="No services available" readonly clearable v-model="newAppointment.service" @change="resetNewAppointmentTimeAndDate()" return-object required item-text="name" outline :rules="nameRules" append-icon="assessment" :items="assessorServices" label="Service">
                                 <template slot="item" slot-scope="{ item, tile }">
                                   <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
                                     {{ item.name.charAt(0) }}
@@ -144,7 +144,7 @@
                               </v-menu>
                             </v-flex>
                             <v-flex sm6 md4 lg3>
-                              <v-autocomplete v-model="newAppointment.hour" :disabled="loadingHours || !newAppointment.date" clearable required item-text="name" item-value="name" outline :rules="nameRules" append-icon="access_time" :items="ac.appointment_restrictions.available_hours" label="Hour">
+                              <v-autocomplete v-model="newAppointment.hour" no-data-text="No time slots available" :disabled="loadingHours || !newAppointment.date" clearable required item-text="name" item-value="name" outline :rules="nameRules" append-icon="access_time" :items="ac.appointment_restrictions.available_hours" label="Hour">
                                 <template slot="item" slot-scope="{ item, tile }">
                                   <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
                                     H
@@ -164,18 +164,32 @@
                           </v-layout>
                         </v-form>
 
+                        <v-dialog width="250" v-model="loadingHours" persistent>
+                          <v-card>
+                            <v-container>
+                              <v-card-text>
+                                <v-layout row>
+                                  <v-flex xs12>
+                                    <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
+                                  </v-flex>
+                                </v-layout>
+                              </v-card-text>
+                            </v-container>
+                          </v-card>
+                        </v-dialog>
+
                         <v-dialog v-if="newAppointmentValidation" width="350" v-model="confirmAppointmentDlg" persistent>
                           <v-card>
                             <v-container>
                               <v-layout row>
                                 <v-flex xs12>
-                                  <h3 class="text-xs-justify">Please, verify this information to make sure everything is fine</h3>
+                                  <h3 class="text-xs-justify">Please, verify this information to make sure everything is correct:</h3>
                                 </v-flex>
                               </v-layout>
                               <v-layout row mt-3>
                                 <v-flex xs12>
                                   <p class="text-xs-justify">
-                                    <a>Needs Assessor:</a> {{newAppointment.assessor.name}}<br />
+                                    <span v-if="newAppointment.assessor.name"><a>Needs Assessor:</a> {{newAppointment.assessor.name}}<br /></span>
                                     <a>Service:</a> {{newAppointment.service.name}}<br />
                                     <a>Date:</a> {{newAppointment.date}}<br />
                                     <a>Hour:</a> {{newAppointment.hour}}<br />
@@ -522,7 +536,7 @@ export default {
       confirmAppointmentDlg: false,
       newAppointmentValidation: false,
       loadingHours: false,
-      newAppointment: { service: {}, assessor: {} },
+      newAppointment: { service: {}, assessor: {}, date: null, hour: null },
       tabs: null,
       e1: true,
       selectedServices: [],
@@ -609,6 +623,10 @@ export default {
   },
   components: { FileUpload, AxiosComponent },
   methods: {
+    resetNewAppointmentTimeAndDate() {
+      this.newAppointment.date = null;
+      this.newAppointment.hour = null;
+    },
     saveAppointment() {
       var config = {
         method: "post",
@@ -683,26 +701,21 @@ export default {
       }
     },
     updateNAServices() {
-      this.loading = true;
-      var requestConfig = {
-        headers: {
-          Authorization: "Bearer " + this.$store.state.payload.jwt
-        }
-      };
-      var requestParams = {
-        ac_id: this.ac.id,
-        user_id: this.currentNA.id,
-        services: this.selectedServices
-      };
 
-      var that = this;
-      axios
-        .post(
-          this.$store.state.baseUrl +
-            "update-na-services?XDEBUG_SESSION_START=netbeans-xdebug",
-          requestParams,
-          requestConfig
-        )
+      this.loading = true;
+        var config = {
+          method: "post",
+          url: "update-na-services",
+          params: {
+            ac_id: this.ac.id,
+            user_id: this.currentNA.id,
+            services: this.selectedServices
+          }
+        };
+        this.$refs.axios.submit(config);
+      
+/*
+
         .then(function(response) {
           that.loading = false;
           that.operationMessage = response.data.msg;
@@ -719,7 +732,7 @@ export default {
             "There was an error on the remote endpoint. Try again later.";
           that.operationMessageType = "error";
           that.snackbar = true;
-        });
+        });*/
     },
     showNAServices(index, item) {
       this.currentNAIndex = index;
@@ -996,22 +1009,25 @@ export default {
           this.ac.appointment_restrictions.available_hours =
             event.data.result.code === 200 &&
             event.data.result.response.code === "success"
-              ? (this.ac.appointment_restrictions.available_hours =
-                  event.data.result.response.data)
-              : [];
+              ? event.data.result.response.data : [];
           this.loadingHours = false;
           break;
         case "update-ac-settings":
         case "create-appointment":
+        case "update-na-services":
           if (event.data.result.code === 200) {
             this.operationMessage = event.data.result.response.msg;
             this.operationMessageType = event.data.result.response.code;
+            if (event.data.result.response.code === "success") {
+              this.confirmAppointmentDlg = false;
+              this.newAppointment = { service: {}, assessor: {} };
+            }
           } else {
-            this.operationMessage = 'Your request could not be executed.';
-            this.operationMessageType = 'error';
+            this.operationMessage = "Your request could not be executed.";
+            this.operationMessageType = "error";
           }
           this.loading = false;
-          this.snackbar= true;
+          this.snackbar = true;
           break;
         default:
           break;
@@ -1021,6 +1037,10 @@ export default {
       if (data.result.code === 200 && data.result.response.code === "success") {
         this.ac = data.result.response.data;
         this.acRole = this.ac.role;
+        if (this.ac.settings.availability_type === 'Combined') {
+          this.assessorServices = this.ac.services;
+        }
+
         if (this.ac.registered && this.acAction === "signup") {
           this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
         } else if (!this.ac.registered && this.acAction === "index") {

@@ -57,9 +57,11 @@ export default {
     },
     resizeCanvas() {
       let canvas = document.querySelector(".signature");
-      var ratio = Math.max(window.devicePixelRatio || 1, 1);
-      canvas.width = window.innerWidth * 0.9;
-      canvas.height = window.innerHeight * 0.7;
+      if (canvas) {
+        var ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = window.innerWidth * 0.9;
+        canvas.height = window.innerHeight * 0.7;
+      }
     },
     draw() {
       this.pad.penColor =

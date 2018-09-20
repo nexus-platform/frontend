@@ -81,7 +81,7 @@
 
 <script>
 import axios from "axios";
-import { saveAs } from 'file-saver/FileSaver';
+import { saveAs } from "file-saver/FileSaver";
 
 export default {
   data() {
@@ -277,10 +277,17 @@ export default {
             link.click();
             document.body.removeChild(link);*/
             that.downloading = false;
-            var blob = new Blob([response.data], {
-              type: "application/pdf"
-            });
-            saveAs(blob, filename);
+            if (response.data) {
+              var blob = new Blob([response.data], {
+                type: "application/pdf"
+              });
+              saveAs(blob, filename);
+            } else {
+              that.snackbar = true;
+              that.operationMessage =
+                "Your file could not be downloaded.";
+              that.operationMessageType = "error";
+            }
           })
           .catch(function(error) {
             console.log(error);

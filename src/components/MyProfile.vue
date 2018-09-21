@@ -108,7 +108,8 @@
                             <v-text-field v-model="userData.password_confirm" prepend-icon="lock" label="Confirm password" :rules="passwordConfirmRules" type="password" hint="Re-type your password"></v-text-field>
                           </v-layout>
                           <v-layout row wrap mt-4>
-                            <v-btn v-on:click="setPassword()" class="white--text" color="info">Set password</v-btn>
+                            <v-spacer></v-spacer>
+                            <v-btn v-on:click="setPassword()" class="white--text" color="info">Change password</v-btn>
                             <v-btn v-on:click="closePasswordDlg()" class="white--text" color="error">Cancel</v-btn>
                           </v-layout>
                         </v-form>

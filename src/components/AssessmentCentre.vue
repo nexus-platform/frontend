@@ -44,7 +44,7 @@
               <v-layout row wrap mt-5>
                 <v-flex xs12>
                   <v-tooltip bottom :color="validationColor">
-                    <v-btn :disabled="loading" v-on:click="submit()" class="white--text" :class="{ red: !validationStatus, indigo: validationStatus }" slot="activator">
+                    <v-btn :disabled="loading" v-on:click="registerWithAC()" class="white--text" :class="{ red: !validationStatus, indigo: validationStatus }" slot="activator">
                       <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
                       <v-icon size="22" v-if="!loading && validationStatus">done</v-icon>
                       <v-icon size="22" v-if="!loading && !validationStatus">error_outline</v-icon>
@@ -73,10 +73,75 @@
         
         <template v-else>
           <v-container>
-            <v-layout row wrap>
-              <v-flex xs11 class="text-xs-right" v-if="ac.role !== 'ac'">
-                <v-btn color="error" @click="cancelRegistrationDlg = true"><icon class="fa" name="user-slash"></icon> Cancel Registration</v-btn>
+            <v-layout row wrap v-if="ac.role !== 'ac'">
+              
+              <v-flex xs12 class="text-xs-right">
+                <v-btn v-if="ac.role === 'na'" small color="primary" @click="setUnavPeriodDlg = true"><icon class="fa" name="user-slash"></icon> Set unavailable period</v-btn>
+                <v-btn small color="error" @click="cancelRegistrationDlg = true"><icon class="fa" name="user-times"></icon> Cancel Registration</v-btn>
               </v-flex>
+
+              <v-dialog v-if="ac.role === 'na'" width="500" v-model="setUnavPeriodDlg" persistent>
+                <v-card>
+                  <v-card-title class="headline grey lighten-2">
+                    Unavailable period
+                  </v-card-title>
+                  <v-container>
+                    <v-form v-model="unavPeriodValidation" ref="unavPeriodForm">
+                      <!--Starting interval-->
+                      <v-layout row wrap>
+                        <v-flex xs12 sm6>
+                          <v-menu v-model="newUnavailablePeriod.sdModal" :close-on-content-click="true" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
+                            <v-text-field v-model="newUnavailablePeriod.start_date" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" clearable append-icon="event" outline required slot="activator" label="Start date" readonly></v-text-field>
+                            <v-date-picker v-model="newUnavailablePeriod.start_date" @change="validateUnavailablePeriod()" no-title :show-current="true" :min="ac.appointment_restrictions.min_date">
+                              <v-spacer></v-spacer>
+                              <v-btn flat small @click="newUnavailablePeriod.sdModal = false">OK</v-btn>
+                            </v-date-picker>
+                          </v-menu>
+                        </v-flex>
+                        <v-flex xs12 sm6>
+                          <v-menu v-model="newUnavailablePeriod.shModal" :close-on-content-click="false" :disabled="!newUnavailablePeriod.start_date" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
+                            <v-text-field v-model="newUnavailablePeriod.start_hour" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" :disabled="!newUnavailablePeriod.start_date" clearable append-icon="access_time" outline required slot="activator" label="Start hour" readonly></v-text-field>
+                            <v-time-picker v-model="newUnavailablePeriod.start_hour" @change="validateUnavailablePeriod()" :disabled="!newUnavailablePeriod.start_date" format="24hr">
+                              <v-spacer></v-spacer>
+                              <v-btn flat small @click="newUnavailablePeriod.shModal = false">OK</v-btn>
+                            </v-time-picker>
+                          </v-menu>
+                        </v-flex>
+                      </v-layout>
+                      <!--Ending interval-->
+                      <v-layout row wrap>
+                        <v-flex xs12 sm6>
+                          <v-menu v-model="newUnavailablePeriod.edModal" :close-on-content-click="true" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
+                            <v-text-field v-model="newUnavailablePeriod.end_date" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" clearable append-icon="event" outline required slot="activator" label="End date" readonly></v-text-field>
+                            <v-date-picker v-model="newUnavailablePeriod.end_date" @change="validateUnavailablePeriod()" no-title :show-current="true" :min="ac.appointment_restrictions.min_date">
+                              <v-spacer></v-spacer>
+                              <v-btn flat small @click="newUnavailablePeriod.edModal = false">OK</v-btn>
+                            </v-date-picker>
+                          </v-menu>
+                        </v-flex>
+                        <v-flex xs12 sm6>
+                          <v-menu v-model="newUnavailablePeriod.ehModal" :close-on-content-click="false" :disabled="!newUnavailablePeriod.end_date" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
+                            <v-text-field v-model="newUnavailablePeriod.end_hour" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" :disabled="!newUnavailablePeriod.start_date" clearable append-icon="access_time" outline required slot="activator" label="End hour" readonly></v-text-field>
+                            <v-time-picker v-model="newUnavailablePeriod.end_hour" @change="validateUnavailablePeriod()" :disabled="!newUnavailablePeriod.start_date" format="24hr">
+                              <v-spacer></v-spacer>
+                              <v-btn flat small @click="newUnavailablePeriod.ehModal = false">OK</v-btn>
+                            </v-time-picker>
+                          </v-menu>
+                        </v-flex>
+                      </v-layout>
+                    </v-form>
+                    <v-layout row wrap>
+                      <v-spacer></v-spacer>
+                      <v-btn small :disabled="loading" color="info" @click="setUnavailablePeriod()">
+                        <icon v-if="!loading" class="fa" name="check"></icon>
+                        <icon v-else class="fa" name="circle-notch" spin></icon> Confirm
+                      </v-btn>
+                      <v-btn small color="error" @click="setUnavPeriodDlg = false"><icon class="fa" name="times"></icon> Cancel</v-btn>
+                    </v-layout>
+                  </v-container>
+                </v-card>
+              </v-dialog>
+
               <v-dialog width="350" v-model="cancelRegistrationDlg" persistent>
                 <v-card>
                   <v-card-title class="headline grey lighten-2">
@@ -103,6 +168,7 @@
                     <div slot="header"><icon name="calendar-alt" class="fa"></icon><b>New appointment</b></div>
                     <v-card>
                       <v-card-text class="animated fadeIn">
+                        
                         <v-form ref="newAppointmentForm" v-model="newAppointmentValidation">
                           <v-layout row wrap v-if="ac.settings.availability_type !== 'Combined'">
                             <v-flex md8 offset-md2 lg6 offset-lg3>
@@ -322,6 +388,9 @@
                                         <icon v-if="!loading" class="fa" name="check"></icon>
                                         <icon v-else class="fa" name="circle-notch" spin></icon> Update services
                                       </v-btn>
+                                      <v-btn @click="naServicesDlg = false" color="error">
+                                        <icon class="fa" name="times"></icon> Close
+                                      </v-btn>
                                     </v-layout>
                                   </v-container>
                                 </v-card>
@@ -393,6 +462,7 @@
                                 </template>
                               </v-data-table>
                             </v-card>
+
                             <v-dialog width="500" v-model="updateServiceDlg" persistent>
                               <v-card>
                                 <v-card-title class="headline grey lighten-2">
@@ -410,18 +480,18 @@
                                         <v-flex><v-textarea v-model="currentService.description" :counter="250" :no-resize="true" maxlength="250" rows="3" outline v-on:keyup.enter="updateService()" append-icon="edit" label="Description" type="text"></v-textarea></v-flex>
                                       </v-layout>
                                       <v-layout row>
-                                        <v-flex sm6><v-text-field v-model="currentService.duration" :rules="nameRules" min="1" max="480" outline v-on:keyup.enter="updateService()" append-icon="access_time" label="Duration" type="number" required></v-text-field></v-flex>
-                                        <v-flex sm6><v-text-field v-model="currentService.attendants_number" :rules="nameRules" min="1" outline v-on:keyup.enter="updateService()" append-icon="group" label="Attendants number" type="number" required></v-text-field></v-flex>
+                                        <v-flex sm6><v-text-field v-model="currentService.duration" :rules="durationRules" :hint="serviceDurationHint" maxlength="3" outline v-on:keyup.enter="updateService()" append-icon="access_time" label="Duration (minutes)" type="text" required></v-text-field></v-flex>
+                                        <v-flex sm6><v-text-field v-model="currentService.attendants_number" :rules="attendantsRules" maxlength="3" outline v-on:keyup.enter="updateService()" append-icon="group" label="Attendants number" type="text" required></v-text-field></v-flex>
                                       </v-layout>
                                       <v-layout row>
-                                        <v-flex sm6><v-text-field v-model="currentService.price" min="1" :rules="nameRules" outline v-on:keyup.enter="updateService()" append-icon="attach_money" label="Price" type="number" required></v-text-field></v-flex>
+                                        <v-flex sm6><v-text-field v-model="currentService.price" maxlength="3" :rules="priceRules" outline v-on:keyup.enter="updateService()" append-icon="attach_money" label="Price" type="text" required></v-text-field></v-flex>
                                         <v-flex sm6><v-text-field v-model="currentService.currency" :disabled="true" outline append-icon="trending_up" label="Currency" type="text" required></v-text-field></v-flex>
                                       </v-layout>
                                     </template>
                                     <template v-else>
                                       <v-layout row>
                                         <v-flex>
-                                          <h3>Are you sure you want to delete the service <a>{{currentService.name}}</a>?</h3>
+                                          <h3>Are you sure you want to delete <a>{{currentService.name}}</a>?</h3>
                                         </v-flex>
                                       </v-layout>
                                     </template>
@@ -430,6 +500,7 @@
                                       <v-btn :disabled="loading" @click="updateService()" :class="{ error: currentServiceAction === 'Delete service', success: currentServiceAction === 'Update service', info: currentServiceAction === 'Add service'}">
                                         <icon v-if="loading" class="fa" name="circle-notch" spin></icon> {{currentServiceAction}}
                                       </v-btn>
+                                      <v-btn @click="updateServiceDlg = false" color="error">Close</v-btn>
                                     </v-layout>
                                   </v-form>
                                 </v-container>
@@ -528,11 +599,18 @@
 
 <script>
 import FileUpload from "@/components/FileUpload";
+import axios from "axios";
 import AxiosComponent from "@/components/AxiosComponent";
+import moment from "moment";
 
 export default {
   data() {
     return {
+      newUnavPeriodError: false,
+      newUnavPeriodErrors: [],
+      newUnavailablePeriod: {},
+      unavPeriodValidation: false,
+      setUnavPeriodDlg: false,
       confirmAppointmentDlg: false,
       newAppointmentValidation: false,
       loadingHours: false,
@@ -562,6 +640,19 @@ export default {
       passwordRules: [
         v => !!v || "This field is required",
         v => (v && v.length > 5) || "Password requires at least 6 characters"
+      ],
+      durationRules: [
+        v => !!v || "This field is required",
+        //v => (v && parseInt(v, 10) != NaN ) || "Integer number expected",
+        v => (v && v > 4 && v < 481) || "This value is not allowed"
+      ],
+      attendantsRules: [
+        v => !!v || "This field is required",
+        v => (v && v > 0) || "This value is not allowed"
+      ],
+      priceRules: [
+        v => !!v || "This field is required",
+        v => (v && v > 0) || "This value is not allowed"
       ],
       passwordConfirmRules: [
         v => !!v || "This field is required",
@@ -603,6 +694,7 @@ export default {
       assessorServices: []
     };
   },
+  components: { FileUpload, AxiosComponent },
   mounted() {
     this.activationUrl = window.location.href.replace(
       this.$route.path,
@@ -621,8 +713,53 @@ export default {
     };
     this.$refs.axios.submit(config);
   },
-  components: { FileUpload, AxiosComponent },
   methods: {
+    validateUnavailablePeriod() {
+      var startDate = moment(
+        this.newUnavailablePeriod.start_date +
+          " " +
+          this.newUnavailablePeriod.start_hour,
+        "YYYY-MM-DD HH:mm"
+      );
+      var endDate = moment(
+        this.newUnavailablePeriod.end_date +
+          " " +
+          this.newUnavailablePeriod.end_hour,
+        "YYYY-MM-DD HH:mm"
+      );
+      if (startDate.isValid() && endDate.isValid()) {
+        var diff = endDate.diff(startDate) / 60000;
+        if (diff < 1) {
+          this.newUnavPeriodErrors = ["Invalid date range"];
+          this.newUnavPeriodError = true;
+        } else if (diff < 5) {
+          this.newUnavPeriodErrors = ["Select a range greater than 5 minutes"];
+          this.newUnavPeriodError = true;
+        } else {
+          this.newUnavPeriodErrors = [];
+          this.newUnavPeriodError = false;
+        }
+      } else {
+        console.log(startDate);
+        console.log(endDate);
+        this.newUnavPeriodError = true;
+      }
+    },
+    setUnavailablePeriod() {
+      this.validateUnavailablePeriod();
+      if (!this.newUnavPeriodError) {
+        var config = {
+          method: "post",
+          url: "set-unavailable-period",
+          params: {
+            period: this.newUnavailablePeriod,
+            ac_id: this.ac.id
+          }
+        };
+        this.loading = true;
+        this.$refs.axios.submit(config);
+      }
+    },
     resetNewAppointmentTimeAndDate() {
       this.newAppointment.date = null;
       this.newAppointment.hour = null;
@@ -701,38 +838,17 @@ export default {
       }
     },
     updateNAServices() {
-
       this.loading = true;
-        var config = {
-          method: "post",
-          url: "update-na-services",
-          params: {
-            ac_id: this.ac.id,
-            user_id: this.currentNA.id,
-            services: this.selectedServices
-          }
-        };
-        this.$refs.axios.submit(config);
-      
-/*
-
-        .then(function(response) {
-          that.loading = false;
-          that.operationMessage = response.data.msg;
-          that.operationMessageType = response.data.code;
-          that.snackbar = true;
-          if (response.data.code === "success") {
-            that.ac.needs_assessors[that.currentNAIndex].services =
-              that.selectedServices;
-          }
-        })
-        .catch(function(error) {
-          that.loading = false;
-          that.operationMessage =
-            "There was an error on the remote endpoint. Try again later.";
-          that.operationMessageType = "error";
-          that.snackbar = true;
-        });*/
+      var config = {
+        method: "post",
+        url: "update-na-services",
+        params: {
+          ac_id: this.ac.id,
+          user_id: this.currentNA.id,
+          services: this.selectedServices
+        }
+      };
+      this.$refs.axios.submit(config);
     },
     showNAServices(index, item) {
       this.currentNAIndex = index;
@@ -743,56 +859,16 @@ export default {
     updateService() {
       if (this.$refs.updateServiceForm.validate()) {
         this.loading = true;
-        var requestConfig = {
-          headers: {
-            Authorization: "Bearer " + this.$store.state.payload.jwt
+        var config = {
+          method: "post",
+          url: "update-ac-service",
+          params: {
+            ac_id: this.ac.id,
+            item: this.currentService,
+            action: this.currentServiceAction
           }
         };
-        var requestParams = {
-          ac_id: this.ac.id,
-          item: this.currentService,
-          action: this.currentServiceAction
-        };
-
-        var that = this;
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "update-ac-service?XDEBUG_SESSION_START=netbeans-xdebug",
-            requestParams,
-            requestConfig
-          )
-          .then(function(response) {
-            that.loading = false;
-            that.operationMessage = response.data.msg;
-            that.operationMessageType = response.data.code;
-            that.snackbar = true;
-            if (response.data.code === "success") {
-              if (that.currentServiceAction === "Add service") {
-                that.currentService.id = response.data.data;
-                that.ac.services.push(that.currentService);
-                that.currentService = { id: -1, currency: "GBP" };
-                that.$nextTick(that.$refs.currentServiceName.focus);
-              } else if (that.currentServiceAction === "Update service") {
-                that.ac.services.splice(
-                  that.currentServiceIndex,
-                  1,
-                  that.currentService
-                );
-                that.$nextTick(that.$refs.currentServiceName.focus);
-              } else if (that.currentServiceAction === "Delete service") {
-                that.ac.services.splice(that.currentServiceIndex, 1);
-                that.updateServiceDlg = false;
-              }
-            }
-          })
-          .catch(function(error) {
-            that.loading = false;
-            that.operationMessage =
-              "There was an error on the remote endpoint. Try again later.";
-            that.operationMessageType = "error";
-            that.snackbar = true;
-          });
+        this.$refs.axios.submit(config);
       }
     },
     showUpdateServiceForm(index, item, mode) {
@@ -822,131 +898,49 @@ export default {
     inviteUser() {
       if (this.$refs.inviteForm.validate()) {
         this.loading = true;
-        var requestConfig = {
-          headers: {
-            Authorization: "Bearer " + this.$store.state.payload.jwt
+        var config = {
+          method: "post",
+          url: "invite-user",
+          params: {
+            invitation: this.invitation,
+            ac_id: this.ac.id,
+            url: window.location.href.replace(
+              this.$route.path,
+              "/assessment-centre/" + this.ac.settings.token + "/signup/"
+            )
           }
         };
-        var requestParams = {
-          invitation: this.invitation,
+        this.$refs.axios.submit(config);
+      }
+    },
+    cancelUserRegistration() {
+      this.loading = true;
+      var config = {
+        method: "post",
+        url: "unregister-user-from-ac",
+        params: {
+          user_id: this.currentUser.id,
           ac_id: this.ac.id,
           url: window.location.href.replace(
             this.$route.path,
             "/assessment-centre/" + this.ac.settings.token + "/signup/"
           )
-        };
-
-        var that = this;
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "invite-user?XDEBUG_SESSION_START=netbeans-xdebug",
-            requestParams,
-            requestConfig
-          )
-          .then(function(response) {
-            that.loading = false;
-            that.operationMessage = response.data.msg;
-            that.operationMessageType = response.data.code;
-            that.snackbar = true;
-            if (response.data.code === "success") {
-              that.invitation = {
-                name: "",
-                email: "",
-                text: ""
-              };
-            }
-            that.$nextTick(that.$refs.invitationName.focus);
-          })
-          .catch(function(error) {
-            that.loading = false;
-            that.operationMessage =
-              "There was an error on the remote endpoint. Try again later.";
-            that.operationMessageType = "error";
-            that.snackbar = true;
-          });
-      }
-    },
-    cancelUserRegistration() {
-      this.loading = true;
-      var requestConfig = {
-        headers: {
-          Authorization: "Bearer " + this.$store.state.payload.jwt
         }
       };
-      var requestParams = {
-        ac_id: this.ac.id,
-        user_id: this.currentUser.id
-      };
-
-      var that = this;
-      axios
-        .post(
-          this.$store.state.baseUrl +
-            "unregister-user-from-ac?XDEBUG_SESSION_START=netbeans-xdebug",
-          requestParams,
-          requestConfig
-        )
-        .then(function(response) {
-          that.loading = false;
-          that.operationMessage = response.data.msg;
-          that.operationMessageType = response.data.code;
-          that.snackbar = true;
-          if (response.data.code === "success") {
-            if (that.currentUserType === "student") {
-              that.ac.students.splice(that.currentUserIndex, 1);
-            } else {
-              that.ac.needs_assessors.splice(that.currentUserIndex, 1);
-            }
-            that.cancelUserRegDlg = false;
-          }
-        })
-        .catch(function(error) {
-          that.loading = false;
-          that.operationMessage =
-            "There was an error on the remote endpoint. Try again later.";
-          that.operationMessageType = "error";
-          that.snackbar = true;
-        });
+      this.$refs.axios.submit(config);
     },
     cancelRegistration() {
       this.loading = true;
-      var requestConfig = {
-        headers: {
-          Authorization: "Bearer " + this.$store.state.payload.jwt
+      var config = {
+        method: "post",
+        url: "unregister-from-ac",
+        params: {
+          ac_id: this.ac.id
         }
       };
-      var requestParams = {
-        ac_id: this.ac.id
-      };
-
-      var that = this;
-      axios
-        .post(
-          this.$store.state.baseUrl +
-            "unregister-from-ac?XDEBUG_SESSION_START=netbeans-xdebug",
-          requestParams,
-          requestConfig
-        )
-        .then(function(response) {
-          that.loading = false;
-          that.operationMessage = response.data.msg;
-          that.operationMessageType = response.data.code;
-          that.snackbar = true;
-          if (response.data.code === "success") {
-            that.ac.registered = false;
-            that.cancelRegistrationDlg = false;
-          }
-        })
-        .catch(function(error) {
-          that.loading = false;
-          that.operationMessage =
-            "There was an error on the remote endpoint. Try again later.";
-          that.operationMessageType = "error";
-          that.snackbar = true;
-        });
+      this.$refs.axios.submit(config);
     },
-    submit() {
+    registerWithAC() {
       if (this.$refs.form.validate()) {
         this.loading = true;
         var requestConfig = {
@@ -1001,46 +995,115 @@ export default {
     },
     handleHttpResponse(event) {
       console.log(event);
-      switch (event.url) {
-        case "get-ac-info":
-          this.setACInfo(event.data);
-          break;
-        case "get-available-hours":
-          this.ac.appointment_restrictions.available_hours =
-            event.data.result.code === 200 &&
-            event.data.result.response.code === "success"
-              ? event.data.result.response.data : [];
-          this.loadingHours = false;
-          break;
-        case "update-ac-settings":
-        case "create-appointment":
-        case "update-na-services":
-          if (event.data.result.code === 200) {
+
+      if (event.data.result.code === 200) {
+        this.operationMessage = event.data.result.response.msg;
+        this.operationMessageType = event.data.result.response.code;
+        this.loading = false;
+        this.loadingHours = false;
+
+        switch (event.url) {
+          case "get-ac-info":
+            this.setACInfo(event.data);
+            break;
+          case "get-available-hours":
+            this.ac.appointment_restrictions.available_hours =
+              event.data.result.code === 200 &&
+              event.data.result.response.code === "success"
+                ? event.data.result.response.data
+                : [];
+            this.loadingHours = false;
+            break;
+          case "update-ac-settings":
+          case "create-appointment":
+          case "update-na-services":
+          case "set-unavailable-period":
+            if (event.data.result.response.code === "success") {
+              //Appointments
+              this.confirmAppointmentDlg = false;
+              this.newAppointment = { service: {}, assessor: {} };
+              //Unavailable periods
+              this.setUnavPeriodDlg = false;
+              this.newUnavailablePeriod = {};
+              this.newUnavPeriodError = true;
+            }
+            this.snackbar = true;
+            break;
+          case "update-ac-service":
+            if (event.data.result.response.code === "success") {
+              switch (this.currentServiceAction) {
+                case "Add service":
+                  this.currentService.id = event.data.result.response.data;
+                  this.ac.services.push(this.currentService);
+                  this.currentService = { id: -1, currency: "GBP" };
+                  this.$nextTick(this.$refs.currentServiceName.focus);
+                  break;
+                case "Update service":
+                  this.ac.services.splice(
+                    this.currentServiceIndex,
+                    1,
+                    this.currentService
+                  );
+                  this.$nextTick(this.$refs.currentServiceName.focus);
+                  break;
+                case "Delete service":
+                  this.ac.services.splice(this.currentServiceIndex, 1);
+                  this.updateServiceDlg = false;
+                  break;
+                default:
+                  break;
+              }
+            }
+            this.snackbar = true;
+            break;
+          case "invite-user":
             this.operationMessage = event.data.result.response.msg;
             this.operationMessageType = event.data.result.response.code;
             if (event.data.result.response.code === "success") {
-              this.confirmAppointmentDlg = false;
-              this.newAppointment = { service: {}, assessor: {} };
+              this.invitation = {
+                name: "",
+                email: "",
+                text: ""
+              };
+              this.$nextTick(this.$refs.invitationName.focus);
             }
-          } else {
-            this.operationMessage = "Your request could not be executed.";
-            this.operationMessageType = "error";
-          }
-          this.loading = false;
-          this.snackbar = true;
-          break;
-        default:
-          break;
+            this.snackbar = true;
+            break;
+          case "unregister-user-from-ac":
+            if (event.data.result.response.code === "success") {
+              if (this.currentUserType === "student") {
+                this.ac.students.splice(this.currentUserIndex, 1);
+              } else {
+                this.ac.needs_assessors.splice(this.currentUserIndex, 1);
+              }
+              this.cancelUserRegDlg = false;
+            }
+            this.snackbar = true;
+            break;
+          case "unregister-from-ac":
+            if (event.data.result.response.code === "success") {
+              this.ac.registered = false;
+              this.cancelRegistrationDlg = false;
+            }
+            this.snackbar = true;
+            break;
+          default:
+            this.snackbar = true;
+            break;
+        }
+      } else {
+        this.operationMessage = "Your request could not be executed.";
+        this.operationMessageType = "error";
+        this.snackbar = true;
       }
     },
     setACInfo(data) {
       if (data.result.code === 200 && data.result.response.code === "success") {
         this.ac = data.result.response.data;
         this.acRole = this.ac.role;
-        if (this.ac.settings.availability_type === 'Combined') {
+        if (this.ac.settings.availability_type === "Combined") {
           this.assessorServices = this.ac.services;
         }
-
         if (this.ac.registered && this.acAction === "signup") {
           this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
         } else if (!this.ac.registered && this.acAction === "index") {
@@ -1063,6 +1126,13 @@ export default {
     }
   },
   computed: {
+    serviceDurationHint() {
+      var res =
+        this.currentService.duration % 60 === 0
+          ? this.currentService.duration / 60
+          : (this.currentService.duration / 60).toFixed(2);
+      return res + (res > 1 ? " hours" : " hour");
+    },
     isGuest() {
       return this.$store.state.payload.is_guest;
     },

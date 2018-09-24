@@ -6,12 +6,10 @@
     </v-card-text>
 
     <v-card-text v-if="loadingInitialElements" class="animated fadeIn">
-      <v-container>
-        <icon name="circle-notch" scale=2 spin style="color: gray;"></icon>
-      </v-container>
+      <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
     </v-card-text>
 
-    <v-card v-if="!loadingInitialElements" class="animated fadeIn">
+    <v-card v-else class="animated fadeIn">
       <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text fixed-tabs dark slider-color="yellow">
         <v-tab :disabled="loading" v-for="(item, i) in items" :key="i + 1" ripple @click="submit(false, i)">
           <span class="hidden-xs-only non-uppercase">{{item.title}}</span>

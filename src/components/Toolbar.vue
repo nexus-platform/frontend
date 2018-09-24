@@ -90,6 +90,10 @@
         <v-spacer></v-spacer>
         
         <v-toolbar-items class="hidden-sm-and-down">
+          <v-btn flat to="/">
+            <v-icon class="white--text">home</v-icon><span class="white--text">Home</span>
+          </v-btn>
+            
           <template v-if="isGuest">
             <v-btn flat to="/login">
               <v-icon class="white--text">lock</v-icon><span class="white--text">Login</span>
@@ -97,16 +101,16 @@
           </template>
 
           <template v-else>
-            <v-btn flat to="/">
-              <v-icon class="white--text">home</v-icon><span class="white--text">Home</span>
+            <v-btn v-if="isStudent" flat to="/dsa-forms">
+              <v-icon class="white--text">picture_as_pdf</v-icon><span class="white--text">DSA Forms</span>
             </v-btn>
 
-            <template v-if="isStudent">
-              <v-btn flat v-if="isStudent" to="/dsa-forms">
-                <v-icon class="white--text">picture_as_pdf</v-icon><span class="white--text">DSA Forms</span>
-              </v-btn>
+            <template v-if="isStudent || isNA">
               <v-btn flat to="/assessment-centres">
                 <v-icon class="white--text">assessment</v-icon><span class="white--text">Assessment Centres</span>
+              </v-btn>
+              <v-btn flat to="/my-bookings">
+                <v-icon class="white--text">event_available</v-icon><span class="white--text">My Bookings</span>
               </v-btn>
             </template>
 

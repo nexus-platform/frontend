@@ -5,7 +5,7 @@
           <a class="forms-list-header">{{message}}</a>
         </v-card-text>
         <v-card-text v-if="loading">
-          <icon name="circle-notch" scale=2 spin style="color: gray;"></icon>
+          <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
         </v-card-text>
         <transition name="slide-fade">
           <v-card-text v-if="!loading">

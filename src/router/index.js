@@ -21,6 +21,7 @@ import NotAllowed from '@/components/NotAllowed';
 import AssessmentCentres from '@/components/AssessmentCentres';
 import AssessmentCentre from '@/components/AssessmentCentre';
 import AcceptInvitation from '@/components/AcceptInvitation';
+import MyBookings from '@/components/MyBookings';
 import store from '../store';
 
 Vue.use(Router);
@@ -173,7 +174,7 @@ const routes = [{
     component: AssessmentCentres,
     meta: {
       requiresAuth: true,
-      roles: ['student']
+      roles: ['student', 'na']
     }
   },
   {
@@ -185,6 +186,11 @@ const routes = [{
     path: '/accept-invitation/:token',
     name: 'AcceptInvitation',
     component: AcceptInvitation
+  },
+  {
+    path: '/my-bookings',
+    name: 'MyBookings',
+    component: MyBookings
   }
 ];
 

@@ -32,7 +32,7 @@
 
         <template slot="no-data">
           <v-alert :value="true" class="black--text" color="default">
-            <h3 v-if="loading">Loading data...</h3> 
+            <v-progress-circular v-if="loading" indeterminate color="blue-grey"></v-progress-circular>
             <span v-if="!loading">There are no items to display</span> 
           </v-alert>
         </template>

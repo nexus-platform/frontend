@@ -16,7 +16,7 @@
           <td class="text-xs-left">{{ props.item.manager }}</td>
           <td class="text-xs-left">
             <v-tooltip bottom color="primary">
-              <v-btn :to="props.item.route + '/signup'" small flat slot="activator" class="btn-sm" color="primary">
+              <v-btn :to="props.item.route + '/index'" small flat slot="activator" class="btn-sm" color="primary">
                 <icon name="arrow-circle-right" class="fa"></icon>
               </v-btn>
               <span>Open page</span>
@@ -30,7 +30,7 @@
 
         <template slot="no-data">
           <v-alert :value="true" class="black--text" color="default">
-            <h3 v-if="loading">Loading data...</h3> 
+            <v-progress-circular v-if="loading" indeterminate color="blue-grey"></v-progress-circular>
             <span v-if="!loading">There are no items to display</span> 
           </v-alert>
         </template>

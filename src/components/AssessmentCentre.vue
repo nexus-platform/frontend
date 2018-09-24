@@ -8,7 +8,7 @@
       </v-layout>
       <v-layout row v-if="loadingInitialElements" wrap mt-2>
         <v-flex xs12>
-          <icon name="circle-notch" scale=2 spin style="color: gray;"></icon>
+          <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
         </v-flex>
       </v-layout>
       <v-layout row v-else wrap class="text-xs-center">
@@ -73,12 +73,32 @@
         
         <template v-else>
           <v-container>
-            <v-layout row wrap v-if="ac.role !== 'ac'">
+            <v-layout row wrap v-if="ac.role !== 'ac' && !isGuest">
               
-              <v-flex xs12 class="text-xs-right">
-                <v-btn v-if="ac.role === 'na'" small color="primary" @click="setUnavPeriodDlg = true"><icon class="fa" name="user-slash"></icon> Set unavailable period</v-btn>
+              <v-flex xs12 sm10 offset-sm1 class="text-xs-right">
+                <v-btn v-if="ac.role === 'na' || ac.role === 'ac'" small color="info" @click="viewCalendarDlg = true"><icon scale="0.9" class="fa" name="calendar-alt"></icon> Display events</v-btn>
+                <v-btn v-if="ac.role === 'na'" small color="warning" @click="setUnavPeriodDlg = true"><icon class="fa" name="user-slash"></icon> Set unavailable period</v-btn>
                 <v-btn small color="error" @click="cancelRegistrationDlg = true"><icon class="fa" name="user-times"></icon> Cancel Registration</v-btn>
               </v-flex>
+
+              <v-dialog v-if="ac.role === 'na' || ac.role === 'ac'" v-model="viewCalendarDlg" fullscreen hide-overlay persistent>
+                <v-card>
+                  <v-card-title class="headline grey lighten-2">
+                    Events
+                  </v-card-title>
+                  <v-container>
+                    <v-layout row wrap>
+                      <v-flex xs12>
+                        <full-calendar :events="appointments"></full-calendar>
+                      </v-flex>
+                    </v-layout>
+                    <v-layout row wrap mt-3>
+                      <v-spacer></v-spacer>
+                      <v-btn small color="error" @click="viewCalendarDlg = false"><icon class="fa" name="times"></icon> close</v-btn>
+                    </v-layout>
+                  </v-container>
+                </v-card>
+              </v-dialog>
 
               <v-dialog v-if="ac.role === 'na'" width="500" v-model="setUnavPeriodDlg" persistent>
                 <v-card>
@@ -167,28 +187,12 @@
                   <v-expansion-panel-content v-if="ac.role === 'student'">
                     <div slot="header"><icon name="calendar-alt" class="fa"></icon><b>New appointment</b></div>
                     <v-card>
-                      <v-card-text class="animated fadeIn">
-                        
+                        <v-card-text class="animated fadeIn">
                         <v-form ref="newAppointmentForm" v-model="newAppointmentValidation">
-                          <v-layout row wrap v-if="ac.settings.availability_type !== 'Combined'">
-                            <v-flex md8 offset-md2 lg6 offset-lg3>
-                              <v-autocomplete no-data-text="No assessors available" readonly clearable v-model="newAppointment.assessor" @change="setAssessorServices()" return-object required item-text="name" outline :rules="nameRules" append-icon="person" :items="ac.needs_assessors" label="Assessor">
-                                <template slot="item" slot-scope="{ item, tile }">
-                                  <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
-                                    {{ item.name.charAt(0) }}
-                                  </v-list-tile-avatar>
-                                  <v-list-tile-content>
-                                    <v-list-tile-title v-text="item.name"></v-list-tile-title>
-                                    <v-list-tile-sub-title><i>{{item.email}}</i></v-list-tile-sub-title>
-                                  </v-list-tile-content>
-                                </template>
-                              </v-autocomplete>
-                            </v-flex>
-                          </v-layout>
                           
                           <v-layout row wrap>
-                            <v-flex md8 offset-md2 lg6 offset-lg3 v-if="ac.services.length > 0">
-                              <v-autocomplete no-data-text="No services available" readonly clearable v-model="newAppointment.service" @change="resetNewAppointmentTimeAndDate()" return-object required item-text="name" outline :rules="nameRules" append-icon="assessment" :items="assessorServices" label="Service">
+                            <v-flex md8 offset-md2 lg6 offset-lg3>
+                              <v-autocomplete clearable v-model="newAppointment.service" @change="resetNewAppointmentInfo()" return-object required item-text="name" outline :rules="nameRules" append-icon="assessment" :items="ac.services" label="Service">
                                 <template slot="item" slot-scope="{ item, tile }">
                                   <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
                                     {{ item.name.charAt(0) }}
@@ -196,6 +200,22 @@
                                   <v-list-tile-content>
                                     <v-list-tile-title v-text="item.name"></v-list-tile-title>
                                     <v-list-tile-sub-title><i>Duration: {{item.duration}} mins. Price: {{item.price}} {{item.currency}}</i></v-list-tile-sub-title>
+                                  </v-list-tile-content>
+                                </template>
+                              </v-autocomplete>
+                            </v-flex>
+                          </v-layout>
+
+                          <v-layout row wrap v-if="ac.settings.availability_type !== 'Combined'">
+                            <v-flex md8 offset-md2 lg6 offset-lg3>
+                              <v-autocomplete no-data-text="No assessors available for this service" clearable v-model="newAppointment.assessor" :rules="nameRules" @change="resetNewAppDateAndTime()" return-object required item-text="name" outline append-icon="person" :items="ac.appointment_restrictions.needs_assessors" label="Assessor">
+                                <template slot="item" slot-scope="{ item, tile }">
+                                  <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
+                                    {{ item.name.charAt(0) }}
+                                  </v-list-tile-avatar>
+                                  <v-list-tile-content>
+                                    <v-list-tile-title v-text="item.name"></v-list-tile-title>
+                                    <v-list-tile-sub-title><i>{{item.email}}</i></v-list-tile-sub-title>
                                   </v-list-tile-content>
                                 </template>
                               </v-autocomplete>
@@ -210,7 +230,7 @@
                               </v-menu>
                             </v-flex>
                             <v-flex sm6 md4 lg3>
-                              <v-autocomplete v-model="newAppointment.hour" no-data-text="No time slots available" :disabled="loadingHours || !newAppointment.date" clearable required item-text="name" item-value="name" outline :rules="nameRules" append-icon="access_time" :items="ac.appointment_restrictions.available_hours" label="Hour">
+                              <v-autocomplete v-model="newAppointment.hour" no-data-text="No available time slots" :disabled="loadingHours || !newAppointment.date" clearable required item-text="name" item-value="name" outline :rules="nameRules" append-icon="access_time" :items="ac.appointment_restrictions.available_hours" label="Hour">
                                 <template slot="item" slot-scope="{ item, tile }">
                                   <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
                                     H
@@ -255,8 +275,8 @@
                               <v-layout row mt-3>
                                 <v-flex xs12>
                                   <p class="text-xs-justify">
-                                    <span v-if="newAppointment.assessor.name"><a>Needs Assessor:</a> {{newAppointment.assessor.name}}<br /></span>
-                                    <a>Service:</a> {{newAppointment.service.name}}<br />
+                                    <span v-if="newAppointment.assessor"><a>Needs Assessor:</a> {{newAppointment.assessor.name}}<br /></span>
+                                    <span v-if="newAppointment.service"><a>Service:</a> {{newAppointment.service.name}}<br /></span>
                                     <a>Date:</a> {{newAppointment.date}}<br />
                                     <a>Hour:</a> {{newAppointment.hour}}<br />
                                   </p>
@@ -602,11 +622,16 @@ import FileUpload from "@/components/FileUpload";
 import axios from "axios";
 import AxiosComponent from "@/components/AxiosComponent";
 import moment from "moment";
+import { FullCalendar } from 'vue-full-calendar';
+import 'fullcalendar/dist/fullcalendar.css';
 
 export default {
   data() {
     return {
+      appointments: [],
+      viewCalendarDlg: false,
       newUnavPeriodError: false,
+      calendarEvents: [],
       newUnavPeriodErrors: [],
       newUnavailablePeriod: {},
       unavPeriodValidation: false,
@@ -684,17 +709,17 @@ export default {
           min_date: null,
           max_date: null,
           allowed_dates: [],
-          available_hours: []
+          available_hours: [],
+          needs_assessors: []
         }
       },
       currentServiceIndex: -1,
       currentService: {},
       invitationToken: null,
-      currentServiceAction: "",
-      assessorServices: []
+      currentServiceAction: ""
     };
   },
-  components: { FileUpload, AxiosComponent },
+  components: { FileUpload, AxiosComponent, FullCalendar },
   mounted() {
     this.activationUrl = window.location.href.replace(
       this.$route.path,
@@ -740,8 +765,6 @@ export default {
           this.newUnavPeriodError = false;
         }
       } else {
-        console.log(startDate);
-        console.log(endDate);
         this.newUnavPeriodError = true;
       }
     },
@@ -760,33 +783,41 @@ export default {
         this.$refs.axios.submit(config);
       }
     },
-    resetNewAppointmentTimeAndDate() {
-      this.newAppointment.date = null;
-      this.newAppointment.hour = null;
+    resetNewAppointmentInfo() {
+      this.resetNewAppDateAndTime();
+      this.ac.appointment_restrictions.needs_assessors = [];
+      this.newAppointment.assessor = null;
+      if (
+        this.newAppointment.service &&
+        this.ac.settings.availability_type !== "Combined"
+      ) {
+        this.ac.needs_assessors.forEach(assessor => {
+          assessor.services.forEach(service => {
+            if (service.id === this.newAppointment.service.id) {
+              this.ac.appointment_restrictions.needs_assessors.push({
+                id: assessor.id,
+                name: assessor.name
+              });
+            }
+          });
+        });
+      }
     },
     saveAppointment() {
       var config = {
         method: "post",
         url: "create-appointment",
         params: {
-          appointment: this.newAppointment
+          appointment: this.newAppointment,
+          home_url: window.location.href.replace(this.$route.path, "")
         }
       };
       this.loading = true;
       this.$refs.axios.submit(config);
     },
-    setAssessorServices() {
-      this.newAppointment.service = null;
+    resetNewAppDateAndTime() {
       this.newAppointment.date = null;
       this.newAppointment.hour = null;
-      if (this.newAppointment.assessor) {
-        this.assessorServices =
-          this.newAppointment.assessor.id > 0
-            ? this.newAppointment.assessor.services
-            : this.ac.services;
-      } else {
-        this.assessorServices = [];
-      }
     },
     allowedDates(val) {
       return this.ac.appointment_restrictions.allowed_dates.includes(val);
@@ -794,15 +825,18 @@ export default {
     getAvailableHours() {
       this.newAppointment.hour = null;
       if (
-        this.newAppointment.assessor &&
         this.newAppointment.service &&
-        this.newAppointment.date
+        this.newAppointment.date &&
+        (this.newAppointment.assessor ||
+          this.ac.settings.availability_type === "Combined")
       ) {
         var config = {
           url: "get-available-hours",
           params: {
             service_id: this.newAppointment.service.id,
-            assessor_id: this.newAppointment.assessor.id,
+            assessor_id: this.newAppointment.assessor
+              ? this.newAppointment.assessor.id
+              : null,
             date: this.newAppointment.date
           }
         };
@@ -811,7 +845,7 @@ export default {
       } else {
         this.snackbar = true;
         this.operationMessageType = "warning";
-        this.operationMessage = "Please, select a service first.";
+        this.operationMessage = "Select a service and an assessor -if allowed";
       }
     },
     toggleBookingDlg() {
@@ -920,11 +954,7 @@ export default {
         url: "unregister-user-from-ac",
         params: {
           user_id: this.currentUser.id,
-          ac_id: this.ac.id,
-          url: window.location.href.replace(
-            this.$route.path,
-            "/assessment-centre/" + this.ac.settings.token + "/signup/"
-          )
+          ac_id: this.ac.id
         }
       };
       this.$refs.axios.submit(config);
@@ -1004,11 +1034,32 @@ export default {
 
         switch (event.url) {
           case "get-ac-info":
-            this.setACInfo(event.data);
+            if (event.data.result.response.code === "success") {
+              this.ac = event.data.result.response.data;
+              console.log(this.ac);
+              this.acRole = this.ac.role;
+              if (this.ac.settings.availability_type === "Combined") {
+              }
+              if (this.ac.registered && this.acAction === "signup") {
+                this.$router.push(
+                  "/assessment-centre/" + this.acSlug + "/index/"
+                );
+              } else if (!this.ac.registered && this.acAction === "index") {
+                this.$router.push(
+                  "/assessment-centre/" +
+                    this.acSlug +
+                    "/signup/" +
+                    this.invitationToken
+                );
+              } else {
+              }
+            } else {
+              this.$router.push("/not-found");
+            }
+            this.loadingInitialElements = false;
             break;
           case "get-available-hours":
             this.ac.appointment_restrictions.available_hours =
-              event.data.result.code === 200 &&
               event.data.result.response.code === "success"
                 ? event.data.result.response.data
                 : [];
@@ -1021,7 +1072,7 @@ export default {
             if (event.data.result.response.code === "success") {
               //Appointments
               this.confirmAppointmentDlg = false;
-              this.newAppointment = { service: {}, assessor: {} };
+              this.newAppointment = { service: null, assessor: null };
               //Unavailable periods
               this.setUnavPeriodDlg = false;
               this.newUnavailablePeriod = {};
@@ -1097,32 +1148,8 @@ export default {
         this.snackbar = true;
       }
     },
-    setACInfo(data) {
-      if (data.result.code === 200 && data.result.response.code === "success") {
-        this.ac = data.result.response.data;
-        this.acRole = this.ac.role;
-        if (this.ac.settings.availability_type === "Combined") {
-          this.assessorServices = this.ac.services;
-        }
-        if (this.ac.registered && this.acAction === "signup") {
-          this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
-        } else if (!this.ac.registered && this.acAction === "index") {
-          this.$router.push(
-            "/assessment-centre/" +
-              this.acSlug +
-              "/signup/" +
-              this.invitationToken
-          );
-        } else {
-        }
-      } else {
-        this.$router.push("/not-found");
-      }
-      this.loadingInitialElements = false;
-    },
     test() {
-      console.clear();
-      console.log("Testing");
+      console.log();
     }
   },
   computed: {

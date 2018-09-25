@@ -89,7 +89,8 @@
                   <v-container>
                     <v-layout row wrap>
                       <v-flex xs12>
-                        <full-calendar :events="appointments"></full-calendar>
+                        <!--<full-calendar :events="appointments"></full-calendar>-->
+                        <calendar-component></calendar-component>
                       </v-flex>
                     </v-layout>
                     <v-layout row wrap mt-3>
@@ -621,7 +622,9 @@
 import FileUpload from "@/components/FileUpload";
 import axios from "axios";
 import AxiosComponent from "@/components/AxiosComponent";
+import CalendarComponent from "@/components/CalendarComponent";
 import moment from "moment";
+
 import { FullCalendar } from 'vue-full-calendar';
 import 'fullcalendar/dist/fullcalendar.css';
 
@@ -719,7 +722,7 @@ export default {
       currentServiceAction: ""
     };
   },
-  components: { FileUpload, AxiosComponent, FullCalendar },
+  components: { FileUpload, AxiosComponent, FullCalendar, CalendarComponent },
   mounted() {
     this.activationUrl = window.location.href.replace(
       this.$route.path,

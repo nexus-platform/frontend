@@ -9,38 +9,73 @@ export default {
   data() {
     return {
       loading: false,
-      reqConfig: {}
+      requestInfo: {}
     };
   },
   methods: {
-    setRequestConfig(config) {
-      this.reqConfig = config;
-      this.reqConfig.baseURL = this.$store.state.baseUrl;
-      if (!this.reqConfig.headers) {
-        this.reqConfig.headers = {};
-      }
-      if (!this.reqConfig.method) {
-        this.reqConfig.method = "get";
+    submit(config) {
+      this.requestInfo = config;
+      this.requestInfo.url = this.$store.state.baseUrl + this.requestInfo.url;
+
+      if (!this.requestInfo.headers) {
+        this.requestInfo.headers = {};
       }
       if (this.$store.state.debug) {
-        this.reqConfig.params.XDEBUG_SESSION_START = "netbeans-xdebug";
+        if (this.requestInfo.method !== "form") {
+          this.requestInfo.params.XDEBUG_SESSION_START = "netbeans-xdebug";
+        } else {
+          this.requestInfo.params.append(
+            "XDEBUG_SESSION_START",
+            "netbeans-xdebug"
+          );
+        }
       }
-      this.reqConfig.headers["Authorization"] =
+      this.requestInfo.headers['Authorization'] =
         "Bearer " + this.$store.state.payload.jwt;
-      this.reqConfig.onUploadProgress = function(progressEvent) {};
-      this.reqConfig.data = this.reqConfig.params;
+
+      //this.requestInfo.onUploadProgress = function(progressEvent) {};
+
+      switch (this.requestInfo.method) {
+        case "form":
+        case "post":
+          /*this.post().then(result => {
+            this.$emit("finish", { data: result, url: this.requestInfo.url });
+          });
+          break;*/
+          this.post().then(result => {
+            this.$emit("finish", { data: result, url: this.requestInfo.url });
+          });
+          break;
+        default:
+          this.get().then(result => {
+            this.$emit("finish", { data: result, url: this.requestInfo.url });
+          });
+          break;
+      }
     },
-    submit(config) {
-      this.setRequestConfig(config);
-      this.submitAsync().then(result => {
-        this.$emit("finish", { data: result, url: config.url });
-        this.loading = false;
+    get() {
+      return new Promise((resolve, reject) => {
+        axios
+          .get(this.requestInfo.url, {
+            params: this.requestInfo.params,
+            headers: this.requestInfo.headers
+          })
+          .then(function(response) {
+            let result = { code: 200, response: response.data };
+            resolve({ result });
+          })
+          .catch(function(error) {
+            let result = { code: 500, response: error };
+            resolve({ result });
+          });
       });
     },
-    submitAsync() {
-      this.loading = true;
+    post() {
       return new Promise((resolve, reject) => {
-        axios(this.reqConfig)
+        axios
+          .post(this.requestInfo.url, this.requestInfo.params, {
+            headers: this.requestInfo.headers
+          })
           .then(function(response) {
             let result = { code: 200, response: response.data };
             resolve({ result });

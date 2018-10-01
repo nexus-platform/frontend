@@ -3,7 +3,9 @@
     <v-card class="pb-4">
       <v-layout row wrap mb-3>
         <v-flex xs12 sm8 offset-sm2 mt-4>
-          <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''"><v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.settings.name}}</h3>
+          <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''">
+            <v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.settings.name}}
+          </h3>
         </v-flex>
       </v-layout>
       <v-layout row v-if="loadingInitialElements" wrap mt-2>
@@ -302,11 +304,10 @@
                     </v-card>
                   </v-expansion-panel-content>
                   
-                  <v-expansion-panel-content v-if="ac.role === 'ac'">
-                    <div slot="header"><icon name="cog" class="fa"></icon>Management</div>
-                    <v-layout row pb-5>
+                  <!--<v-expansion-panel-content">
+                    <div slot="header"><icon name="cog" class="fa"></icon>Management</div>-->
+                    <v-layout v-if="ac.role === 'ac'" row pb-5>
                       <v-flex sm10 offset-sm1>
-
                         <v-tabs slot="extension" v-model="tabs" fixed-tabs icons-and-text color="transparent">
                           <v-tabs-slider></v-tabs-slider>
                           <v-tab href="#tab-students" class="primary--text">
@@ -326,7 +327,7 @@
                         <v-tabs-items v-model="tabs">
                           <v-tab-item id='tab-students'>
                             <v-card>
-                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Institute', value: 'institute' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.students" class="elevation-1">
+                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Institute', value: 'institute' }, /*{ text: 'Status', value: 'status' },*/ { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.students" class="elevation-1">
                                 <template slot="headerCell" slot-scope="props">
                                   <v-tooltip bottom>
                                     <span slot="activator">{{ props.header.text }}</span>
@@ -336,6 +337,12 @@
                                 <template slot="items" slot-scope="props">
                                   <td class="text-xs-left">{{ props.item.name }}</td>
                                   <td class="text-xs-left">{{ props.item.institute }}</td>
+                                  <!--<td class="text-xs-left">
+                                    <v-tooltip bottom color="black">
+                                      <v-switch :disabled="loading" slot="activator" @change="toggleUserStatus(props.item.id, props.item.status)" v-model="props.item.status"></v-switch>
+                                      <span v-html="loading ? 'Setting account status...' : (props.item.status ? 'Deactivate' : 'Activate') + ' account'"></span>
+                                    </v-tooltip>
+                                  </td>-->
                                   <td class="text-xs-left">
                                     <v-tooltip bottom color="black">
                                       <v-btn @click="setCurrentUser(props.index, props.item, 'student')" small flat slot="activator" class="btn-sm" color="error">
@@ -355,7 +362,7 @@
                                 <v-spacer></v-spacer>
                                 <v-btn @click="inviteUsersDlg = true" color="info"><icon class="fa" name="envelope"></icon> Invite Assessors</v-btn>
                               </v-layout>
-                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.needs_assessors" class="elevation-1">
+                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Status', value: 'status' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.needs_assessors" class="elevation-1">
                                 <template slot="headerCell" slot-scope="props">
                                   <v-tooltip bottom>
                                     <span slot="activator">{{ props.header.text }}</span>
@@ -367,13 +374,19 @@
                                   <td class="text-xs-left">{{ props.item.email }}</td>
                                   <td class="text-xs-left">
                                     <v-tooltip bottom color="black">
-                                      <v-btn :disabled="ac.services.length < 1" @click="showNAServices(props.index, props.item)" small flat slot="activator" class="btn-sm" color="primary">
+                                      <v-switch :disabled="loading" slot="activator" @change="toggleUserStatus(props.item.id, props.item.status)" v-model="props.item.status"></v-switch>
+                                      <span v-html="loading ? 'Setting account status...' : (props.item.status ? 'Deactivate' : 'Activate') + ' account'"></span>
+                                    </v-tooltip>
+                                  </td>
+                                  <td class="text-xs-left">
+                                    <v-tooltip bottom color="black">
+                                      <v-btn :disabled="ac.services.length < 1 || loading || !props.item.status" @click="showNAServices(props.index, props.item)" small flat slot="activator" class="btn-sm" color="primary">
                                         <icon class="fa" name="user-cog"></icon>
                                       </v-btn>
                                       <span>Assign services</span>
                                     </v-tooltip>
                                     <v-tooltip bottom color="black">
-                                      <v-btn @click="setCurrentUser(props.index, props.item, 'needs_assessor')" small flat slot="activator" class="btn-sm" color="error">
+                                      <v-btn :disabled="loading" @click="setCurrentUser(props.index, props.item, 'needs_assessor')" small flat slot="activator" class="btn-sm" color="error">
                                         <icon class="fa" name="user-times"></icon>
                                       </v-btn>
                                       <span>Cancel registration</span>
@@ -518,7 +531,7 @@
                                     </template>
                                     <v-layout row>
                                       <v-spacer></v-spacer>
-                                      <v-btn :disabled="loading" @click="updateService()" :class="{ error: currentServiceAction === 'Delete service', success: currentServiceAction === 'Update service', info: currentServiceAction === 'Add service'}">
+                                      <v-btn :disabled="loading" @click="updateService()" :class="{ warning: currentServiceAction === 'Delete service', success: currentServiceAction === 'Update service', info: currentServiceAction === 'Add service'}">
                                         <icon v-if="loading" class="fa" name="circle-notch" spin></icon> {{currentServiceAction}}
                                       </v-btn>
                                       <v-btn @click="updateServiceDlg = false" color="error">Close</v-btn>
@@ -596,7 +609,7 @@
 
                       </v-flex>
                     </v-layout>
-                  </v-expansion-panel-content>
+                  <!--</v-expansion-panel-content>-->
                 </v-expansion-panel>
               </v-flex>
             </v-layout>
@@ -625,8 +638,8 @@ import AxiosComponent from "@/components/AxiosComponent";
 import CalendarComponent from "@/components/CalendarComponent";
 import moment from "moment";
 
-import { FullCalendar } from 'vue-full-calendar';
-import 'fullcalendar/dist/fullcalendar.css';
+import { FullCalendar } from "vue-full-calendar";
+import "fullcalendar/dist/fullcalendar.css";
 
 export default {
   data() {
@@ -680,7 +693,7 @@ export default {
       ],
       priceRules: [
         v => !!v || "This field is required",
-        v => (v && v > 0) || "This value is not allowed"
+        v => (v && v >= 0) || "This value is not allowed"
       ],
       passwordConfirmRules: [
         v => !!v || "This field is required",
@@ -742,6 +755,19 @@ export default {
     this.$refs.axios.submit(config);
   },
   methods: {
+    toggleUserStatus(userId, status) {
+      var config = {
+        method: "post",
+        url: "set-ac-user-status",
+        params: {
+          user_id: userId,
+          ac_id: this.ac.id,
+          status: status
+        }
+      };
+      this.loading = true;
+      this.$refs.axios.submit(config);
+    },
     validateUnavailablePeriod() {
       var startDate = moment(
         this.newUnavailablePeriod.start_date +
@@ -795,14 +821,16 @@ export default {
         this.ac.settings.availability_type !== "Combined"
       ) {
         this.ac.needs_assessors.forEach(assessor => {
-          assessor.services.forEach(service => {
-            if (service.id === this.newAppointment.service.id) {
-              this.ac.appointment_restrictions.needs_assessors.push({
-                id: assessor.id,
-                name: assessor.name
-              });
-            }
-          });
+          if (assessor.status === 1) {
+            assessor.services.forEach(service => {
+              if (service.id === this.newAppointment.service.id) {
+                this.ac.appointment_restrictions.needs_assessors.push({
+                  id: assessor.id,
+                  name: assessor.name
+                });
+              }
+            });
+          }
         });
       }
     },
@@ -976,11 +1004,8 @@ export default {
     registerWithAC() {
       if (this.$refs.form.validate()) {
         this.loading = true;
-        var requestConfig = {
-          headers: {
-            Authorization: "Bearer " + this.$store.state.payload.jwt,
-            "Content-Type": "multipart/form-data"
-          }
+        var headers = {
+          "Content-Type": "multipart/form-data"
         };
         var formData = new FormData();
         formData.append("dsa_letter", this.ac.user_data.dsa_letter);
@@ -989,60 +1014,27 @@ export default {
         formData.append("role", this.acRole);
         formData.append("invitation_token", this.invitationToken);
 
-        var that = this;
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "register-with-ac?XDEBUG_SESSION_START=netbeans-xdebug",
-            formData,
-            requestConfig
-          )
-          .then(function(response) {
-            that.loading = false;
-            that.operationMessage = response.data.msg;
-            that.operationMessageType = response.data.code;
-            that.snackbar = true;
-            if (response.data.code === "success") {
-              that.ac.registered = true;
-              if (that.isGuest) {
-                that.$store.state.authRouteRequested =
-                  "/assessment-centre/" + that.acSlug + "/index";
-                setTimeout(function() {
-                  that.$router.push("/login");
-                }, 5000);
-              } else {
-                that.$router.push(
-                  "/assessment-centre/" + that.acSlug + "/index"
-                );
-              }
-            }
-          })
-          .catch(function(error) {
-            that.loading = false;
-            that.operationMessage =
-              "There was an error on the remote endpoint. Try again later.";
-            that.operationMessageType = "error";
-            that.snackbar = true;
-          });
+        var config = {
+          method: "form",
+          url: "register-with-ac",
+          params: formData,
+          headers: headers
+        };
+        this.$refs.axios.submit(config);
       }
     },
     handleHttpResponse(event) {
-      console.log(event);
-
       if (event.data.result.code === 200) {
         this.operationMessage = event.data.result.response.msg;
         this.operationMessageType = event.data.result.response.code;
         this.loading = false;
         this.loadingHours = false;
 
-        switch (event.url) {
+        switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case "get-ac-info":
             if (event.data.result.response.code === "success") {
               this.ac = event.data.result.response.data;
-              console.log(this.ac);
               this.acRole = this.ac.role;
-              if (this.ac.settings.availability_type === "Combined") {
-              }
               if (this.ac.registered && this.acAction === "signup") {
                 this.$router.push(
                   "/assessment-centre/" + this.acSlug + "/index/"
@@ -1102,24 +1094,17 @@ export default {
                   break;
                 case "Delete service":
                   this.ac.services.splice(this.currentServiceIndex, 1);
-                  this.updateServiceDlg = false;
                   break;
                 default:
                   break;
               }
+              this.updateServiceDlg = false;
             }
             this.snackbar = true;
             break;
           case "invite-user":
-            this.operationMessage = event.data.result.response.msg;
-            this.operationMessageType = event.data.result.response.code;
             if (event.data.result.response.code === "success") {
-              this.invitation = {
-                name: "",
-                email: "",
-                text: ""
-              };
-              this.$nextTick(this.$refs.invitationName.focus);
+              this.inviteUsersDlg = false;
             }
             this.snackbar = true;
             break;
@@ -1141,6 +1126,26 @@ export default {
             }
             this.snackbar = true;
             break;
+          case "register-with-ac":
+            this.snackbar = true;
+            if (event.data.result.response.code === "success") {
+              this.ac.registered = true;
+              if (this.isGuest) {
+                this.$store.state.authRouteRequested =
+                  "/assessment-centre/" + this.acSlug + "/index";
+                setTimeout(function() {
+                  this.$router.push("/login");
+                }, 5000);
+              } else {
+                this.$router.push(
+                  "/assessment-centre/" + this.acSlug + "/index"
+                );
+              }
+            }
+            break;
+          case "set-ac-user-status":
+            this.snackbar = true;
+            break;
           default:
             this.snackbar = true;
             break;
@@ -1152,7 +1157,7 @@ export default {
       }
     },
     test() {
-      console.log();
+      console.log("Testing");
     }
   },
   computed: {
@@ -1185,4 +1190,12 @@ export default {
 </script>
 
 <style scoped>
+.v-input--selection-controls.v-input .v-label {
+  font-size: 14px !important;
+}
+.v-input__control,
+.v-datatable .v-input--selection-controls {
+  margin-top: -9px !important;
+  max-height: 20px !important;
+}
 </style>

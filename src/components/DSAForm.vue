@@ -37,6 +37,15 @@
                 <v-flex v-for="(col, k) in row" :key="col.id" xs12 :md1="col.class === 'md1'" :md2="col.class === 'md2'" :md3="col.class === 'md3'" :md4="col.class === 'md4'" :md5="col.class === 'md5'" :md6="col.class === 'md6'" :md7="col.class === 'md7'" :md8="col.class === 'md8'" :md9="col.class === 'md9'" :md10="col.class === 'md10'" :md11="col.class === 'md11'" :md12="col.class === 'md12'">
                   <p v-if="col.content_type === 'html'" v-html="col.html"></p>
                   
+                  <template v-if="col.content_type === 'input_group'">
+                    <v-layout row wrap v-for="rowCount in col.repeat" :key="col.name + rowCount">
+                      <v-flex v-for="(inputItem, inputIndex) in col.inputs" :key="col.name + rowCount + inputIndex" xs12 :md1="inputItem.class === 'md1'" :md2="inputItem.class === 'md2'" :md3="inputItem.class === 'md3'" :md4="inputItem.class === 'md4'" :md5="inputItem.class === 'md5'" :md6="inputItem.class === 'md6'" :md7="inputItem.class === 'md7'" :md8="inputItem.class === 'md8'" :md9="inputItem.class === 'md9'" :md10="inputItem.class === 'md10'" :md11="inputItem.class === 'md11'" :md12="inputItem.class === 'md12'">
+                        <!--v-on:input="applyFunction(col.input)"-->
+                        <v-text-field outline :type="inputItem.type === 'number' ? 'number' : 'text'" :readonly="inputItem.read_only" :required="inputItem.required" :disabled="inputItem.disabled" v-model="inputItem.value" :hint="inputItem.hint ? inputItem.hint : inputItem.title" :label="inputItem.title" :maxlength="inputItem.max_length"></v-text-field>
+                      </v-flex>
+                    </v-layout>
+                  </template>
+
                   <template v-if="col.content_type === 'input'">
 
                     <template v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length <= 255">
@@ -44,17 +53,6 @@
                     </template>
 
                     <template v-if="col.input.max_length > 255">
-                      <!--<v-layout row>
-                        <v-spacer></v-spacer>
-                        <v-tooltip bottom color="black">
-                          <v-btn small flat slot="activator" class="btn-sm" v-on:click="updateTextAreaRows(i, j, k, 1)" color="success"><icon name="plus" class="fa"></icon></v-btn>  
-                          <span>Add row</span>
-                        </v-tooltip>
-                        <v-tooltip bottom color="black">
-                          <v-btn small flat slot="activator" class="btn-sm" :disabled="col.input.rows === 1" v-on:click="updateTextAreaRows(i, j, k, -1)" color="error"><icon name="minus" class="fa"></icon></v-btn>
-                          <span>Remove row</span>
-                        </v-tooltip>
-                      </v-layout>-->
                       <v-textarea outline v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" v-on:input="applyFunction(col.input)" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" :background-color="col.input.comments.length > 0 ? 'success' : ''" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
                     </template>
 

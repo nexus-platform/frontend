@@ -97,7 +97,7 @@
                     </v-layout>
                     <v-layout row wrap mt-3>
                       <v-spacer></v-spacer>
-                      <v-btn small color="error" @click="viewCalendarDlg = false"><icon class="fa" name="times"></icon> close</v-btn>
+                      <v-btn small color="error" @click="viewCalendarDlg = false"><icon class="fa" name="times"></icon> Close</v-btn>
                     </v-layout>
                   </v-container>
                 </v-card>
@@ -288,12 +288,12 @@
                               </v-layout>
                               <v-layout row mt-3>
                                 <v-spacer></v-spacer>
-                                <v-btn small color="error" @click="confirmAppointmentDlg = false">
-                                  <icon class="fa" name="times"></icon> Go back
-                                </v-btn>
                                 <v-btn small :disabled="loading" color="info" @click="saveAppointment()">
                                   <icon v-if="!loading" class="fa" name="check"></icon>
-                                  <icon v-else class="fa" name="circle-notch" spin></icon> Confirm
+                                  <icon v-else class="fa" name="circle-notch" spin></icon>Yes
+                                </v-btn>
+                                <v-btn small color="error" @click="confirmAppointmentDlg = false">
+                                  <icon class="fa" name="times"></icon>No
                                 </v-btn>
                               </v-layout>
                             </v-container>
@@ -337,12 +337,6 @@
                                 <template slot="items" slot-scope="props">
                                   <td class="text-xs-left">{{ props.item.name }}</td>
                                   <td class="text-xs-left">{{ props.item.institute }}</td>
-                                  <!--<td class="text-xs-left">
-                                    <v-tooltip bottom color="black">
-                                      <v-switch :disabled="loading" slot="activator" @change="toggleUserStatus(props.item.id, props.item.status)" v-model="props.item.status"></v-switch>
-                                      <span v-html="loading ? 'Setting account status...' : (props.item.status ? 'Deactivate' : 'Activate') + ' account'"></span>
-                                    </v-tooltip>
-                                  </td>-->
                                   <td class="text-xs-left">
                                     <v-tooltip bottom color="black">
                                       <v-btn @click="setCurrentUser(props.index, props.item, 'student')" small flat slot="activator" class="btn-sm" color="error">
@@ -374,7 +368,7 @@
                                   <td class="text-xs-left">{{ props.item.email }}</td>
                                   <td class="text-xs-left">
                                     <v-tooltip bottom color="black">
-                                      <v-switch :disabled="loading" slot="activator" @change="toggleUserStatus(props.item.id, props.item.status)" v-model="props.item.status"></v-switch>
+                                      <v-switch :disabled="loading" color="primary" slot="activator" @change="toggleUserStatus(props.item.id, props.item.status)" v-model="props.item.status"></v-switch>
                                       <span v-html="loading ? 'Setting account status...' : (props.item.status ? 'Deactivate' : 'Activate') + ' account'"></span>
                                     </v-tooltip>
                                   </td>
@@ -1060,13 +1054,20 @@ export default {
                 : [];
             this.loadingHours = false;
             break;
+          case "update-na-services":
+            if (event.data.result.response.code === "success") {
+              this.currentNA.services = this.selectedServices;
+              this.naServicesDlg = false;
+            }
+            this.snackbar = true;
+            break;
           case "update-ac-settings":
           case "create-appointment":
-          case "update-na-services":
           case "set-unavailable-period":
             if (event.data.result.response.code === "success") {
               //Appointments
               this.confirmAppointmentDlg = false;
+              this.naServicesDlg = false;
               this.newAppointment = { service: null, assessor: null };
               //Unavailable periods
               this.setUnavPeriodDlg = false;

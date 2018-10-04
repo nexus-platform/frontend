@@ -14,7 +14,7 @@
               <v-layout row>
                 <v-flex lg12>
                   <v-text-field ref="username" v-on:keyup.enter="submit" v-model="email" prepend-icon="mail" name="email" label="Email" type="text" required :rules="emailRules" hint="Enter your registered email address"></v-text-field>
-                  <v-text-field ref="password" v-on:keyup.enter="submit" v-model="password" prepend-icon="lock" name="password" label="Password" id="password" type="password" required :rules="passwordRules" hint="Enter your password"></v-text-field>
+                  <v-text-field ref="password" v-on:keyup.enter="submit" @input="showCapsLockMsg($event)" v-model="password" prepend-icon="lock" name="password" label="Password" id="password" type="password" required :rules="passwordRules" hint="Enter your password"></v-text-field>
                 </v-flex>
               </v-layout>
             </v-form>
@@ -60,6 +60,12 @@
       </v-flex>
     </v-layout>
     <speech-component ref="speech" @voices-loaded="playText(appMessage)" @speech-end="playingText = false"></speech-component>
+    
+    <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="capsLockAlert" color="warning">
+      <v-icon color="white">warning</v-icon> Caps Lock is active
+      <v-btn flat @click.native="capsLockAlert = false"><icon name="times"></icon></v-btn>
+    </v-snackbar>
+
 	</v-container>
 </template>
 
@@ -71,6 +77,7 @@ import SpeechComponent from "@/components/SpeechComponent";
 export default {
   data() {
     return {
+      capsLockAlert: false,
       loading: false,
       alert: false,
       appMessage: "Welcome to Nexus",
@@ -101,8 +108,9 @@ export default {
     }
   },
   methods: {
-    test() {
-      alert("ja");
+    showCapsLockMsg(e) {
+      var lastChar = e.substring(e.length - 1);
+      this.capsLockAlert = (lastChar.toUpperCase() === lastChar && lastChar.toLowerCase() !== lastChar);
     },
     playText(text) {
       this.playingText = true;

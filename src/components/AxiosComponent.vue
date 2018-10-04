@@ -38,10 +38,6 @@ export default {
       switch (this.requestInfo.method) {
         case "form":
         case "post":
-          /*this.post().then(result => {
-            this.$emit("finish", { data: result, url: this.requestInfo.url });
-          });
-          break;*/
           this.post().then(result => {
             this.$emit("finish", { data: result, url: this.requestInfo.url });
           });
@@ -72,8 +68,10 @@ export default {
     },
     post() {
       return new Promise((resolve, reject) => {
+        var fullUrl = this.requestInfo.url + ((this.requestInfo.params.XDEBUG_SESSION_START) ?  '?XDEBUG_SESSION_START=netbeans-xdebug' : '');
+      
         axios
-          .post(this.requestInfo.url, this.requestInfo.params, {
+          .post(fullUrl, this.requestInfo.params, {
             headers: this.requestInfo.headers
           })
           .then(function(response) {

@@ -38,10 +38,30 @@
                   <p v-if="col.content_type === 'html'" v-html="col.html"></p>
                   
                   <template v-if="col.content_type === 'input_group'">
-                    <v-layout row wrap v-for="rowCount in col.repeat" :key="col.name + rowCount">
-                      <v-flex v-for="(inputItem, inputIndex) in col.inputs" :key="col.name + rowCount + inputIndex" xs12 :md1="inputItem.class === 'md1'" :md2="inputItem.class === 'md2'" :md3="inputItem.class === 'md3'" :md4="inputItem.class === 'md4'" :md5="inputItem.class === 'md5'" :md6="inputItem.class === 'md6'" :md7="inputItem.class === 'md7'" :md8="inputItem.class === 'md8'" :md9="inputItem.class === 'md9'" :md10="inputItem.class === 'md10'" :md11="inputItem.class === 'md11'" :md12="inputItem.class === 'md12'">
-                        <!--v-on:input="applyFunction(col.input)"-->
-                        <v-text-field outline :type="inputItem.type === 'number' ? 'number' : 'text'" :readonly="inputItem.read_only" :required="inputItem.required" :disabled="inputItem.disabled" v-model="inputItem.value" :hint="inputItem.hint ? inputItem.hint : inputItem.title" :label="inputItem.title" :maxlength="inputItem.max_length"></v-text-field>
+                    <v-layout><span><b>{{col.name}}</b></span></v-layout>
+                    <v-layout row wrap>
+                      <v-tooltip bottom color="black">
+                        <v-btn slot="activator" @click="updateRows(i, j, k, 1)" class="no-margin-left" color="primary" small><icon class="fa" name="plus"></icon></v-btn>
+                        <span>Add row</span>
+                      </v-tooltip>
+                      <v-tooltip bottom color="black">
+                        <v-btn :disabled="col.rows.length < 1" slot="activator" @click="updateRows(i, j, k, -1)" class="no-margin-left" color="error" small><icon class="fa" name="minus"></icon></v-btn>
+                        <span>Remove row</span>
+                      </v-tooltip>
+                    </v-layout>
+                    <v-layout row wrap v-for="(inputRow, inputRowIndex) in col.rows" :key="'ir_' + inputRowIndex">
+                      <v-flex v-for="(inputItem, inputItemIndex) in inputRow" :key="'ii_' + inputItemIndex" xs12 :md1="inputItem.class === 'md1'" :md2="inputItem.class === 'md2'" :md3="inputItem.class === 'md3'" :md4="inputItem.class === 'md4'" :md5="inputItem.class === 'md5'" :md6="inputItem.class === 'md6'" :md7="inputItem.class === 'md7'" :md8="inputItem.class === 'md8'" :md9="inputItem.class === 'md9'" :md10="inputItem.class === 'md10'" :md11="inputItem.class === 'md11'" :md12="inputItem.class === 'md12'">
+                        <v-text-field v-model="inputItem.input.value" v-on:input="applyFunction(inputItem.input, col)" outline :type="inputItem.input.type === 'number' ? 'number' : 'text'" :readonly="inputItem.input.read_only" :required="inputItem.input.required" :disabled="inputItem.input.disabled" :hint="inputItem.input.hint ? inputItem.input.hint : inputItem.input.title" :label="inputItem.input.title" :maxlength="inputItem.input.max_length"></v-text-field>
+                      </v-flex>
+                    </v-layout>
+                    <v-layout row wrap v-if="col.commentable && (isDO || isStudent)">
+                      <v-flex>
+                        <v-tooltip right color="black">
+                          <v-btn slot="activator" color="info" @click="showComments(i, j, k)" class="btn-req-modif-sign">
+                            <icon class="fa" name="comments"></icon>Comments
+                          </v-btn>
+                          <span v-html="'Show comments'"></span>
+                        </v-tooltip>
                       </v-flex>
                     </v-layout>
                   </template>
@@ -49,11 +69,11 @@
                   <template v-if="col.content_type === 'input'">
 
                     <template v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length <= 255">
-                      <v-text-field outline v-on:input="applyFunction(col.input)" :type="col.input.type === 'number' ? 'number' : 'text'" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" :background-color="col.input.comments.length > 0 ? 'success' : ''" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
+                      <v-text-field outline :type="col.input.type === 'number' ? 'number' : 'text'" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" :background-color="col.input.comments.length > 0 ? 'success' : ''" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
                     </template>
 
                     <template v-if="col.input.max_length > 255">
-                      <v-textarea outline v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" v-on:input="applyFunction(col.input)" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" :background-color="col.input.comments.length > 0 ? 'success' : ''" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
+                      <v-textarea outline v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" :background-color="col.input.comments.length > 0 ? 'success' : ''" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
                     </template>
 
                     <template v-if="col.input.type === 'date' || col.input.type === 'month'">
@@ -122,13 +142,20 @@
           </v-card>
         </v-tab-item>
       </v-tabs>
-      
-      <v-btn color="cyan" :disabled="loading" class="mb-5 white--text" @click="previousTab()">
-        <v-icon>chevron_left</v-icon>
-      </v-btn>
-      <v-btn color="cyan" :disabled="loading" class="mb-5 white--text" @click="nextTab()">
-        <v-icon>chevron_right</v-icon>
-      </v-btn>
+
+      <v-tooltip bottom color="black">
+        <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="previousTab()">
+          <v-icon>chevron_left</v-icon>
+        </v-btn>
+        <span>Previous tab</span>
+      </v-tooltip>
+
+      <v-tooltip bottom color="black">
+        <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="nextTab()">
+          <v-icon>chevron_right</v-icon>
+        </v-btn>
+        <span>Next tab</span>
+      </v-tooltip>
       
     </v-card>
 
@@ -359,10 +386,24 @@ export default {
     VueQrcode
   },
   methods: {
+    updateRows(i, j, k, operation) {
+      var inputGroup = this.items[i].components[j][k];
+      if (operation === 1) {
+        var newRow = JSON.parse(JSON.stringify(inputGroup.model));
+        var newRowItems = newRow.length;
+        var newRowCount = inputGroup.rows.length + 1;
+        for (var i = 0; i < newRowItems; i++) {
+          newRow[i].input.name += ` ${newRowCount}`;
+        }
+        inputGroup.rows.push(newRow);
+      } else {
+        inputGroup.rows.splice(-1);
+      }
+    },
     missingFields(i) {
       var rows = this.items[i].components;
-      var inputsCount = 0,
-        inputsFilled = 0;
+      var inputsCount = 0;
+      var inputsFilled = 0;
       for (var j in rows) {
         var row = rows[j];
         for (var k in row) {
@@ -371,6 +412,19 @@ export default {
             inputsCount++;
             if (component.input.value) {
               inputsFilled++;
+            }
+          } else if (component.content_type === "input_group") {
+            for (var l in component.rows) {
+              var inputRow = component.rows[l];
+              for (var m in inputRow) {
+                var inputItem = inputRow[m];
+                if (inputItem.content_type === "input") {
+                  inputsCount++;
+                  if (inputItem.input.value) {
+                    inputsFilled++;
+                  }
+                }
+              }
             }
           }
         }
@@ -389,6 +443,19 @@ export default {
             inputsCount++;
             if (component.input.value) {
               inputsFilled++;
+            }
+          } else if (component.content_type === "input_group") {
+            for (var l in component.rows) {
+              var inputRow = component.rows[l];
+              for (var m in inputRow) {
+                var inputItem = inputRow[m];
+                if (inputItem.content_type === "input") {
+                  inputsCount++;
+                  if (inputItem.input.value) {
+                    inputsFilled++;
+                  }
+                }
+              }
             }
           }
         }
@@ -470,32 +537,43 @@ export default {
     test() {
       alert("This is a test!");
     },
-    applyFunction(input) {
+    applyFunction(input, col) {
       if (input.function) {
-        var valuesArray = input.value.trim().split("\n");
-        switch (input.function.name) {
-          case "sum":
-            var res = 0;
-            valuesArray.forEach(element => {
-              res += parseFloat(element);
-            });
-            res = res.toFixed(2);
+        var modelName = input.name.substring(0, input.name.lastIndexOf(" "));
+        var fieldIndex = -1;
+        var valuesArr = [];
+        var res = 0;
+        for (var i in col.model) {
+          if (col.model[i].input.name === modelName) {
+            fieldIndex = i;
             break;
-          default:
-            break;
+          }
         }
-        for (var i in this.items) {
-          var rows = this.items[i].components;
-          for (var j in rows) {
-            var row = rows[j];
-            for (var k in row) {
-              var component = row[k];
-              if (
-                component.content_type === "input" &&
-                component.input.name === input.function.dest
-              ) {
-                this.items[i].components[j][k].input.value = res;
+        if (fieldIndex > -1) {
+          for (var i in col.rows) {
+            valuesArr[valuesArr.length] = col.rows[i][fieldIndex].input.value;
+          }
+          switch (input.function.name) {
+            case "sum": {
+              valuesArr.forEach(element => {
+                res += parseFloat(element);
+              });
+              res = res.toFixed(2);
+
+              for (var i in this.items) {
+                var rows = this.items[i].components;
+                for (var j in rows) {
+                  var row = rows[j];
+                  for (var k in row) {
+                    var component = row[k];
+                    if (component.content_type === "input" && component.input.name === input.function.dest) {
+                      component.input.value = res;
+                      break;
+                    }
+                  }
+                }
               }
+              break;
             }
           }
         }
@@ -601,18 +679,25 @@ export default {
           roles: this.$store.state.payload.roles,
           fullname: this.$store.state.payload.fullname,
           status: 1,
-          //coordinates: { i: this.i, j: this.j, k: this.k },
           headline: '<i style="color: #666;">Sending comment...</i>'
         };
         this.currentComments.push(newComment);
-        this.items[this.i].components[this.j][
-          this.k
-        ].input.comments = this.currentComments;
+        var currComponent = this.items[this.i].components[this.j][this.k];
+        var commentIndex = -1;
+        var fieldName = "";
+
+        if (currComponent.content_type === "input") {
+          currComponent.input.comments = this.currentComments;
+          commentIndex = currComponent.input.comments.length - 1;
+          fieldName = currComponent.input.name;
+        } else {
+          currComponent.comments = this.currentComments;
+          commentIndex = currComponent.comments.length - 1;
+          fieldName = currComponent.name;
+        }
+
         this.newCommentText = "";
         this.$nextTick(this.$refs.txt_new_comment.focus);
-        var commentIndex =
-          this.items[this.i].components[this.j][this.k].input.comments.length -
-          1;
 
         var requestConfig = {
           headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
@@ -623,7 +708,7 @@ export default {
           univ_slug: this.univSlug,
           id: this.entityId,
           comment: newComment,
-          field_name: this.items[this.i].components[this.j][this.k].input.name,
+          field_name: fieldName,
           index: commentIndex
         };
 
@@ -640,23 +725,24 @@ export default {
           .then(function(response) {
             var index = response.data.index;
             that.sendingComment = false;
-            if (response.data.code === "success") {
-              that.entityId = response.data.data;
-              that.items[that.i].components[that.j][that.k].input.comments[
-                index
-              ].status = 2;
-              that.items[that.i].components[that.j][that.k].input.comments[
-                index
-              ].headline =
+            var currComponent = that.items[that.i].components[that.j][that.k];
+            that.entityId = response.data.data;
+
+            if (currComponent.content_type === "input") {
+              /*
+              that.items[that.i].components[that.j][that.k].input.comments[index].status = 2;
+              that.items[that.i].components[that.j][that.k].input.comments[index].headline = response.data.headline;
+              */
+              currComponent.input.comments[index].status = 2;
+              currComponent.input.comments[index].headline =
                 response.data.headline;
             } else {
-              that.items[that.i].components[that.j][that.k].input.comments[
-                index
-              ].status = 0;
-              that.items[that.i].components[that.j][that.k].input.comments[
-                index
-              ].headline =
-                "Comment could not be sent.";
+              currComponent.comments[index].status =
+                response.data.code === "success" ? 2 : 0;
+              currComponent.comments[index].headline =
+                response.data.code === "success"
+                  ? response.data.headline
+                  : "Comment could not be sent.";
             }
           })
           .catch(function(error) {
@@ -671,13 +757,31 @@ export default {
                     for (var l in component.input.comments) {
                       var comment = component.input.comments[l];
                       if (comment.status === 1) {
-                        that.items[that.i].components[that.j][
+                        /*that.items[that.i].components[that.j][
                           that.k
                         ].input.comments[l].status = 0;
                         that.items[that.i].components[that.j][
                           that.k
                         ].input.comments[l].headline =
-                          "Comment could not be sent.";
+                          "Comment could not be sent.";*/
+                        comment.status = 0;
+                        comment.headline = "Comment could not be sent.";
+                      }
+                    }
+                  } else if (component.content_type === "input_group") {
+                    for (var l in component.rows) {
+                      var inputRow = component.rows[l];
+                      for (var m in inputRow) {
+                        var inputItem = inputRow[m];
+                        if (inputItem.content_type === "input") {
+                          for (var m in component.input.comments) {
+                            var comment = component.input.comments[m];
+                            if (comment.status === 1) {
+                              comment.status = 0;
+                              comment.headline = "Comment could not be sent.";
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -689,7 +793,11 @@ export default {
     },
     showComments(i, j, k) {
       this.setCurrentCoordinates(i, j, k);
-      this.currentComments = this.items[i].components[j][k].input.comments;
+      var currComponent = this.items[i].components[j][k];
+      this.currentComments =
+        currComponent.content_type === "input"
+          ? currComponent.input.comments
+          : currComponent.comments;
       this.commentsDialog = true;
       this.$nextTick(this.$refs.txt_new_comment.focus);
     },
@@ -706,9 +814,6 @@ export default {
     setSignatureFromUpload(event) {
       this.items[this.i].components[this.j][this.k].input.value = event;
       this.uploadDialog = false;
-    },
-    updateTextAreaRows(i, j, k, value) {
-      this.items[i].components[j][k].input.rows += value;
     },
     chunkString(str, length) {
       return str.match(new RegExp(".{1," + length + "}", "g"));
@@ -727,6 +832,20 @@ export default {
               !component.input.value
             ) {
               return true;
+            } else if (component.content_type === "input_group") {
+              for (var l in component.rows) {
+                var inputRow = component.rows[l];
+                for (var m in inputRow) {
+                  var inputItem = inputRow[m];
+                  if (
+                    inputItem.content_type === "input" &&
+                    inputItem.input.required &&
+                    !inputItem.input.value
+                  ) {
+                    return true;
+                  }
+                }
+              }
             }
           }
         }
@@ -787,6 +906,53 @@ export default {
                         chunk.start - 1,
                         chunk.length
                       );
+                    }
+                  }
+                }
+              } else if (component.content_type === "input_group") {
+                for (var l in component.rows) {
+                  var inputRow = component.rows[l];
+                  for (var m in inputRow) {
+                    var inputItem = inputRow[m];
+                    if (
+                      inputItem.content_type === "input" &&
+                      inputItem.input.value
+                    ) {
+                      if (
+                        inputItem.input.type === "signature" ||
+                        inputItem.input.type === "image"
+                      ) {
+                        var inputData = {
+                          value: inputItem.input.value
+                        };
+                        requestParams.signaturesInfo[
+                          inputItem.input.name
+                        ] = inputData;
+                      } else {
+                        requestParams.data[inputItem.input.name] =
+                          inputItem.input.value;
+                        requestParams.data[component.name] =
+                          component.rows.length; //saving rows number
+                        var newValue = inputItem.input.value;
+                        if (
+                          inputItem.input.type === "date" ||
+                          inputItem.input.type === "month"
+                        ) {
+                          newValue = this.formatDate(
+                            inputItem.input.value,
+                            inputItem.input.format
+                          );
+                        }
+                        if ("chunks" in inputItem.input) {
+                          for (var l in inputItem.input.chunks) {
+                            var chunk = inputItem.input.chunks[l];
+                            requestParams.data[chunk.name] = newValue.substr(
+                              chunk.start - 1,
+                              chunk.length
+                            );
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -862,7 +1028,6 @@ export default {
           .then(function(response) {
             let items = response.data;
             let pdfName = response.data.msg;
-
             that.loading = false;
             resolve({
               items,
@@ -963,6 +1128,9 @@ label {
 }
 .fa-comment-status {
   margin-bottom: -2px;
+}
+.no-margin-left {
+  margin-left: 0;
 }
 ::-webkit-scrollbar {
   width: 7px !important;

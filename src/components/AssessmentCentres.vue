@@ -15,7 +15,7 @@
           <td class="text-xs-left">{{ props.item.address }}</td>
           <td class="text-xs-left">{{ props.item.manager }}</td>
           <td class="text-xs-left">
-            <v-tooltip bottom color="primary">
+            <v-tooltip bottom color="black">
               <v-btn :to="props.item.route + '/index'" small flat slot="activator" class="btn-sm" color="primary">
                 <icon name="arrow-circle-right" class="fa"></icon>
               </v-btn>

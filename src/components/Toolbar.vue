@@ -109,9 +109,9 @@
               <v-btn flat to="/assessment-centres">
                 <v-icon class="white--text">assessment</v-icon><span class="white--text">Assessment Centres</span>
               </v-btn>
-              <v-btn flat to="/my-bookings">
+              <!--<v-btn flat to="/my-bookings">
                 <v-icon class="white--text">event_available</v-icon><span class="white--text">My Bookings</span>
-              </v-btn>
+              </v-btn>-->
             </template>
 
             <v-menu v-if="isDO" offset-y transition="fade-transition" bottom>

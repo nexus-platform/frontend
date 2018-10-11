@@ -1,19 +1,16 @@
 <template>
   <v-container style="margin-top: 60px;" class="animated fadeIn">
-    <v-card class="pb-4">
-      <v-layout row wrap mb-3>
+      <v-layout row v-if="loadingInitialElements" wrap mt-2>
         <v-flex xs12 sm8 offset-sm2 mt-4>
           <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''">
             <v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.settings.name}}
           </h3>
         </v-flex>
-      </v-layout>
-      <v-layout row v-if="loadingInitialElements" wrap mt-2>
-        <v-flex xs12>
+        <v-flex xs12 mt-3>
           <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
         </v-flex>
       </v-layout>
-      <v-layout row v-else wrap class="text-xs-center">
+      <!--<v-layout row v-else wrap class="text-xs-center">
         <v-flex xs12 v-if="ac.admin">
           <h3><v-icon color="primary">business_center</v-icon> <b>Manager:</b> {{ac.admin}}</h3>
         </v-flex>
@@ -23,9 +20,10 @@
         <v-flex xs12>
           <h3><v-icon color="primary">location_on</v-icon> <b>Address:</b> {{ac.settings.address}}</h3>
         </v-flex>
-      </v-layout>
+      </v-layout>-->
 
       <template v-if="!loadingInitialElements">
+        
         <template v-if="!ac.registered">
           <v-container pa-5>
             <v-form v-model="validationStatus" ref="form">
@@ -75,539 +73,13 @@
         
         <template v-else>
           <v-container>
-            <v-layout row wrap v-if="ac.role !== 'ac' && !isGuest">
-              
-              <v-flex xs12 sm10 offset-sm1 class="text-xs-right">
-                <v-btn v-if="ac.role === 'na' || ac.role === 'ac'" small color="info" @click="viewCalendarDlg = true"><icon scale="0.9" class="fa" name="calendar-alt"></icon> Display events</v-btn>
-                <v-btn v-if="ac.role === 'na'" small color="warning" @click="setUnavPeriodDlg = true"><icon class="fa" name="user-slash"></icon> Set unavailable period</v-btn>
-                <v-btn small color="error" @click="cancelRegistrationDlg = true"><icon class="fa" name="user-times"></icon> Cancel Registration</v-btn>
-              </v-flex>
-
-              <v-dialog v-if="ac.role === 'na' || ac.role === 'ac'" v-model="viewCalendarDlg" fullscreen hide-overlay persistent>
-                <v-card>
-                  <v-card-title class="headline grey lighten-2">
-                    Events
-                  </v-card-title>
-                  <v-container>
-                    <v-layout row wrap>
-                      <v-flex xs12>
-                        <!--<full-calendar :events="appointments"></full-calendar>-->
-                        <calendar-component></calendar-component>
-                      </v-flex>
-                    </v-layout>
-                    <v-layout row wrap mt-3>
-                      <v-spacer></v-spacer>
-                      <v-btn small color="error" @click="viewCalendarDlg = false"><icon class="fa" name="times"></icon> Close</v-btn>
-                    </v-layout>
-                  </v-container>
-                </v-card>
-              </v-dialog>
-
-              <v-dialog v-if="ac.role === 'na'" width="500" v-model="setUnavPeriodDlg" persistent>
-                <v-card>
-                  <v-card-title class="headline grey lighten-2">
-                    Unavailable period
-                  </v-card-title>
-                  <v-container>
-                    <v-form v-model="unavPeriodValidation" ref="unavPeriodForm">
-                      <!--Starting interval-->
-                      <v-layout row wrap>
-                        <v-flex xs12 sm6>
-                          <v-menu v-model="newUnavailablePeriod.sdModal" :close-on-content-click="true" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
-                            <v-text-field v-model="newUnavailablePeriod.start_date" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" clearable append-icon="event" outline required slot="activator" label="Start date" readonly></v-text-field>
-                            <v-date-picker v-model="newUnavailablePeriod.start_date" @change="validateUnavailablePeriod()" no-title :show-current="true" :min="ac.appointment_restrictions.min_date">
-                              <v-spacer></v-spacer>
-                              <v-btn flat small @click="newUnavailablePeriod.sdModal = false">OK</v-btn>
-                            </v-date-picker>
-                          </v-menu>
-                        </v-flex>
-                        <v-flex xs12 sm6>
-                          <v-menu v-model="newUnavailablePeriod.shModal" :close-on-content-click="false" :disabled="!newUnavailablePeriod.start_date" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
-                            <v-text-field v-model="newUnavailablePeriod.start_hour" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" :disabled="!newUnavailablePeriod.start_date" clearable append-icon="access_time" outline required slot="activator" label="Start hour" readonly></v-text-field>
-                            <v-time-picker v-model="newUnavailablePeriod.start_hour" @change="validateUnavailablePeriod()" :disabled="!newUnavailablePeriod.start_date" format="24hr">
-                              <v-spacer></v-spacer>
-                              <v-btn flat small @click="newUnavailablePeriod.shModal = false">OK</v-btn>
-                            </v-time-picker>
-                          </v-menu>
-                        </v-flex>
-                      </v-layout>
-                      <!--Ending interval-->
-                      <v-layout row wrap>
-                        <v-flex xs12 sm6>
-                          <v-menu v-model="newUnavailablePeriod.edModal" :close-on-content-click="true" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
-                            <v-text-field v-model="newUnavailablePeriod.end_date" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" clearable append-icon="event" outline required slot="activator" label="End date" readonly></v-text-field>
-                            <v-date-picker v-model="newUnavailablePeriod.end_date" @change="validateUnavailablePeriod()" no-title :show-current="true" :min="ac.appointment_restrictions.min_date">
-                              <v-spacer></v-spacer>
-                              <v-btn flat small @click="newUnavailablePeriod.edModal = false">OK</v-btn>
-                            </v-date-picker>
-                          </v-menu>
-                        </v-flex>
-                        <v-flex xs12 sm6>
-                          <v-menu v-model="newUnavailablePeriod.ehModal" :close-on-content-click="false" :disabled="!newUnavailablePeriod.end_date" :nudge-bottom="60" lazy transition="scale-transition" min-width="290px">
-                            <v-text-field v-model="newUnavailablePeriod.end_hour" :rules="nameRules" :error-messages="newUnavPeriodErrors" :error="newUnavPeriodError" :disabled="!newUnavailablePeriod.start_date" clearable append-icon="access_time" outline required slot="activator" label="End hour" readonly></v-text-field>
-                            <v-time-picker v-model="newUnavailablePeriod.end_hour" @change="validateUnavailablePeriod()" :disabled="!newUnavailablePeriod.start_date" format="24hr">
-                              <v-spacer></v-spacer>
-                              <v-btn flat small @click="newUnavailablePeriod.ehModal = false">OK</v-btn>
-                            </v-time-picker>
-                          </v-menu>
-                        </v-flex>
-                      </v-layout>
-                    </v-form>
-                    <v-layout row wrap>
-                      <v-spacer></v-spacer>
-                      <v-btn small :disabled="loading" color="info" @click="setUnavailablePeriod()">
-                        <icon v-if="!loading" class="fa" name="check"></icon>
-                        <icon v-else class="fa" name="circle-notch" spin></icon> Confirm
-                      </v-btn>
-                      <v-btn small color="error" @click="setUnavPeriodDlg = false"><icon class="fa" name="times"></icon> Cancel</v-btn>
-                    </v-layout>
-                  </v-container>
-                </v-card>
-              </v-dialog>
-
-              <v-dialog width="350" v-model="cancelRegistrationDlg" persistent>
-                <v-card>
-                  <v-card-title class="headline grey lighten-2">
-                    Cancel Registration
-                    <v-spacer></v-spacer>
-                    <a @click="cancelRegistrationDlg = false"><icon name="times" class="fa"></icon></a>
-                  </v-card-title>
-                  <v-container>
-                    <h3>Are you sure you want to cancel your registration with this Centre?</h3>
-                    <v-btn :disabled="loading" color="error" @click="cancelRegistration()">
-                      <icon v-if="!loading" class="fa" name="check"></icon>
-                      <icon v-else class="fa" name="circle-notch" spin></icon> Yes
-                    </v-btn>
-                    <v-btn color="info" @click="cancelRegistrationDlg = false"><icon class="fa" name="times"></icon> No</v-btn>
-                  </v-container>
-                </v-card>
-              </v-dialog>
-            </v-layout>
-
-            <v-layout row wrap mt-3>
-              <v-flex xs10 offset-xs1>
-                <v-expansion-panel>
-                  <v-expansion-panel-content v-if="ac.role === 'student'">
-                    <div slot="header"><icon name="calendar-alt" class="fa"></icon><b>New appointment</b></div>
-                    <v-card>
-                        <v-card-text class="animated fadeIn">
-                        <v-form ref="newAppointmentForm" v-model="newAppointmentValidation">
-                          
-                          <v-layout row wrap>
-                            <v-flex md8 offset-md2 lg6 offset-lg3>
-                              <v-autocomplete clearable v-model="newAppointment.service" @change="resetNewAppointmentInfo()" return-object required item-text="name" outline :rules="nameRules" append-icon="assessment" :items="ac.services" label="Service">
-                                <template slot="item" slot-scope="{ item, tile }">
-                                  <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
-                                    {{ item.name.charAt(0) }}
-                                  </v-list-tile-avatar>
-                                  <v-list-tile-content>
-                                    <v-list-tile-title v-text="item.name"></v-list-tile-title>
-                                    <v-list-tile-sub-title><i>Duration: {{item.duration}} mins. Price: {{item.price}} {{item.currency}}</i></v-list-tile-sub-title>
-                                  </v-list-tile-content>
-                                </template>
-                              </v-autocomplete>
-                            </v-flex>
-                          </v-layout>
-
-                          <v-layout row wrap v-if="ac.settings.availability_type !== 'Combined'">
-                            <v-flex md8 offset-md2 lg6 offset-lg3>
-                              <v-autocomplete no-data-text="No assessors available for this service" clearable v-model="newAppointment.assessor" :rules="nameRules" @change="resetNewAppDateAndTime()" return-object required item-text="name" outline append-icon="person" :items="ac.appointment_restrictions.needs_assessors" label="Assessor">
-                                <template slot="item" slot-scope="{ item, tile }">
-                                  <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
-                                    {{ item.name.charAt(0) }}
-                                  </v-list-tile-avatar>
-                                  <v-list-tile-content>
-                                    <v-list-tile-title v-text="item.name"></v-list-tile-title>
-                                    <v-list-tile-sub-title><i>{{item.email}}</i></v-list-tile-sub-title>
-                                  </v-list-tile-content>
-                                </template>
-                              </v-autocomplete>
-                            </v-flex>
-                          </v-layout>
-
-                          <v-layout row wrap>
-                            <v-flex sm6 md4 offset-md2 lg3 offset-lg3>
-                              <v-menu v-model="newAppointment.dateModal" :close-on-content-click="true" :nudge-bottom="60" lazy transition="scale-transition" full-width min-width="290px">
-                                <v-text-field v-model="newAppointment.date" clearable append-icon="event" outline required slot="activator" :rules="nameRules" label="Date" readonly></v-text-field>
-                                <v-date-picker v-model="newAppointment.date" @change="getAvailableHours()" no-title ref="newAppointmentDate" :show-current="true" :min="ac.appointment_restrictions.min_date" :max="ac.appointment_restrictions.max_date" :allowed-dates="allowedDates"></v-date-picker>
-                              </v-menu>
-                            </v-flex>
-                            <v-flex sm6 md4 lg3>
-                              <v-autocomplete v-model="newAppointment.hour" no-data-text="No available time slots" :disabled="loadingHours || !newAppointment.date" clearable required item-text="name" item-value="name" outline :rules="nameRules" append-icon="access_time" :items="ac.appointment_restrictions.available_hours" label="Hour">
-                                <template slot="item" slot-scope="{ item, tile }">
-                                  <v-list-tile-avatar color="indigo" class="headline font-weight-light white--text">
-                                    H
-                                  </v-list-tile-avatar>
-                                  <v-list-tile-content>
-                                    <v-list-tile-title v-text="item.name"></v-list-tile-title>
-                                  </v-list-tile-content>
-                                </template>
-                              </v-autocomplete>
-                            </v-flex>
-                          </v-layout>
-                          
-                          <v-layout row wrap>
-                            <v-flex xs12 md8 offset-md2 lg6 offset-lg3>
-                              <v-btn large block :disabled="!newAppointmentValidation" color="info" @click="confirmAppointmentDlg = true"><v-icon>event_available</v-icon> Confirm<span class="hidden-xs-only">&nbsp;appointment</span></v-btn>
-                            </v-flex>
-                          </v-layout>
-                        </v-form>
-
-                        <v-dialog width="250" v-model="loadingHours" persistent>
-                          <v-card>
-                            <v-container>
-                              <v-card-text>
-                                <v-layout row>
-                                  <v-flex xs12>
-                                    <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
-                                  </v-flex>
-                                </v-layout>
-                              </v-card-text>
-                            </v-container>
-                          </v-card>
-                        </v-dialog>
-
-                        <v-dialog v-if="newAppointmentValidation" width="350" v-model="confirmAppointmentDlg" persistent>
-                          <v-card>
-                            <v-container>
-                              <v-layout row>
-                                <v-flex xs12>
-                                  <h3 class="text-xs-justify">Please, verify this information to make sure everything is correct:</h3>
-                                </v-flex>
-                              </v-layout>
-                              <v-layout row mt-3>
-                                <v-flex xs12>
-                                  <p class="text-xs-justify">
-                                    <span v-if="newAppointment.assessor"><a>Needs Assessor:</a> {{newAppointment.assessor.name}}<br /></span>
-                                    <span v-if="newAppointment.service"><a>Service:</a> {{newAppointment.service.name}}<br /></span>
-                                    <a>Date:</a> {{newAppointment.date}}<br />
-                                    <a>Hour:</a> {{newAppointment.hour}}<br />
-                                  </p>
-                                  <v-divider></v-divider>
-                                </v-flex>
-                              </v-layout>
-                              <v-layout row mt-3>
-                                <v-spacer></v-spacer>
-                                <v-btn small :disabled="loading" color="info" @click="saveAppointment()">
-                                  <icon v-if="!loading" class="fa" name="check"></icon>
-                                  <icon v-else class="fa" name="circle-notch" spin></icon>Yes
-                                </v-btn>
-                                <v-btn small color="error" @click="confirmAppointmentDlg = false">
-                                  <icon class="fa" name="times"></icon>No
-                                </v-btn>
-                              </v-layout>
-                            </v-container>
-                          </v-card>
-                        </v-dialog>
-
-                      </v-card-text>
-                    </v-card>
-                  </v-expansion-panel-content>
-                  
-                  <!--<v-expansion-panel-content">
-                    <div slot="header"><icon name="cog" class="fa"></icon>Management</div>-->
-                    <v-layout v-if="ac.role === 'ac'" row pb-5>
-                      <v-flex sm10 offset-sm1>
-                        <v-tabs slot="extension" v-model="tabs" fixed-tabs icons-and-text color="transparent">
-                          <v-tabs-slider></v-tabs-slider>
-                          <v-tab href="#tab-students" class="primary--text">
-                            <v-icon>school</v-icon> Students
-                          </v-tab>
-                          <v-tab href="#tab-needs-assessors" class="primary--text">
-                            <v-icon>assignment_ind</v-icon> Assessors
-                          </v-tab>
-                          <v-tab href="#tab-services" class="primary--text">
-                            <v-icon>assessment</v-icon> Services
-                          </v-tab>
-                          <v-tab href="#tab-settings" class="primary--text">
-                            <v-icon>settings</v-icon> Settings
-                          </v-tab>
-                        </v-tabs>
-
-                        <v-tabs-items v-model="tabs">
-                          <v-tab-item id='tab-students'>
-                            <v-card>
-                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Institute', value: 'institute' }, /*{ text: 'Status', value: 'status' },*/ { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.students" class="elevation-1">
-                                <template slot="headerCell" slot-scope="props">
-                                  <v-tooltip bottom>
-                                    <span slot="activator">{{ props.header.text }}</span>
-                                    <span>{{ props.header.text }}</span>
-                                  </v-tooltip>
-                                </template>
-                                <template slot="items" slot-scope="props">
-                                  <td class="text-xs-left">{{ props.item.name }}</td>
-                                  <td class="text-xs-left">{{ props.item.institute }}</td>
-                                  <td class="text-xs-left">
-                                    <v-tooltip bottom color="black">
-                                      <v-btn @click="setCurrentUser(props.index, props.item, 'student')" small flat slot="activator" class="btn-sm" color="error">
-                                        <icon class="fa" name="user-times"></icon>
-                                      </v-btn>
-                                      <span>Cancel registration</span>
-                                    </v-tooltip>
-                                  </td>
-                                </template>
-                              </v-data-table>
-                            </v-card>
-                          </v-tab-item>
-
-                          <v-tab-item id='tab-needs-assessors'>
-                            <v-card>
-                              <v-layout row class="mt-3 mb-2">
-                                <v-spacer></v-spacer>
-                                <v-btn @click="inviteUsersDlg = true" color="info"><icon class="fa" name="envelope"></icon> Invite Assessors</v-btn>
-                              </v-layout>
-                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Email', value: 'email' }, { text: 'Status', value: 'status' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.needs_assessors" class="elevation-1">
-                                <template slot="headerCell" slot-scope="props">
-                                  <v-tooltip bottom>
-                                    <span slot="activator">{{ props.header.text }}</span>
-                                    <span>{{ props.header.text }}</span>
-                                  </v-tooltip>
-                                </template>
-                                <template slot="items" slot-scope="props">
-                                  <td class="text-xs-left">{{ props.item.name }}</td>
-                                  <td class="text-xs-left">{{ props.item.email }}</td>
-                                  <td class="text-xs-left">
-                                    <v-tooltip bottom color="black">
-                                      <v-switch :disabled="loading" color="primary" slot="activator" @change="toggleUserStatus(props.item.id, props.item.status)" v-model="props.item.status"></v-switch>
-                                      <span v-html="loading ? 'Setting account status...' : (props.item.status ? 'Deactivate' : 'Activate') + ' account'"></span>
-                                    </v-tooltip>
-                                  </td>
-                                  <td class="text-xs-left">
-                                    <v-tooltip bottom color="black">
-                                      <v-btn :disabled="ac.services.length < 1 || loading || !props.item.status" @click="showNAServices(props.index, props.item)" small flat slot="activator" class="btn-sm" color="primary">
-                                        <icon class="fa" name="user-cog"></icon>
-                                      </v-btn>
-                                      <span>Assign services</span>
-                                    </v-tooltip>
-                                    <v-tooltip bottom color="black">
-                                      <v-btn :disabled="loading" @click="setCurrentUser(props.index, props.item, 'needs_assessor')" small flat slot="activator" class="btn-sm" color="error">
-                                        <icon class="fa" name="user-times"></icon>
-                                      </v-btn>
-                                      <span>Cancel registration</span>
-                                    </v-tooltip>
-                                  </td>
-                                </template>
-                              </v-data-table>
-
-                              <v-dialog width="500" v-model="naServicesDlg" persistent>
-                                <v-card>
-                                  <v-card-title class="headline grey lighten-2">
-                                    Available services
-                                    <v-spacer></v-spacer>
-                                    <a @click="naServicesDlg = false"><icon name="times" class="fa"></icon></a>
-                                  </v-card-title>
-                                  <v-container>
-                                    <v-data-table ref="tblNAServices" :headers="[{ text: 'Name', value: 'name' }, { text: 'Description', value: 'description' }]" :items="ac.services" v-model="selectedServices" item-key="id" select-all>
-                                      <template slot="headerCell" slot-scope="props">
-                                        <v-tooltip bottom>
-                                          <span slot="activator">{{ props.header.text }}</span>
-                                          <span>{{ props.header.text }}</span>
-                                        </v-tooltip>
-                                      </template>
-                                      <template slot="items" slot-scope="props">
-                                        <td><v-checkbox v-model="props.selected" primary hide-details></v-checkbox></td>
-                                        <td class="text-xs-left">{{ props.item.name }}</td>
-                                        <td class="text-xs-left">{{ props.item.description }}</td>
-                                      </template>
-                                    </v-data-table>
-                                    <v-layout row>
-                                      <v-spacer></v-spacer>
-                                      <v-btn :disabled="loading" color="info" @click="updateNAServices()">
-                                        <icon v-if="!loading" class="fa" name="check"></icon>
-                                        <icon v-else class="fa" name="circle-notch" spin></icon> Update services
-                                      </v-btn>
-                                      <v-btn @click="naServicesDlg = false" color="error">
-                                        <icon class="fa" name="times"></icon> Close
-                                      </v-btn>
-                                    </v-layout>
-                                  </v-container>
-                                </v-card>
-                              </v-dialog>
-
-                              <v-dialog width="500" v-model="inviteUsersDlg" persistent>
-                                <v-card>
-                                  <v-card-title class="headline grey lighten-2">
-                                    Invite user
-                                    <v-spacer></v-spacer>
-                                    <a @click="inviteUsersDlg = false"><icon name="times" class="fa"></icon></a>
-                                  </v-card-title>
-                                  <v-container>
-                                    <v-form ref="inviteForm">
-                                      <v-layout row>
-                                        <v-text-field max="50" outline v-on:keyup.enter="inviteUser()" ref="invitationName" v-model="invitation.name" append-icon="person" label="Name" type="text" required :rules="nameRules" hint="Enter the assessor's name"></v-text-field>
-                                      </v-layout>
-                                      <v-layout row>
-                                        <v-text-field max="150" outline v-on:keyup.enter="inviteUser()" v-model="invitation.email" append-icon="mail" label="Email" type="text" required :rules="emailRules" hint="Enter the email address"></v-text-field>
-                                      </v-layout>
-                                      <v-layout row>
-                                        <v-textarea outline v-model="invitation.text" append-icon="edit" label="Custom message" type="text" required hint="Enter a custom message"></v-textarea>
-                                      </v-layout>
-                                      <v-layout row>
-                                        <v-spacer></v-spacer>
-                                        <v-btn :disabled="loading" color="info" @click="inviteUser()">
-                                          <icon v-if="!loading" class="fa" name="envelope"></icon>
-                                          <icon v-else class="fa" name="circle-notch" spin></icon> Send invitation
-                                        </v-btn>
-                                      </v-layout>
-                                    </v-form>
-                                  </v-container>
-                                </v-card>
-                              </v-dialog>
-                            </v-card>
-                          </v-tab-item>
-
-                          <v-tab-item id='tab-services'>
-                            <v-card>
-                              <v-layout row class="mt-3 mb-2">
-                                <v-spacer></v-spacer>
-                                <v-btn @click="showUpdateServiceForm(-1, {id: -1, currency: 'GBP'}, 'Add service')" color="info"><icon class="fa" name="server"></icon> Add Service</v-btn>
-                              </v-layout>
-                              <v-data-table :headers="[{ text: 'Name', value: 'name' }, { text: 'Description', value: 'description' }, { text: 'Duration', value: 'duration' }, { text: 'Actions', sortable: false, value: 'actions'}]" :items="ac.services" class="elevation-1">
-                                <template slot="headerCell" slot-scope="props">
-                                  <v-tooltip bottom>
-                                    <span slot="activator">{{ props.header.text }}</span>
-                                    <span>{{ props.header.text }}</span>
-                                  </v-tooltip>
-                                </template>
-                                <template slot="items" slot-scope="props">
-                                  <td class="text-xs-left">{{ props.item.name }}</td>
-                                  <td class="text-xs-left">{{ props.item.description }}</td>
-                                  <td class="text-xs-left">{{ props.item.duration }}</td>
-                                  <td class="text-xs-left">
-                                    <v-tooltip bottom color="black">
-                                      <v-btn @click="showUpdateServiceForm(props.index, props.item, 'Update service')" small flat slot="activator" class="btn-sm" color="success">
-                                        <icon class="fa" name="edit"></icon>
-                                      </v-btn>
-                                      <span>Update</span>
-                                    </v-tooltip>
-                                    <v-tooltip bottom color="black">
-                                      <v-btn @click="showUpdateServiceForm(props.index, props.item, 'Delete service')" small flat slot="activator" class="btn-sm" color="error">
-                                        <icon class="fa" name="trash-alt"></icon>
-                                      </v-btn>
-                                      <span>Delete</span>
-                                    </v-tooltip>
-                                  </td>
-                                </template>
-                              </v-data-table>
-                            </v-card>
-
-                            <v-dialog width="500" v-model="updateServiceDlg" persistent>
-                              <v-card>
-                                <v-card-title class="headline grey lighten-2">
-                                  {{currentServiceAction}}
-                                  <v-spacer></v-spacer>
-                                  <a @click="updateServiceDlg = false"><icon name="times" class="fa"></icon></a>
-                                </v-card-title>
-                                <v-container>
-                                  <v-form ref="updateServiceForm">
-                                    <template v-if="currentServiceAction !== 'Delete service'">
-                                      <v-layout row>  
-                                        <v-flex><v-text-field v-model="currentService.name" :rules="nameRules" max="50" ref="currentServiceName" outline v-on:keyup.enter="updateService()" append-icon="room_service" label="Name" type="text" required></v-text-field></v-flex>
-                                      </v-layout>
-                                      <v-layout row>
-                                        <v-flex><v-textarea v-model="currentService.description" :counter="250" :no-resize="true" maxlength="250" rows="3" outline v-on:keyup.enter="updateService()" append-icon="edit" label="Description" type="text"></v-textarea></v-flex>
-                                      </v-layout>
-                                      <v-layout row>
-                                        <v-flex sm6><v-text-field v-model="currentService.duration" :rules="durationRules" :hint="serviceDurationHint" maxlength="3" outline v-on:keyup.enter="updateService()" append-icon="access_time" label="Duration (minutes)" type="text" required></v-text-field></v-flex>
-                                        <v-flex sm6><v-text-field v-model="currentService.attendants_number" :rules="attendantsRules" maxlength="3" outline v-on:keyup.enter="updateService()" append-icon="group" label="Attendants number" type="text" required></v-text-field></v-flex>
-                                      </v-layout>
-                                      <v-layout row>
-                                        <v-flex sm6><v-text-field v-model="currentService.price" maxlength="3" :rules="priceRules" outline v-on:keyup.enter="updateService()" append-icon="attach_money" label="Price" type="text" required></v-text-field></v-flex>
-                                        <v-flex sm6><v-text-field v-model="currentService.currency" :disabled="true" outline append-icon="trending_up" label="Currency" type="text" required></v-text-field></v-flex>
-                                      </v-layout>
-                                    </template>
-                                    <template v-else>
-                                      <v-layout row>
-                                        <v-flex>
-                                          <h3>Are you sure you want to delete <a>{{currentService.name}}</a>?</h3>
-                                        </v-flex>
-                                      </v-layout>
-                                    </template>
-                                    <v-layout row>
-                                      <v-spacer></v-spacer>
-                                      <v-btn :disabled="loading" @click="updateService()" :class="{ warning: currentServiceAction === 'Delete service', success: currentServiceAction === 'Update service', info: currentServiceAction === 'Add service'}">
-                                        <icon v-if="loading" class="fa" name="circle-notch" spin></icon> {{currentServiceAction}}
-                                      </v-btn>
-                                      <v-btn @click="updateServiceDlg = false" color="error">Close</v-btn>
-                                    </v-layout>
-                                  </v-form>
-                                </v-container>
-                              </v-card>
-                            </v-dialog>
-                          </v-tab-item>
-
-                          <v-tab-item id='tab-settings'>
-                            <v-card>
-                              <v-container>
-                                <v-form ref="settingsForm" v-model="settingsValidationStatus">
-                                  <v-layout row wrap>
-                                    <v-flex xs12 sm6 d-flex>
-                                      <v-text-field v-model="ac.settings.name" required :rules="nameRules" label="Name" outline></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm6 d-flex>
-                                      <v-text-field v-model="ac.settings.token" required :rules="nameRules" label="Slug" outline></v-text-field>
-                                    </v-flex>
-                                  </v-layout>
-                                  <v-layout row wrap>
-                                    <v-flex xs12 sm4 d-flex>
-                                      <v-text-field v-model="ac.settings.telephone" required :rules="nameRules" label="Telephone" outline></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm4 d-flex>
-                                      <v-text-field v-model="ac.settings.address" required :rules="nameRules" label="Address" outline></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm4 d-flex>
-                                      <v-select v-model="ac.settings.availability_type" required :rules="nameRules" :items="['Individual', 'Combined']" label="Availability type" outline></v-select>
-                                    </v-flex>
-                                  </v-layout>
-                                  <v-layout row wrap>
-                                    <v-tooltip bottom :color="settingsValidationColor">
-                                      <v-btn :disabled="loading" v-on:click="updateACSettings()" class="white--text" :class="{ red: !settingsValidationStatus, indigo: settingsValidationStatus }" slot="activator">
-                                        <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                                        <v-icon size="22" v-if="!loading && settingsValidationStatus">done</v-icon>
-                                        <v-icon size="22" v-if="!loading && !settingsValidationStatus">error_outline</v-icon>
-                                        &nbsp;Update settings
-                                      </v-btn>
-                                      <span>{{settingsValidationMessage}}</span>
-                                    </v-tooltip>
-                                  </v-layout>
-                                </v-form>
-                              </v-container>
-                            </v-card>
-                          </v-tab-item>
-
-                        </v-tabs-items>
-
-                        <v-dialog width="500" v-model="cancelUserRegDlg" persistent>
-                          <v-card>
-                            <v-card-title class="headline grey lighten-2">
-                              Cancel user registration
-                              <v-spacer></v-spacer>
-                              <a @click="cancelUserRegDlg = false"><icon name="times" class="fa"></icon></a>
-                            </v-card-title>
-                            <v-container>
-                              <v-layout row>
-                                  <h3>Are you sure you want to revoke {{currentUser.name}}'s registration?</h3>
-                              </v-layout>
-                              <v-divider class="mt-3 mb-3"></v-divider>
-                              <v-layout row>
-                                <v-spacer></v-spacer>
-                                <v-btn :disabled="loading" color="error" @click="cancelUserRegistration()">
-                                  <icon v-if="!loading" class="fa" name="check"></icon>
-                                  <icon v-else class="fa" name="circle-notch" spin></icon> Yes
-                                </v-btn>
-                                <v-btn color="info" @click="cancelUserRegDlg = false"><icon class="fa" name="times"></icon> No</v-btn>
-                              </v-layout>
-                            </v-container>
-                          </v-card>
-                        </v-dialog>
-
-                      </v-flex>
-                    </v-layout>
-                  <!--</v-expansion-panel-content>-->
-                </v-expansion-panel>
+            <v-layout row wrap>
+              <v-flex xs12>
+                <div class="iframe-container">
+                  <iframe id="iframe" ref="iframe" style="border: none; width: 100%; padding-bottom: 5px;" :src="eaUrl" scrolling="no"></iframe>
+                </div>
               </v-flex>
             </v-layout>
-
           </v-container>
         </template>
 
@@ -617,8 +89,6 @@
         <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
         <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
       </v-snackbar>
-
-    </v-card>
     
     <axios-component ref="axios" v-on:finish="handleHttpResponse($event)" />
 
@@ -629,23 +99,20 @@
 import FileUpload from "@/components/FileUpload";
 import axios from "axios";
 import AxiosComponent from "@/components/AxiosComponent";
-import CalendarComponent from "@/components/CalendarComponent";
 import moment from "moment";
-
-import { FullCalendar } from "vue-full-calendar";
-import "fullcalendar/dist/fullcalendar.css";
 
 export default {
   data() {
     return {
       appointments: [],
-      viewCalendarDlg: false,
+      dlgViewCalendar: false,
+      dlgWorkingPlan: false,
       newUnavPeriodError: false,
       calendarEvents: [],
       newUnavPeriodErrors: [],
       newUnavailablePeriod: {},
       unavPeriodValidation: false,
-      setUnavPeriodDlg: false,
+      dlgSetUnavPeriod: false,
       confirmAppointmentDlg: false,
       newAppointmentValidation: false,
       loadingHours: false,
@@ -678,7 +145,6 @@ export default {
       ],
       durationRules: [
         v => !!v || "This field is required",
-        //v => (v && parseInt(v, 10) != NaN ) || "Integer number expected",
         v => (v && v > 4 && v < 481) || "This value is not allowed"
       ],
       attendantsRules: [
@@ -726,10 +192,11 @@ export default {
       currentServiceIndex: -1,
       currentService: {},
       invitationToken: null,
-      currentServiceAction: ""
+      currentServiceAction: "",
+      eaUrl: ""
     };
   },
-  components: { FileUpload, AxiosComponent, FullCalendar, CalendarComponent },
+  components: { FileUpload, AxiosComponent },
   mounted() {
     this.activationUrl = window.location.href.replace(
       this.$route.path,
@@ -747,8 +214,23 @@ export default {
       }
     };
     this.$refs.axios.submit(config);
+    
+    if (window.addEventListener) {
+      window.addEventListener("message", this.zino_resize, false);
+    }
   },
   methods: {
+    zino_resize(event) {
+      var zino_iframe = document.getElementById("iframe");
+      if (zino_iframe) {
+        zino_iframe.style.height = event.data.height + "px";
+      }
+    },
+    resizeIframe() {
+      var frame = document.getElementById("iframe");
+      var doc = frame.contentDocument || frame.contentWindow.document;
+      frame.style.height = frame.contentDocument.body.scrollHeight + "px";
+    },
     toggleUserStatus(userId, status) {
       var config = {
         method: "post",
@@ -1029,6 +511,16 @@ export default {
             if (event.data.result.response.code === "success") {
               this.ac = event.data.result.response.data;
               this.acRole = this.ac.role;
+              this.eaUrl =
+                `${this.$store.state.baseUrl}../../ea/index.php/` +
+                (this.acRole === "student"
+                  ? "appointments/index/"
+                  : "backend/index/");
+              this.eaUrl += `?ac=${this.ac.token}&jwt=${
+                this.$store.state.payload.jwt
+              }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
+                this.$store.state.baseUrl
+              }`;
               if (this.ac.registered && this.acAction === "signup") {
                 this.$router.push(
                   "/assessment-centre/" + this.acSlug + "/index/"
@@ -1070,7 +562,7 @@ export default {
               this.naServicesDlg = false;
               this.newAppointment = { service: null, assessor: null };
               //Unavailable periods
-              this.setUnavPeriodDlg = false;
+              this.dlgSetUnavPeriod = false;
               this.newUnavailablePeriod = {};
               this.newUnavPeriodError = true;
             }
@@ -1157,8 +649,8 @@ export default {
         this.snackbar = true;
       }
     },
-    test() {
-      console.log("Testing");
+    test(event) {
+      console.log(event);
     }
   },
   computed: {
@@ -1199,4 +691,17 @@ export default {
   margin-top: -9px !important;
   max-height: 20px !important;
 }
+/*.iframe-container {
+  overflow: hidden;
+  padding-top: 75%;
+  position: relative;
+}
+.iframe-container iframe {
+  border: 0;
+  height: 80%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}*/
 </style>

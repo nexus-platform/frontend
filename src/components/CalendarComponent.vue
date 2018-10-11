@@ -6,15 +6,13 @@
       @change="saveState">
 
       <template slot="title">
-        DaySpan
+        Events
       </template>
 
       <template slot="menuRight">
-        <v-btn icon large href="https://github.com/ClickerMonkey/dayspan-vuetify" target="_blank">
-          <v-avatar size="32px" tile>
-            <img src="https://simpleicons.org/icons/github.svg" alt="Github">
-          </v-avatar>
-        </v-btn>
+        <v-btn flat color="info" @click="setCalendarFormat('month')">Month</v-btn>
+        <v-btn flat color="info" @click="setCalendarFormat('week')">Week</v-btn>
+        <v-btn flat color="info" @click="setCalendarFormat('day')">Day</v-btn>
       </template>
 
       <template slot="eventPopover" slot-scope="slotData">
@@ -53,58 +51,56 @@
 </template>
 
 <script>
-import { Calendar, Weekday, Month } from 'dayspan';
-import Vue from 'vue';
-
+import { Calendar, Weekday, Month } from "dayspan";
+import Vue from "vue";
 
 export default {
-
-  name: 'app',
+  name: "app",
 
   data: () => ({
-    storeKey: 'dayspanState',
+    storeKey: "dayspanState",
     calendar: Calendar.months(),
     defaultEvents: [
       {
         data: {
-          title: 'Weekly Meeting',
-          color: '#3F51B5'
+          title: "Weekly Meeting",
+          color: "#3F51B5"
         },
         schedule: {
           dayOfWeek: [Weekday.MONDAY],
           times: [9],
           duration: 30,
-          durationUnit: 'minutes'
+          durationUnit: "minutes"
         }
       },
       {
         data: {
-          title: 'First Weekend',
-          color: '#4CAF50'
+          title: "First Weekend",
+          color: "#4CAF50"
         },
         schedule: {
           weekspanOfMonth: [0],
           dayOfWeek: [Weekday.FRIDAY],
           duration: 3,
-          durationUnit: 'days'
+          durationUnit: "days"
         }
       },
       {
         data: {
-          title: 'End of Month',
-          color: '#000000'
+          title: "End of Month",
+          color: "#000000"
         },
         schedule: {
           lastDayOfMonth: [1],
           duration: 1,
-          durationUnit: 'hours'
+          durationUnit: "hours"
         }
       },
       {
         data: {
-          title: 'Mother\'s Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Mother's Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.MAY],
@@ -114,9 +110,9 @@ export default {
       },
       {
         data: {
-          title: 'New Year\'s Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "New Year's Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.JANUARY],
@@ -125,9 +121,9 @@ export default {
       },
       {
         data: {
-          title: 'Inauguration Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Inauguration Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.JANUARY],
@@ -136,9 +132,9 @@ export default {
       },
       {
         data: {
-          title: 'Martin Luther King, Jr. Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Martin Luther King, Jr. Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.JANUARY],
@@ -148,9 +144,9 @@ export default {
       },
       {
         data: {
-          title: 'George Washington\'s Birthday',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "George Washington's Birthday",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.FEBRUARY],
@@ -160,9 +156,9 @@ export default {
       },
       {
         data: {
-          title: 'Memorial Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Memorial Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.MAY],
@@ -172,9 +168,9 @@ export default {
       },
       {
         data: {
-          title: 'Independence Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Independence Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.JULY],
@@ -183,9 +179,9 @@ export default {
       },
       {
         data: {
-          title: 'Labor Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Labor Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.SEPTEMBER],
@@ -195,9 +191,9 @@ export default {
       },
       {
         data: {
-          title: 'Columbus Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Columbus Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.OCTOBER],
@@ -207,9 +203,9 @@ export default {
       },
       {
         data: {
-          title: 'Veterans Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Veterans Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.NOVEMBER],
@@ -218,9 +214,9 @@ export default {
       },
       {
         data: {
-          title: 'Thanksgiving Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Thanksgiving Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.NOVEMBER],
@@ -230,9 +226,9 @@ export default {
       },
       {
         data: {
-          title: 'Christmas Day',
-          color: '#2196F3',
-          calendar: 'US Holidays'
+          title: "Christmas Day",
+          color: "#2196F3",
+          calendar: "US Holidays"
         },
         schedule: {
           month: [Month.DECEMBER],
@@ -242,84 +238,87 @@ export default {
     ]
   }),
 
-  mounted()
-  {
+  mounted() {
     window.app = this.$refs.app;
 
     this.loadState();
   },
 
-  methods:
-  {
-    getCalendarTime(calendarEvent)
-    {
-      let sa = calendarEvent.start.format('a');
-      let ea = calendarEvent.end.format('a');
-      let sh = calendarEvent.start.format('h');
-      let eh = calendarEvent.end.format('h');
+  methods: {
+    setCalendarFormat(format) {
+      switch (format) {
+        case "month":
+          this.calendar = Calendar.months();
+          break;
+        case "week":
+          this.calendar = Calendar.weeks();
+          break;
+        case "day":
+          this.calendar = Calendar.days();
+          break;
+        default:
+          break;
+      }
+    },
+    getCalendarTime(calendarEvent) {
+      let sa = calendarEvent.start.format("a");
+      let ea = calendarEvent.end.format("a");
+      let sh = calendarEvent.start.format("h");
+      let eh = calendarEvent.end.format("h");
 
-      if (calendarEvent.start.minute !== 0)
-      {
-        sh += calendarEvent.start.format(':mm');
+      if (calendarEvent.start.minute !== 0) {
+        sh += calendarEvent.start.format(":mm");
       }
 
-      if (calendarEvent.end.minute !== 0)
-      {
-        eh += calendarEvent.end.format(':mm');
+      if (calendarEvent.end.minute !== 0) {
+        eh += calendarEvent.end.format(":mm");
       }
 
-      return (sa === ea) ? (sh + ' - ' + eh + ea) : (sh + sa + ' - ' + eh + ea);
+      return sa === ea ? sh + " - " + eh + ea : sh + sa + " - " + eh + ea;
     },
 
-    saveState()
-    {
+    saveState() {
       let state = this.calendar.toInput(true);
       let json = JSON.stringify(state);
 
       localStorage.setItem(this.storeKey, json);
     },
 
-    loadState()
-    {
+    loadState() {
       let state = {};
 
-      try
-      {
+      try {
         let savedState = JSON.parse(localStorage.getItem(this.storeKey));
-
-        if (savedState)
-        {
+        if (savedState) {
           state = savedState;
           state.preferToday = false;
         }
-      }
-      catch (e)
-      {
+      } catch (e) {
         // eslint-disable-next-line
-        console.log( e );
+        console.log(e);
       }
 
-      if (!state.events || !state.events.length)
-      {
+      if (!state.events || !state.events.length) {
         state.events = this.defaultEvents;
       }
 
-      state.events.forEach(ev =>
-      {
+      state.events.forEach(ev => {
         let defaults = this.$dayspan.getDefaultEventDetails();
 
-        ev.data = Vue.util.extend( defaults, ev.data );
+        ev.data = Vue.util.extend(defaults, ev.data);
       });
 
-      this.$refs.app.setState( state );
+      this.$refs.app.setState(state);
     }
   }
-}
+};
 </script>
 
 <style scoped>
-
-body, html, #app, #dayspan {
+body,
+html,
+#app,
+#dayspan {
   font-family: Roboto, sans-serif !important;
   width: 100%;
   height: 100%;
@@ -331,4 +330,7 @@ body, html, #app, #dayspan {
   margin-bottom: 8px !important;
 }
 
+.v-menu--inline {
+  display: none;
+}
 </style>

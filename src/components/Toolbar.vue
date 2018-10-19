@@ -68,7 +68,7 @@
               <v-list-tile-content>My DSA Forms</v-list-tile-content>
             </v-list-tile>
 
-            <v-list-tile v-on:click="logout">
+            <v-list-tile v-on:click="logout()">
               <v-list-tile-action>
                 <v-icon>power_settings_new</v-icon>
               </v-list-tile-action>
@@ -338,7 +338,7 @@
                   <v-icon class="menu-icon">picture_as_pdf</v-icon>
                   <span>My DSA Forms</span>
                 </v-list-tile>
-                <v-list-tile :disabled="loggingOut" v-on:click="logout" class="dropdown-menu-item">
+                <v-list-tile :disabled="loggingOut" v-on:click="logout()" class="dropdown-menu-item">
                   <icon v-if="loggingOut" class="menu-icon fa" name="circle-notch" spin></icon>
                   <v-icon v-else class="menu-icon">power_settings_new</v-icon>
                   <span>Logout</span>
@@ -652,8 +652,16 @@ export default {
       this.showNotificationsCount = false;
       this.selectedNotifications = [];
       this.selectedActivities = [];
+
+      axios
+        .get(this.$store.state.eaUrl + "user/logout", {
+          params: { XDEBUG_SESSION_START: "netbeans-xdebug" }
+        })
+        .then(function(response) {})
+        .catch(function(error) {});
       this.$store.commit("logout");
       this.$router.push("/login");
+
       /*
       clearInterval(that.timer);
       var requestConfig = {
@@ -776,7 +784,7 @@ a {
 ::-webkit-scrollbar {
   width: 7px !important;
 }
-.v-toolbar__items .v-btn--active{
+.v-toolbar__items .v-btn--active {
   background-color: #3848a0;
 }
 </style>

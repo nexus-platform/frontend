@@ -683,8 +683,6 @@ export default {
           }
         }
 
-        debugger;
-
         if (!this.ac.user_data.password) {
           this.operationMessage = "Password missing";
           this.validationStatus = false;
@@ -858,7 +856,6 @@ export default {
             break;
           case "register-with-ac":
             this.snackbar = true;
-            debugger;
             if (event.data.result.response.code === "success") {
               this.ac.registered = true;
               if (this.isGuest) {

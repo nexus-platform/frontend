@@ -19,19 +19,35 @@
       <template v-if="!ac.registered">
         <v-container pa-5>
           <v-form v-model="validationStatus" ref="form">
-            <v-layout row wrap v-if="acRole === 'na'">
-              <v-flex sm5 md5>
-                <v-text-field :disabled="!isGuest" v-model="ac.user_data.name" prepend-icon="edit" name="name" label="First name" type="text" :rules="nameRules"></v-text-field>
-                <v-text-field :disabled="!isGuest" v-model="ac.user_data.last_name" prepend-icon="edit" name="last_name" label="Last name" type="text" :rules="lastNameRules"></v-text-field>
-                <v-text-field :disabled="!isGuest" @blur="test" v-model="ac.user_data.postcode" prepend-icon="place" name="postcode" label="Postcode" :rules="postcodeRules" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" type="text"></v-text-field>
-                <v-text-field :disabled="!isGuest" v-model="ac.user_data.address" prepend-icon="fas fa-map-signs" name="address" label="Address" id="address" type="text" :rules="addressRules"></v-text-field>
-              </v-flex>
-              <v-flex offset-sm2 sm5>
-                <v-text-field :disabled="!isGuest" v-model="ac.user_data.email" prepend-icon="email" name="email" label="Email" id="email" type="email" :rules="emailRules"></v-text-field>
-                <v-text-field :disabled="!isGuest" v-model="ac.user_data.password" prepend-icon="lock" name="password" label="Password" id="password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
-                <v-text-field :disabled="!isGuest" v-model="ac.user_data.password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" id="passwordConfirm" :rules="passwordConfirmRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
-              </v-flex>
-            </v-layout>
+            <template v-if="acRole === 'na'">
+              <v-layout row wrap>
+                <v-flex sm5 md5>
+                  <v-text-field :disabled="!isGuest" v-model="ac.user_data.name" prepend-icon="edit" name="name" label="First name" type="text" :rules="nameRules"></v-text-field>
+                  <v-text-field :disabled="!isGuest" v-model="ac.user_data.last_name" prepend-icon="edit" name="last_name" label="Last name" type="text" :rules="lastNameRules"></v-text-field>
+                  <v-text-field :disabled="!isGuest" @blur="test" v-model="ac.user_data.postcode" prepend-icon="place" name="postcode" label="Postcode" :rules="postcodeRules" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" type="text"></v-text-field>
+                  <v-text-field :disabled="!isGuest" v-model="ac.user_data.address" prepend-icon="fas fa-map-signs" name="address" label="Address" id="address" type="text" :rules="addressRules"></v-text-field>
+                </v-flex>
+                <v-flex offset-sm2 sm5>
+                  <v-text-field :disabled="true" v-model="ac.user_data.email" prepend-icon="email" name="email" label="Email" id="email" type="email" :rules="emailRules"></v-text-field>
+                  <v-text-field :disabled="!isGuest" v-model="ac.user_data.password" prepend-icon="lock" name="password" label="Password" id="password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
+                  <v-text-field :disabled="!isGuest" v-model="ac.user_data.password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" id="passwordConfirm" :rules="passwordConfirmRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
+                </v-flex>
+              </v-layout>
+
+              <v-layout row wrap mt-5>
+                <v-flex xs12>
+                  <v-tooltip bottom :color="validationColor">
+                    <v-btn :disabled="loading" v-on:click="registerWithAC()" class="white--text" :class="{ red: !validationStatus, indigo: validationStatus }" slot="activator">
+                      <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
+                      <v-icon size="22" v-if="!loading && validationStatus">done</v-icon>
+                      <v-icon size="22" v-if="!loading && !validationStatus">error_outline</v-icon>
+                      &nbsp;Register with this Centre
+                    </v-btn>
+                    <span>{{validationMessage}}</span>
+                  </v-tooltip>
+                </v-flex>
+              </v-layout>
+            </template>
 
             <v-layout row wrap v-else-if="acRole === 'student'">
               <v-card class="animated fadeIn">
@@ -177,20 +193,43 @@
       </template>
       
       <template v-else>
-        <v-layout row wrap mt-2 v-if="loadingEA">
-          <v-flex xs12 sm8 offset-sm2 mt-4>
-            <h3 class="primary--text uppercase">Loading Appointments information</h3>
-          </v-flex>
-          <v-flex xs12 mt-3>
-            <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
-          </v-flex>
-        </v-layout>
-        <v-layout row wrap>
-          <v-flex xs12>
-            <iframe class="animated fadeIn" ref="iframe" style="border: none; width: 100%; padding-bottom: 5px;" :src="eaUrl" scrolling="no"></iframe>          </v-flex>
-        </v-layout>
+        <template v-if="isGuest">
+          <v-layout row wrap>
+            <v-flex xs12>
+              <v-card-text align-center justify-center class="animated fadeIn">
+                <h3 color="primary">Congratulations!</h3>
+                <h4>
+                  You have successfully registered with this Centre.<br />
+                  Your browser will redirect you to the login page in a few seconds.
+                </h4>
+                <v-tooltip bottom color="black">
+                  <v-btn to="/login" slot="activator" color="cyan" class="mb-2">
+                    <v-icon class="white--text">lock</v-icon><span class="white--text">Go to Login Page</span>
+                  </v-btn>
+                  <span>Take me to the login page now</span>
+                </v-tooltip>
+              </v-card-text>
+            </v-flex>
+          </v-layout>
+        </template>
+        
+        <template v-else>
+          <v-layout row wrap mt-2 v-if="loadingEA">
+            <v-flex xs12 sm8 offset-sm2 mt-4>
+              <h3 class="primary--text uppercase">Loading Appointments information</h3>
+            </v-flex>
+            <v-flex xs12 mt-3>
+              <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
+            </v-flex>
+          </v-layout>
+          <v-layout row wrap>
+            <v-flex xs12>
+              <iframe class="animated fadeIn" ref="iframe" style="border: none; width: 100%; padding-bottom: 5px;" :src="eaUrl" scrolling="no"></iframe>
+            </v-flex>
+          </v-layout>
+        </template>
       </template>
-
+      
     </template>
 
     <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
@@ -668,43 +707,44 @@ export default {
     },
     registerWithAC() {
       if (this.$refs.form.validate()) {
-        var data = {};
-
-        for (var i in this.items) {
-          var rows = this.items[i].components;
-          for (var j in rows) {
-            var row = rows[j];
-            for (var k in row) {
-              var component = row[k];
-              if (component.content_type === "input"/* && component.input.value*/) {
-                this.ac.user_data[component.input.name] = component.input.value;
+        if (this.acRole === "student") {
+          for (var i in this.items) {
+            var rows = this.items[i].components;
+            for (var j in rows) {
+              var row = rows[j];
+              for (var k in row) {
+                var component = row[k];
+                if (
+                  component.content_type ===
+                  "input" /* && component.input.value*/
+                ) {
+                  this.ac.user_data[component.input.name] =
+                    component.input.value;
+                }
               }
             }
           }
-        }
 
-        if (!this.ac.user_data.password) {
-          this.operationMessage = "Password missing";
-          this.validationStatus = false;
-        }
-        else if (!this.ac.user_data.password_confirm) {
-          this.operationMessage = "Password confirmation missing";
-          this.validationStatus = false;
-        }
-        else if (!this.ac.user_data.name) {
-          this.operationMessage = "Student's name missing";
-          this.validationStatus = false;
-        }
-        else if (!this.ac.user_data.email) {
-          this.operationMessage = "Email missing";
-          this.validationStatus = false;
-        }
-        else if (this.ac.user_data.password !== this.ac.user_data.password_confirm) {
-          this.operationMessage = "Passwords do not match";
-          this.validationStatus = false;
-        }
-        else {
-          this.validationStatus = true;
+          if (!this.ac.user_data.password) {
+            this.operationMessage = "Password missing";
+            this.validationStatus = false;
+          } else if (!this.ac.user_data.password_confirm) {
+            this.operationMessage = "Password confirmation missing";
+            this.validationStatus = false;
+          } else if (!this.ac.user_data.name) {
+            this.operationMessage = "Student's name missing";
+            this.validationStatus = false;
+          } else if (!this.ac.user_data.email) {
+            this.operationMessage = "Email missing";
+            this.validationStatus = false;
+          } else if (
+            this.ac.user_data.password !== this.ac.user_data.password_confirm
+          ) {
+            this.operationMessage = "Passwords do not match";
+            this.validationStatus = false;
+          } else {
+            this.validationStatus = true;
+          }
         }
 
         if (this.validationStatus) {
@@ -760,12 +800,16 @@ export default {
                   "/assessment-centre/" + this.acSlug + "/index/"
                 );
               } else if (!this.ac.registered && this.acAction === "index") {
-                this.$router.push(
-                  "/assessment-centre/" +
-                    this.acSlug +
-                    "/signup/" +
-                    this.invitationToken
-                );
+                var url = "/assessment-centre/" + this.acSlug + "/signup/";
+                var urlOk = true;
+                if (this.acRole === "na") {
+                  if (this.invitationToken) {
+                    url += this.invitationToken;
+                  } else {
+                    urlOk = false;
+                  }
+                }
+                this.$router.push(urlOk ? url : "/");
               } else if (this.ac.registered) {
                 this.loadingEA = true;
               }
@@ -858,16 +902,15 @@ export default {
             this.snackbar = true;
             if (event.data.result.response.code === "success") {
               this.ac.registered = true;
+              var newRoute = "/assessment-centre/" + this.acSlug + "/index";
               if (this.isGuest) {
-                this.$store.state.authRouteRequested =
-                  "/assessment-centre/" + this.acSlug + "/index";
+                this.$store.state.authRouteRequested = newRoute;
+                var that = this;
                 setTimeout(function() {
-                  this.$router.push("/login");
-                }, 5000);
+                  that.$router.push("/login");
+                }, 7000);
               } else {
-                this.$router.push(
-                  "/assessment-centre/" + this.acSlug + "/index"
-                );
+                this.$router.push(newRoute);
               }
             }
             break;

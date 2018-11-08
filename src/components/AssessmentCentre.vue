@@ -406,14 +406,14 @@ export default {
         settings: {
           name: "Validating Assessment Centre Information",
           admin: null
-        },
-        appointment_restrictions: {
+        }
+        /*appointment_restrictions: {
           min_date: null,
           max_date: null,
           allowed_dates: [],
           available_hours: [],
           needs_assessors: []
-        }
+        }*/
       },
       currentServiceIndex: -1,
       currentService: {},
@@ -452,6 +452,30 @@ export default {
       window.addEventListener("message", this.eaFrameResize, false);
     }
   },
+  beforeRouteUpdate(to, from, next) {
+    this.ac = {
+      id: null,
+      settings: {
+        name: "Validating Assessment Centre Information",
+        admin: null
+      }
+    };
+    this.loadingInitialElements = true;
+    this.acSlug = to.params.slug;
+    this.acAction = to.params.action;
+    this.invitationToken = to.params.token;
+
+    var config = {
+      url: "get-ac-info",
+      params: {
+        slug: this.acSlug,
+        invitation_token: this.invitationToken
+      }
+    };
+    this.$refs.axios.submit(config);
+    next();
+  },
+
   methods: {
     eaFrameResize(event) {
       this.loadingEA = false;

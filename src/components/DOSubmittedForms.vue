@@ -1,11 +1,8 @@
 <template>
-  <v-container style="margin-top: 60px;" class="animated fadeIn">
-    <v-card>
+  <v-container class="animated fadeIn">
+    <v-card class="elevation-0">
       <v-card-title>
         <strong>Submitted Forms</strong>
-        <!--<v-spacer></v-spacer>
-        <v-spacer></v-spacer>
-        <v-text-field v-model="search" append-icon="search" label="Search" hint="Enter your criteria and press Enter..." single-line v-on:keyup.enter="searchItems"></v-text-field>-->
       </v-card-title>
   
       <v-data-table :headers="headers" :items="desserts" :pagination.sync="pagination" :total-items="totalDesserts" :loading="loading" class="elevation-1">

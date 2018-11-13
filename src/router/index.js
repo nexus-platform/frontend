@@ -22,11 +22,13 @@ import AssessmentCentres from '@/components/AssessmentCentres';
 import AssessmentCentre from '@/components/AssessmentCentre';
 import AcceptInvitation from '@/components/AcceptInvitation';
 import MyBookings from '@/components/MyBookings';
+import DSA from '@/components/DSA';
 import store from '../store';
 
 Vue.use(Router);
 
-const routes = [{
+const routes = [
+  {
     path: '*',
     name: 'NotFound',
     component: NotFound,
@@ -39,10 +41,44 @@ const routes = [{
     name: 'Index',
     component: Home,
     meta: {
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/dsa/:dsa_slug/:action?',
+    name: 'DSA',
+    component: DSA,
+    meta: {
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/dsa/:dsa_slug/dsa-forms/index',
+    name: 'DSAForms',
+    component: DSAForms,
+    meta: {
       requiresAuth: true
     }
   },
   {
+    path: '/dsa/:dsa_slug/dsa-forms/:form/:entity?',
+    name: 'DSAForm',
+    component: DSAForm,
+    meta: {
+      requiresAuth: true,
+      roles: ['do', 'student']
+    }
+  },
+  {
+    path: '/dsa/:dsa_slug/my-dsa-forms/index',
+    name: 'MyDSAForms',
+    component: MyDSAForms,
+    meta: {
+      requiresAuth: true,
+      roles: ['student']
+    }
+  },
+  /*{
     path: '/login',
     name: 'Login',
     component: Login,
@@ -57,7 +93,7 @@ const routes = [{
     meta: {
       requiresAnon: true
     }
-  },
+  },*/
   {
     path: '/contact',
     name: 'Contact',
@@ -77,23 +113,6 @@ const routes = [{
     component: MyProfile,
     meta: {
       requiresAuth: true
-    }
-  },
-  {
-    path: '/dsa-forms',
-    name: 'DSAForms',
-    component: DSAForms,
-    meta: {
-      requiresAuth: true
-    }
-  },
-  {
-    path: '/dsa-form/:univ/:form/:entity?',
-    name: 'DSAForm',
-    component: DSAForm,
-    meta: {
-      requiresAuth: true,
-      roles: ['do', 'student']
     }
   },
   {
@@ -118,15 +137,6 @@ const routes = [{
     component: TestComponent
   },
   {
-    path: '/my-dsa-forms',
-    name: 'MyDSAForms',
-    component: MyDSAForms,
-    meta: {
-      requiresAuth: true,
-      roles: ['student']
-    }
-  },
-  {
     path: '/do-submitted-forms',
     name: 'DOSubmittedForms',
     component: DOSubmittedForms,
@@ -141,15 +151,6 @@ const routes = [{
     component: SignFromMobile,
     meta: {
       requiresAuth: false
-    }
-  },
-  {
-    path: '/my-institute',
-    name: 'MyInstitute',
-    component: MyInstitute,
-    meta: {
-      requiresAuth: true,
-      roles: ['do']
     }
   },
   {

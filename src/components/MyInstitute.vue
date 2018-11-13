@@ -1,10 +1,6 @@
 <template>
-    <v-container style="margin-top: 60px;" class="animated fadeIn">
-      <v-card class="text-lg-center">
-
-        <v-card-text>
-          <a class="forms-list-header">{{message}}</a>
-        </v-card-text>
+    <v-container class="animated fadeIn">
+      <v-card class="text-lg-center elevation-0">
         
         <transition name="slide-fade">
           <v-card-text v-if="loading">
@@ -17,7 +13,7 @@
         <transition name="slide-fade">
           <v-container v-if="!loading" class="text-xs-left">
             <v-layout row wrap>
-              <v-flex xs4>
+              <v-flex md8>
                 <v-text-field v-model="univ_slug" type="text" max="50" outline hint="Choose a unique, easy-to-remember identifier for your Institute" label="Custom Institute Identifier"></v-text-field>
               </v-flex>
             </v-layout>

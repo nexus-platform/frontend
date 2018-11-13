@@ -30,7 +30,7 @@ export default {
           );
         }
       }
-      this.requestInfo.headers['Authorization'] =
+      this.requestInfo.headers["Authorization"] =
         "Bearer " + this.$store.state.payload.jwt;
 
       //this.requestInfo.onUploadProgress = function(progressEvent) {};
@@ -68,8 +68,12 @@ export default {
     },
     post() {
       return new Promise((resolve, reject) => {
-        var fullUrl = this.requestInfo.url + ((this.requestInfo.params.XDEBUG_SESSION_START) ?  '?XDEBUG_SESSION_START=netbeans-xdebug' : '');
-      
+        var fullUrl =
+          this.requestInfo.url +
+          (this.requestInfo.params.XDEBUG_SESSION_START
+            ? "?XDEBUG_SESSION_START=netbeans-xdebug"
+            : "");
+
         axios
           .post(fullUrl, this.requestInfo.params, {
             headers: this.requestInfo.headers

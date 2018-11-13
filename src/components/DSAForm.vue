@@ -10,7 +10,7 @@
     </v-card-text>
 
     <v-card v-else class="animated fadeIn">
-      <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text fixed-tabs dark slider-color="yellow">
+      <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text dark slider-color="white">
         <v-tab :disabled="loading" v-for="(item, i) in items" :key="i + 1" ripple @click="submit(false, i)">
           <span class="hidden-xs-only non-uppercase">{{item.title}}</span>
           <span class="hidden-sm-and-up">{{i + 1}}</span>
@@ -302,6 +302,7 @@ import SignatureUpload from "@/components/SignatureUpload";
 import VueQrcode from "@xkeshi/vue-qrcode";
 import VueChatScroll from "vue-chat-scroll";
 import VTooltip from "v-tooltip";
+import jquery from "jquery";
 
 Vue.use(VueChatScroll);
 Vue.use(VTooltip);
@@ -369,7 +370,7 @@ export default {
     this.scannerUrl = window.location.href.replace(this.$route.path, "/qrscan");
     this.isDO = this.$store.state.payload.roles.includes("do");
     this.isStudent = this.$store.state.payload.roles.includes("student");
-    this.univSlug = this.$route.params.univ;
+    this.univSlug = this.$route.params.dsa_slug;
     this.formSlug = this.$route.params.form;
     this.entityId = this.$route.params.entity ? this.$route.params.entity : 0;
     this.getDataFromApi().then(data => {

@@ -17,14 +17,6 @@
               {{operationMessage}}
             </v-alert>
           </v-container>
-          
-          <v-container v-if="!loading && isGuest">
-            <v-flex xs12>
-              <router-link to="/login" tag="span" style="cursor: pointer">
-                <v-btn class="white--text primary"><v-icon small="">lock</v-icon>&nbsp;Go to Login Page</v-btn>
-              </router-link>
-            </v-flex>
-          </v-container>
 
         </v-card>
       </v-flex>
@@ -62,7 +54,7 @@ export default {
       axios
         .post(
           this.$store.state.baseUrl +
-            "activate-account?XDEBUG_SESSION_START=netbeans-xdebug",
+            "dsa-activate-account?XDEBUG_SESSION_START=netbeans-xdebug",
           {
             token: this.token,
             login_url: this.loginUrl

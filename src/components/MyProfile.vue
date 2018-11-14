@@ -78,7 +78,7 @@
 
                   <v-layout row wrap mt-5>
                     <v-flex xs12>
-                      <v-btn v-on:click="editPassword = true" class="white--text" color="warning">
+                      <v-btn v-on:click="dlgChangePassword = true" class="white--text" color="warning">
                         <v-icon size="22">lock</v-icon>&nbsp;Change password
                       </v-btn>
                     </v-flex>
@@ -95,7 +95,7 @@
                     </v-flex>
                   </v-layout>
 
-                  <v-dialog width="400" v-model="editPassword" persistent>
+                  <v-dialog width="400" v-model="dlgChangePassword" persistent>
                     <v-card>
                       <v-card-title class="headline grey lighten-2">
                         Change password
@@ -109,8 +109,15 @@
                           </v-layout>
                           <v-layout row wrap mt-4>
                             <v-spacer></v-spacer>
-                            <v-btn v-on:click="setPassword()" class="white--text" color="info">Change password</v-btn>
-                            <v-btn v-on:click="closePasswordDlg()" class="white--text" color="error">Cancel</v-btn>
+                            <v-btn :disabled="loading" v-on:click="changePassword()" class="white--text" color="info">
+                              <icon v-if="loading" name="circle-notch" spin class="gray--text fa"></icon>
+                              <v-icon v-else size="22" class="fa">done</v-icon>
+                              Change password
+                            </v-btn>
+                            <v-btn v-on:click="closePasswordDlg()" class="white--text" color="error">
+                              <v-icon class="fa" size="22">cancel</v-icon>
+                              Cancel
+                            </v-btn>
                           </v-layout>
                         </v-form>
                       </v-container>
@@ -142,6 +149,8 @@
       <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
     </v-snackbar>
 
+    <axios-component ref="axios" v-on:finish="handleHttpResponse($event)" />
+
   </v-container>
 </template>
 
@@ -149,11 +158,12 @@
 import SignatureUpload from "@/components/SignatureUpload";
 import axios from "axios";
 import FileUpload from "@/components/FileUpload";
+import AxiosComponent from "@/components/AxiosComponent";
 
 export default {
   data() {
     return {
-      editPassword: false,
+      dlgChangePassword: false,
       uploadDialog: false,
       uploadingImage: false,
       loadingInitialElements: true,
@@ -196,10 +206,7 @@ export default {
       return this.profileValidationStatus ? "indigo" : "red";
     }
   },
-  components: {
-    SignatureUpload,
-    FileUpload
-  },
+  components: { SignatureUpload, FileUpload, AxiosComponent },
   created() {
     this.getProfileInfo();
   },
@@ -241,16 +248,26 @@ export default {
           });
       }
     },
-    setPassword() {
+    changePassword() {
       if (this.$refs.passwordForm.validate()) {
-        this.editPassword = false;
+        this.loading = true;
+        var config = {
+          url: "change-password",
+          method: "post",
+          params: {
+            current_password: this.userData.current_password,
+            password: this.userData.password,
+            password_confirm: this.userData.password_confirm
+          }
+        };
+        this.$refs.axios.submit(config);
       }
     },
     closePasswordDlg() {
       this.userData.current_password = null;
       this.userData.password = null;
       this.userData.password_confirm = null;
-      this.editPassword = false;
+      this.dlgChangePassword = false;
     },
     getProfileInfo() {
       this.loadingInitialElements = true;
@@ -335,6 +352,32 @@ export default {
             that.snackbar = true;
             that.uploadingImage = false;
           });
+      }
+    },
+    handleHttpResponse(event) {
+      this.loading = false;
+      this.loadingInitialElements = false;
+
+      if (event.data.result.code === 200) {
+        var response = event.data.result.response;
+        this.operationMessage = response.msg;
+        this.operationMessageType = response.code;
+
+        switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
+          case "change-password":
+            this.snackbar = true;
+            if (response.code === "success") {
+              this.dlgChangePassword = false;
+            }
+            break;
+          default:
+            this.snackbar = true;
+            break;
+        }
+      } else {
+        this.operationMessage = "Your request could not be executed.";
+        this.operationMessageType = "error";
+        this.snackbar = true;
       }
     }
   }

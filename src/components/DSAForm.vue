@@ -9,6 +9,32 @@
       <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
     </v-card-text>
 
+    <v-card-text v-else-if="unfinishedForms.length > 0" class="animated fadeIn" align-center>
+      <v-layout row wrap>
+        <v-flex sm12>
+          <h4>You still have {{ unfinishedForms.length }} unfinished form{{ unfinishedForms.length > 1 ? 's' : '' }}.<br/>Do you want to resume or start over?</h4>
+        </v-flex>
+      </v-layout>
+
+      <v-layout row wrap mt-2>
+        <v-flex sm6 offset-sm3 style="text-align: center;">
+          <table style="width: 100%; border-top: 1px solid #ccc">
+            <tr>
+              <td style="border-bottom: 1px solid #eee">Date</td>
+              <td style="border-bottom: 1px solid #eee">Progress</td>
+              <td style="border-bottom: 1px solid #eee">Actions</td>
+            </tr>
+            <tr v-for="(item, index) in unfinishedForms" :key="`unfinished-${index}`">
+              <td style="border-bottom: 1px solid #eee">{{ item.date }}</td>
+              <td style="border-bottom: 1px solid #eee">{{ item.progress }}</td>
+              <td style="border-bottom: 1px solid #eee"><v-btn :to="item.route" small class="purple white--text"><v-icon size="22" class="fa">restore</v-icon>Resume</v-btn></td>
+            </tr>
+          </table>
+          <v-btn @click="unfinishedForms = []" small color="info"><v-icon size="22" class="fa">new_releases</v-icon>Start a new one</v-btn>
+        </v-flex>
+      </v-layout>
+    </v-card-text>
+
     <v-card v-else class="animated fadeIn">
       <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text dark slider-color="white">
         <v-tab :disabled="loading" v-for="(item, i) in items" :key="i + 1" ripple @click="submit(false, i)">
@@ -288,6 +314,8 @@
       <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
       <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
     </v-snackbar>
+
+    <axios-component ref="axios" v-on:finish="handleHttpResponse($event)" />
     
   </v-container>
 </template>
@@ -299,6 +327,7 @@ import Vue from "vue";
 import CameraCapture from "@/components/CameraCapture";
 import SignaturePad from "@/components/SignaturePad";
 import SignatureUpload from "@/components/SignatureUpload";
+import AxiosComponent from "@/components/AxiosComponent";
 import VueQrcode from "@xkeshi/vue-qrcode";
 import VueChatScroll from "vue-chat-scroll";
 import VTooltip from "v-tooltip";
@@ -322,7 +351,7 @@ export default {
       loading: true,
       loadingInitialElements: true,
       items: [],
-      pdfName: "Processing form...",
+      pdfName: null,
       operationMessage: "",
       operationMessageType: "error",
       formattedValues: [],
@@ -352,41 +381,76 @@ export default {
       i: -1,
       j: -1,
       k: -1,
-      bus: new Vue()
+      bus: new Vue(),
+      unfinishedForms: []
     };
   },
   beforeRouteUpdate(to, from, next) {
-    this.pdfName = "Processing form...";
-    this.loadingInitialElements = true;
-    this.entityId = this.$route.params.entity ? this.$route.params.entity : 0;
-    this.getDataFromApi().then(data => {
-      this.items = data.items.data;
-      this.pdfName = data.pdfName;
-      this.loadingInitialElements = false;
-    });
+    this.updateGUI(to);
     next();
   },
   mounted() {
     this.scannerUrl = window.location.href.replace(this.$route.path, "/qrscan");
     this.isDO = this.$store.state.payload.roles.includes("do");
     this.isStudent = this.$store.state.payload.roles.includes("student");
-    this.univSlug = this.$route.params.dsa_slug;
-    this.formSlug = this.$route.params.form;
-    this.entityId = this.$route.params.entity ? this.$route.params.entity : 0;
-    this.getDataFromApi().then(data => {
-      this.items = data.items.data;
-      this.pdfName = data.pdfName;
-      this.loadingInitialElements = false;
-    });
     this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    this.updateGUI(this.$route);
   },
   components: {
     CameraCapture,
     SignaturePad,
     SignatureUpload,
-    VueQrcode
+    VueQrcode,
+    AxiosComponent
   },
   methods: {
+    updateGUI(route) {
+      this.pdfName = "Processing form...";
+      this.univSlug = route.params.dsa_slug;
+      this.formSlug = route.params.form;
+      this.entityId = route.params.entity ? route.params.entity : 0;
+      this.loadingInitialElements = true;
+
+      var config = {
+        url: "get-pdf-content",
+        params: {
+          form_slug: this.formSlug,
+          univ_slug: this.univSlug,
+          entity_id: this.entityId
+        }
+      };
+      this.$refs.axios.submit(config);
+    },
+    handleHttpResponse(event) {
+      this.loading = false;
+      this.loadingInitialElements = false;
+
+      if (event.data.result.code === 200) {
+        var response = event.data.result.response;
+        this.operationMessage = response.msg;
+        this.operationMessageType = response.code;
+
+        switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
+          case "get-pdf-content":
+            if (response.code === "success") {
+              this.pdfName = response.msg;
+              this.items = response.data;
+              this.unfinishedForms = response.unfinished_forms;
+            } else {
+              this.pdfName =
+                "There was an error while trying to load your form.";
+            }
+            break;
+          default:
+            this.snackbar = true;
+            break;
+        }
+      } else {
+        this.operationMessage = "Your request could not be executed.";
+        this.operationMessageType = "error";
+        this.snackbar = true;
+      }
+    },
     updateRows(i, j, k, operation) {
       var inputGroup = this.items[i].components[j][k];
       if (operation === 1) {
@@ -567,7 +631,10 @@ export default {
                   var row = rows[j];
                   for (var k in row) {
                     var component = row[k];
-                    if (component.content_type === "input" && component.input.name === input.function.dest) {
+                    if (
+                      component.content_type === "input" &&
+                      component.input.name === input.function.dest
+                    ) {
                       component.input.value = res;
                       break;
                     }
@@ -870,43 +937,41 @@ export default {
           signaturesInfo: {}
         };
 
+        var totalInputs = 0;
+        var filledInputs = 0;
+
         for (var i in this.items) {
           var rows = this.items[i].components;
           for (var j in rows) {
             var row = rows[j];
             for (var k in row) {
               var component = row[k];
-              if (component.content_type === "input" && component.input.value) {
-                if (
-                  component.input.type === "signature" ||
-                  component.input.type === "image"
-                ) {
-                  var inputData = {
-                    value: component.input.value
-                  };
-                  requestParams.signaturesInfo[
-                    component.input.name
-                  ] = inputData;
-                } else {
-                  requestParams.data[component.input.name] =
-                    component.input.value;
-                  var newValue = component.input.value;
-                  if (
-                    component.input.type === "date" ||
-                    component.input.type === "month"
-                  ) {
-                    newValue = this.formatDate(
-                      component.input.value,
-                      component.input.format
-                    );
-                  }
-                  if ("chunks" in component.input) {
-                    for (var l in component.input.chunks) {
-                      var chunk = component.input.chunks[l];
-                      requestParams.data[chunk.name] = newValue.substr(
-                        chunk.start - 1,
-                        chunk.length
+              if (component.content_type === "input") {
+                totalInputs++;
+                if (component.input.value) {
+                  filledInputs++;
+                  if (component.input.type === "signature" || component.input.type === "image") {
+                    var inputData = {
+                      value: component.input.value
+                    };
+                    requestParams.signaturesInfo[component.input.name] = inputData;
+                  } else {
+                    requestParams.data[component.input.name] = component.input.value;
+                    var newValue = component.input.value;
+                    if (component.input.type === "date" || component.input.type === "month") {
+                      newValue = this.formatDate(
+                        component.input.value,
+                        component.input.format
                       );
+                    }
+                    if ("chunks" in component.input) {
+                      for (var l in component.input.chunks) {
+                        var chunk = component.input.chunks[l];
+                        requestParams.data[chunk.name] = newValue.substr(
+                          chunk.start - 1,
+                          chunk.length
+                        );
+                      }
                     }
                   }
                 }
@@ -915,42 +980,32 @@ export default {
                   var inputRow = component.rows[l];
                   for (var m in inputRow) {
                     var inputItem = inputRow[m];
-                    if (
-                      inputItem.content_type === "input" &&
-                      inputItem.input.value
-                    ) {
-                      if (
-                        inputItem.input.type === "signature" ||
-                        inputItem.input.type === "image"
-                      ) {
-                        var inputData = {
-                          value: inputItem.input.value
-                        };
-                        requestParams.signaturesInfo[
-                          inputItem.input.name
-                        ] = inputData;
-                      } else {
-                        requestParams.data[inputItem.input.name] =
-                          inputItem.input.value;
-                        requestParams.data[component.name] =
-                          component.rows.length; //saving rows number
-                        var newValue = inputItem.input.value;
-                        if (
-                          inputItem.input.type === "date" ||
-                          inputItem.input.type === "month"
-                        ) {
-                          newValue = this.formatDate(
-                            inputItem.input.value,
-                            inputItem.input.format
-                          );
-                        }
-                        if ("chunks" in inputItem.input) {
-                          for (var l in inputItem.input.chunks) {
-                            var chunk = inputItem.input.chunks[l];
-                            requestParams.data[chunk.name] = newValue.substr(
-                              chunk.start - 1,
-                              chunk.length
+                    if (inputItem.content_type === "input" && inputItem.input.value) {
+                      totalInputs++;
+                      if (inputItem.input.value) {
+                        filledInputs++;
+                        if (inputItem.input.type === "signature" || inputItem.input.type === "image") {
+                          var inputData = {
+                            value: inputItem.input.value
+                          };
+                          requestParams.signaturesInfo[
+                            inputItem.input.name
+                          ] = inputData;
+                        } else {
+                          requestParams.data[inputItem.input.name] = inputItem.input.value;
+                          requestParams.data[component.name] = component.rows.length; //saving rows number
+                          var newValue = inputItem.input.value;
+                          if (inputItem.input.type === "date" || inputItem.input.type === "month") {
+                            newValue = this.formatDate(
+                              inputItem.input.value,
+                              inputItem.input.format
                             );
+                          }
+                          if ("chunks" in inputItem.input) {
+                            for (var l in inputItem.input.chunks) {
+                              var chunk = inputItem.input.chunks[l];
+                              requestParams.data[chunk.name] = newValue.substr(chunk.start - 1, chunk.length);
+                            }
                           }
                         }
                       }
@@ -970,6 +1025,8 @@ export default {
         ) {
           requestParams.data.id = this.entityId;
           requestParams.data.full_submit = fullSubmit;
+          requestParams.data.total_inputs = totalInputs;
+          requestParams.data.filled_inputs = filledInputs;
           this.loading = true;
           var that = this;
 

@@ -691,7 +691,7 @@ export default {
             that.operationMessageType = response.data.code;
           })
           .catch(function(error) {
-            that.snackbar = true;
+            //that.snackbar = true;
             that.loadingPreviousSignature = false;
             that.operationMessage =
               "There was an error on the remote endpoint. Try again later.";

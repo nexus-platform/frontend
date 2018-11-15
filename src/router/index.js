@@ -13,7 +13,6 @@ import ResetPassword from '@/components/ResetPassword';
 import TestComponent from '@/components/TestComponent';
 import SignFromMobile from '@/components/SignFromMobile';
 import DOSubmittedForms from '@/components/DOSubmittedForms';
-import MyInstitute from '@/components/MyInstitute';
 import QRCodeScanner from '@/components/QRCodeScanner';
 import NotAllowed from '@/components/NotAllowed';
 import AssessmentCentres from '@/components/AssessmentCentres';
@@ -76,22 +75,6 @@ const routes = [
       roles: ['student']
     }
   },
-  /*{
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: {
-      requiresAnon: true
-    }
-  },
-  {
-    path: '/signup/:university_token?',
-    name: 'Signup',
-    component: Signup,
-    meta: {
-      requiresAnon: true
-    }
-  },*/
   {
     path: '/contact',
     name: 'Contact',

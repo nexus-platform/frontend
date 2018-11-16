@@ -30,7 +30,7 @@
           <v-divider light></v-divider>
 
           <template v-if="isGuest">
-            <v-list-tile to="/login">
+            <v-list-tile :to="$store.state.homeUrl">
               <v-list-tile-action>
                 <v-icon>lock</v-icon>
               </v-list-tile-action>
@@ -40,7 +40,7 @@
 
           <template v-else>
             <template v-if="isStudent">
-              <v-list-tile to="/dsa-forms">
+              <v-list-tile :to="this.$store.state.dsaFormsUrl">
                 <v-list-tile-action>
                   <v-icon>picture_as_pdf</v-icon>
                 </v-list-tile-action>

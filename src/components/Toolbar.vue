@@ -107,7 +107,7 @@
                 <v-list-tile v-if="this.$store.state.payload.is_univ_manager" :to="$store.state.homeUrl.replace('/index', '/admin')" class="dropdown-menu-item">
                   <v-icon class="menu-icon">fas fa-graduation-cap</v-icon>My Institute
                 </v-list-tile>
-                <v-list-tile :to="$store.state.homeUrl.replace('/index', '/do-submitted-forms')" class="dropdown-menu-item">
+                <v-list-tile :to="$store.state.homeUrl.replace('/index', '/submitted-forms')" class="dropdown-menu-item">
                   <v-icon class="menu-icon">mail</v-icon>In-progress forms
                 </v-list-tile>
               </v-list>

@@ -1,78 +1,76 @@
 <template>
   <v-container class="animated fadeIn">
-    <v-card class="elevation-0">
-      <v-card-title>
-        <strong>Submitted Forms</strong>
-      </v-card-title>
-  
-      <v-data-table :headers="headers" :items="desserts" :pagination.sync="pagination" :total-items="totalDesserts" :loading="loading" class="elevation-1">
-        
-        <template slot="items" slot-scope="props">
-          <td>{{ props.item.student_name }}</td>
-          <td class="text-xs-left">{{ props.item.univ_name }}</td>
-          <td class="text-xs-left">{{ props.item.pdf_name }}</td>
-          <td class="text-xs-left">{{ props.item.status_desc }}</td>
-          <td class="text-xs-left">{{ props.item.created_at }}</td>
-          <td class="text-xs-left">
-            <v-tooltip bottom color="black">
-              <v-btn @click="reviewForm(props.item.route)" :disabled="props.item.status === 3" small flat slot="activator" class="btn-sm" color="warning">
-                <icon class="fa" name="edit"></icon>
-              </v-btn>
-              <span>Review</span>
-            </v-tooltip>
-            <v-tooltip bottom color="black">
-              <v-btn @click="showApproveDialog(props.item.id, props.index)" :disabled="props.item.status !== 1" small flat slot="activator" class="btn-sm" color="success">
-                <icon class="fa" name="thumbs-up"></icon>
-              </v-btn>
-              <span>Approve</span>
-            </v-tooltip>
-            <v-tooltip bottom color="black">
-              <v-btn @click="downloadFile(props.item.id, props.item.filename)" :disabled="props.item.status !== 3 || downloading" small flat slot="activator" class="btn-sm" color="info">
-                <icon v-if="!downloading" class="fa" name="download"></icon>
-                <icon v-if="downloading" class="fa" name="circle-notch" spin></icon>
-              </v-btn>
-              <span>Download</span>
-            </v-tooltip>
-          </td>
-        </template>
+    <v-card-title>
+      <strong>Submitted Forms</strong>
+    </v-card-title>
 
-        <v-alert slot="no-results" :value="true" class="black--text" color="default">
-          Your search for "{{ search }}" found no results.
-        </v-alert>
-
-        <template slot="no-data">
-          <v-alert :value="true" class="black--text" color="default">
-            <h3 v-if="loading">Loading data...</h3> 
-            <span v-if="!loading">There are no items to display</span> 
-          </v-alert>
-        </template>
-
-      </v-data-table>
-
-      <v-dialog width="500" v-model="approveDialog" persistent>
-        <v-card>
-          <v-card-title class="headline grey lighten-2">
-            Approve Form
-            <v-spacer></v-spacer>
-            <a @click="approveDialog = false"><icon name="times" class="fa"></icon></a>
-          </v-card-title>
-          <v-container>
-            <h3>Are you sure you want to approve this form?</h3>
-            <v-btn :disabled="approvingForm" @click="approveForm()" color="info">
-              <icon v-if="!approvingForm" class="fa" name="thumbs-up"></icon>
-              <icon v-if="approvingForm" class="fa" name="circle-notch" spin></icon>Yes
+    <v-data-table :headers="headers" :items="desserts" :pagination.sync="pagination" :total-items="totalDesserts" :loading="loading" class="elevation-0">
+      
+      <template slot="items" slot-scope="props">
+        <td>{{ props.item.student_name }}</td>
+        <td class="text-xs-left">{{ props.item.univ_name }}</td>
+        <td class="text-xs-left">{{ props.item.pdf_name }}</td>
+        <td class="text-xs-left">{{ props.item.status_desc }}</td>
+        <td class="text-xs-left">{{ props.item.created_at }}</td>
+        <td class="text-xs-left">
+          <v-tooltip bottom color="black">
+            <v-btn @click="reviewForm(props.item.route)" :disabled="props.item.status === 3" small flat slot="activator" class="btn-sm" color="warning">
+              <icon class="fa" name="edit"></icon>
             </v-btn>
-            <v-btn @click="approveDialog = false" color="error"><icon class="fa" name="thumbs-down"></icon>Not yet</v-btn>
-          </v-container>
-        </v-card>
-      </v-dialog>
+            <span>Review</span>
+          </v-tooltip>
+          <v-tooltip bottom color="black">
+            <v-btn @click="showApproveDialog(props.item.id, props.index)" :disabled="props.item.status !== 1" small flat slot="activator" class="btn-sm" color="success">
+              <icon class="fa" name="thumbs-up"></icon>
+            </v-btn>
+            <span>Approve</span>
+          </v-tooltip>
+          <v-tooltip bottom color="black">
+            <v-btn @click="downloadFile(props.item.id, props.item.filename)" :disabled="props.item.status !== 3 || downloading" small flat slot="activator" class="btn-sm" color="info">
+              <icon v-if="!downloading" class="fa" name="download"></icon>
+              <icon v-if="downloading" class="fa" name="circle-notch" spin></icon>
+            </v-btn>
+            <span>Download</span>
+          </v-tooltip>
+        </td>
+      </template>
 
-      <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
-        <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
-        <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
-      </v-snackbar>
+      <v-alert slot="no-results" :value="true" class="black--text" color="default">
+        Your search for "{{ search }}" found no results.
+      </v-alert>
 
-    </v-card>
+      <template slot="no-data">
+        <v-alert :value="true" class="black--text" color="default">
+          <h3 v-if="loading">Loading data...</h3> 
+          <span v-if="!loading">There are no items to display</span> 
+        </v-alert>
+      </template>
+
+    </v-data-table>
+
+    <v-dialog width="500" v-model="approveDialog" persistent>
+      <v-card>
+        <v-card-title class="headline grey lighten-2">
+          Approve Form
+          <v-spacer></v-spacer>
+          <a @click="approveDialog = false"><icon name="times" class="fa"></icon></a>
+        </v-card-title>
+        <v-container>
+          <h3>Are you sure you want to approve this form?</h3>
+          <v-btn :disabled="approvingForm" @click="approveForm()" color="info">
+            <icon v-if="!approvingForm" class="fa" name="thumbs-up"></icon>
+            <icon v-if="approvingForm" class="fa" name="circle-notch" spin></icon>Yes
+          </v-btn>
+          <v-btn @click="approveDialog = false" color="error"><icon class="fa" name="thumbs-down"></icon>Not yet</v-btn>
+        </v-container>
+      </v-card>
+    </v-dialog>
+
+    <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
+      <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
+      <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
+    </v-snackbar>
+
   </v-container>  
 </template>
 

@@ -12,10 +12,8 @@ import ActivateAccount from '@/components/ActivateAccount';
 import ResetPassword from '@/components/ResetPassword';
 import TestComponent from '@/components/TestComponent';
 import SignFromMobile from '@/components/SignFromMobile';
-import DOSubmittedForms from '@/components/DOSubmittedForms';
 import QRCodeScanner from '@/components/QRCodeScanner';
 import NotAllowed from '@/components/NotAllowed';
-import AssessmentCentres from '@/components/AssessmentCentres';
 import AssessmentCentre from '@/components/AssessmentCentre';
 import AcceptInvitation from '@/components/AcceptInvitation';
 import MyBookings from '@/components/MyBookings';
@@ -42,19 +40,19 @@ const routes = [
     }
   },
   {
-    path: '/dsa/:dsa_slug/:action?',
+    path: '/dsa/:dsa_slug/:action/:parameter?/:id?',
     name: 'DSA',
     component: DSA,
     meta: {
       requiresAuth: false
     }
   },
-  {
+  /*{
     path: '/dsa/:dsa_slug/dsa-forms/index',
     name: 'DSAForms',
     component: DSAForms,
     meta: {
-      requiresAuth: true
+      requiresAuth: false
     }
   },
   {
@@ -62,11 +60,11 @@ const routes = [
     name: 'DSAForm',
     component: DSAForm,
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       roles: ['do', 'student']
     }
-  },
-  {
+  },*/
+  /*{
     path: '/dsa/:dsa_slug/my-dsa-forms/index',
     name: 'MyDSAForms',
     component: MyDSAForms,
@@ -74,19 +72,11 @@ const routes = [
       requiresAuth: true,
       roles: ['student']
     }
-  },
+  },*/
   {
     path: '/contact',
     name: 'Contact',
     component: Contact
-  },
-  {
-    path: '/request-password-reset',
-    name: 'RequestPasswordReset',
-    component: RequestPasswordReset,
-    meta: {
-      requiresAnon: true
-    }
   },
   {
     path: '/my-profile',
@@ -118,15 +108,6 @@ const routes = [
     component: TestComponent
   },
   {
-    path: '/do-submitted-forms',
-    name: 'DOSubmittedForms',
-    component: DOSubmittedForms,
-    meta: {
-      requiresAuth: true,
-      roles: ['do']
-    }
-  },
-  {
     path: '/sign-from-mobile/:random_code',
     name: 'SignFromMobile',
     component: SignFromMobile,
@@ -148,15 +129,6 @@ const routes = [
     component: NotAllowed,
     meta: {
       requiresAuth: true
-    }
-  },
-  {
-    path: '/assessment-centres',
-    name: 'AssessmentCentres',
-    component: AssessmentCentres,
-    meta: {
-      requiresAuth: true,
-      roles: ['student', 'na']
     }
   },
   {
@@ -185,7 +157,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     if (payload.is_guest) {
       store._modules.root._rawModule.state.authRouteRequested = to.path;
-      next('/login');
+      //next('/login');
     } else if (to.meta.hasOwnProperty('roles')) {
       var found = false;
       for (var i in to.meta.roles) {

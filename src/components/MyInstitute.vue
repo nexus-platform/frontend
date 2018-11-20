@@ -8,13 +8,11 @@
               <icon name="circle-notch" scale=2 spin style="color: gray;"></icon>
             </v-container>
           </v-card-text>
-        </transition>
 
-        <transition name="slide-fade">
-          <v-container v-if="!loading" class="text-xs-left">
+          <v-container v-else class="text-xs-left">
             <v-layout row wrap>
               <v-flex md8>
-                <v-text-field v-model="univ_slug" type="text" max="50" outline hint="Choose a unique, easy-to-remember identifier for your Institute" label="Custom Institute Identifier"></v-text-field>
+                <v-text-field v-model="univ_slug" :rules="univSlugRules" type="text" max="50" outline hint="Choose a short, easy to type identifier for your Institute -no whitespaces or special characters" label="Custom Institute Identifier"></v-text-field>
               </v-flex>
             </v-layout>
 
@@ -33,7 +31,7 @@
                       <v-container>
                         <v-layout row wrap>
                           <v-flex xs12 sm4>
-                            <v-checkbox v-model="item.active" label="This form is available"></v-checkbox>
+                            <v-checkbox v-model="item.active" :label="'This form is ' + (item.active ? '' : 'not ') + 'visible for students'"></v-checkbox>
                           </v-flex>
                           <v-flex xs12 sm8>
                             <v-text-field :disabled="!item.active" outline type="text" prepend-icon="edit" v-model="item.slug" hint="This will be the URL available to your institute's students" label="Custom URL" maxlength="50"></v-text-field>
@@ -70,32 +68,44 @@ import axios from "axios";
 
 export default {
   data: () => ({
-    loading: true,
+    loading: false,
     snackbar: false,
     updating: false,
     univ_slug: null,
+    univSlugRules: [
+      v => !!v || "This field is required",
+      v => !!v || "This field is required",
+    ],
     message: "Loading your institute information...",
     operationMessageType: "",
     operationMessage: "",
     dsa_forms: []
   }),
   mounted() {
-    this.getDataFromApi().then(data => {
-      this.operationMessageType = data.items.code;
-      this.operationMessage = data.items.msg;
-      this.message = data.items.msg;
-      this.univ_slug = data.items.data.univ_slug;
-      this.dsa_forms = data.items.data.forms;
-      this.loading = false;
-    });
+    this.updateGUI();
+  },
+  beforeRouteUpdatebeforeRouteUpdate(to, from, next) {
+    next();
+    this.updateGUI();
   },
   methods: {
+    updateGUI() {
+      this.loading = true;
+      this.getDataFromApi().then(data => {
+        this.operationMessageType = data.items.code;
+        this.operationMessage = data.items.msg;
+        this.message = data.items.msg;
+        this.univ_slug = data.items.data.univ_slug;
+        this.dsa_forms = data.items.data.forms;
+        this.loading = false;
+      });
+    },
     submit() {
       if (!this.updating && this.univ_slug) {
         this.updating = true;
         var requestParams = {
           slug: this.univ_slug,
-          data: this.dsa_forms
+          univ_forms: this.dsa_forms
         };
         var requestConfig = {
           headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
@@ -113,6 +123,12 @@ export default {
             that.operationMessage = response.data.msg;
             that.operationMessageType = response.data.code;
             that.snackbar = true;
+            if (response.data.data.old_token !== response.data.data.new_token) {
+              var newUrl = `/dsa/${response.data.data.new_token}/`;
+              that.$store.state.homeUrl = `${newUrl}index`;
+              that.$router.push(`${newUrl}admin`);
+              that.updateGUI();
+            }
           })
           .catch(function(error) {
             that.updating = false;

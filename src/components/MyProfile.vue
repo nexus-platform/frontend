@@ -17,47 +17,6 @@
     <v-layout row wrap v-else>
       <v-flex xs12>
         <v-expansion-panel>
-          <v-expansion-panel-content v-if="userData.is_student">
-            <div slot="header"><icon name="edit" class="fa"></icon><b>Signature</b></div>
-            <v-card>
-              <v-card-text>
-                <v-layout row wrap>
-                  <v-flex xs12 sm6 lg3 v-if="loadingInitialElements">
-                    <icon name="circle-notch" scale="2" spin class="fa" color="gray"></icon>
-                  </v-flex>
-                  <v-flex xs12 sm6 lg3 v-if="!loadingInitialElements && userData.signature">
-                    <img class="thumbnail" v-bind:src="userData.signature"/>
-                  </v-flex>
-                  <v-flex xs12 sm6 lg3>
-                    <v-btn v-on:click="showUpload()" class="primary"><icon name="edit" class="fa"></icon>Select from local drive</v-btn>
-                    <v-layout v-if="userData.signature" row wrap>
-                      <v-flex>
-                        <v-btn :disabled="uploadingImage" v-if="userData.signature" v-on:click="uploadSignature()" class="success">
-                          <icon v-if="!uploadingImage" name="upload" class="fa"></icon>
-                          <icon v-if="uploadingImage" name="circle-notch" spin class="fa"></icon>
-                          Upload
-                        </v-btn>
-                      </v-flex>
-                    </v-layout>
-                  </v-flex>
-                </v-layout>
-
-                <v-dialog width="500" v-model="uploadDialog" persistent>
-                  <v-card>
-                    <v-card-title class="headline grey lighten-2">
-                      Upload Signature
-                      <v-spacer></v-spacer>
-                      <a @click="uploadDialog = false"><icon name="times" class="fa"></icon></a>
-                    </v-card-title>
-                    <v-container>
-                      <signature-upload v-on:set-signature="setSignatureFromUpload($event)"></signature-upload>
-                    </v-container>
-                  </v-card>
-                </v-dialog>
-              </v-card-text>
-            </v-card>
-          </v-expansion-panel-content>
-          
           <v-expansion-panel-content>
             <div slot="header"><icon name="user" class="fa"></icon><b>Personal information</b></div>
             <v-card>
@@ -140,6 +99,90 @@
               </v-container>
             </v-card>
           </v-expansion-panel-content>
+
+          <template v-if="userData.is_student">
+            <v-expansion-panel-content>
+              <div slot="header"><icon name="edit" class="fa"></icon><b>Signature</b></div>
+              <v-card>
+                <v-card-text>
+                  <v-layout row wrap>
+                    <v-flex xs12 sm6 lg3 v-if="loadingInitialElements">
+                      <icon name="circle-notch" scale="2" spin class="fa" color="gray"></icon>
+                    </v-flex>
+                    <v-flex xs12 sm6 lg3 v-if="!loadingInitialElements && userData.signature">
+                      <img class="thumbnail" v-bind:src="userData.signature"/>
+                    </v-flex>
+                    <v-flex xs12 sm6 lg3>
+                      <v-btn v-on:click="showUpload()" class="primary"><icon name="edit" class="fa"></icon>Select from local drive</v-btn>
+                      <v-layout v-if="userData.signature" row wrap>
+                        <v-flex>
+                          <v-btn :disabled="uploadingImage" v-if="userData.signature" v-on:click="uploadSignature()" class="success">
+                            <icon v-if="!uploadingImage" name="upload" class="fa"></icon>
+                            <icon v-if="uploadingImage" name="circle-notch" spin class="fa"></icon>
+                            Upload
+                          </v-btn>
+                        </v-flex>
+                      </v-layout>
+                    </v-flex>
+                  </v-layout>
+
+                  <v-dialog width="500" v-model="uploadDialog" persistent>
+                    <v-card>
+                      <v-card-title class="headline grey lighten-2">
+                        Upload Signature
+                        <v-spacer></v-spacer>
+                        <a @click="uploadDialog = false"><icon name="times" class="fa"></icon></a>
+                      </v-card-title>
+                      <v-container>
+                        <signature-upload v-on:set-signature="setSignatureFromUpload($event)"></signature-upload>
+                      </v-container>
+                    </v-card>
+                  </v-dialog>
+                </v-card-text>
+              </v-card>
+            </v-expansion-panel-content>
+
+            <v-expansion-panel-content>
+              <div slot="header"><icon name="layer-group" class="fa"></icon><b>Registration</b></div>
+              <v-card>
+                <v-container pl-5>
+                  <v-layout row wrap>
+                    <v-flex sm10>
+                      <v-btn @click="dlgCancelReg = true" color="error"><v-icon class="fa">cancel</v-icon>Cancel registration with {{ this.$store.state.payload.institute.name }}</v-btn>
+                    </v-flex>
+                  </v-layout>
+
+                  <v-dialog width="500" v-model="dlgCancelReg" persistent>
+                    <v-card>
+                      <v-card-title class="headline grey lighten-2">
+                        Cancel Registration
+                        <v-spacer></v-spacer>
+                        <a @click="dlgCancelReg = false"><icon name="times" class="fa"></icon></a>
+                      </v-card-title>
+                      <v-container>
+                        <v-layout row wrap>
+                          <v-flex xs12>
+                            <h3>Are you sure you want to cancel your registration?</h3>
+                          </v-flex>
+                        </v-layout>
+                        <v-card-actions class="mt-3">
+                          <v-spacer></v-spacer>
+                          <v-btn :disabled="loading" @click="cancelRegistration()" color="error">
+                            <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
+                            <v-icon size="22" v-else>done</v-icon> Yes
+                          </v-btn>
+                          <v-btn @click="dlgCancelReg = false" color="info">
+                            <v-icon size="22">cancel</v-icon> No
+                          </v-btn>
+                        </v-card-actions>
+                      </v-container>
+                    </v-card>
+                  </v-dialog>
+                </v-container>
+              </v-card>
+            </v-expansion-panel-content>
+
+          </template>
         </v-expansion-panel>
       </v-flex>
     </v-layout>
@@ -164,6 +207,7 @@ export default {
   data() {
     return {
       dlgChangePassword: false,
+      dlgCancelReg: false,
       uploadDialog: false,
       uploadingImage: false,
       loadingInitialElements: true,
@@ -211,6 +255,20 @@ export default {
     this.getProfileInfo();
   },
   methods: {
+    cancelRegistration() {
+      this.loading = true;
+      this.snackbar = false;
+
+      var config = {
+        url: "cancel-registration",
+        method: "post",
+        params: {
+          type: this.$store.state.payload.institute.type,
+          slug: this.$store.state.payload.institute.slug,
+        }
+      };
+      this.$refs.axios.submit(config);
+    },
     updateProfile() {
       if (this.$refs.form.validate()) {
         this.loading = true;
@@ -368,6 +426,14 @@ export default {
             this.snackbar = true;
             if (response.code === "success") {
               this.dlgChangePassword = false;
+            }
+            break;
+          case "cancel-registration":
+            this.snackbar = true;
+            if (response.code === "success") {
+              this.dlgCancelReg = false;
+              this.$store.commit("logout");
+              this.$router.push(this.$store.state.homeUrl);
             }
             break;
           default:

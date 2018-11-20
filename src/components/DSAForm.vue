@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid style="margin-top: 60px;">
+  <v-container fluid class="mt-3">
 
     <v-card-text class="text-lg-center animated fadeIn">
       <a class="pdf-title">{{pdfName}}</a>
@@ -27,7 +27,9 @@
             <tr v-for="(item, index) in unfinishedForms" :key="`unfinished-${index}`">
               <td style="border-bottom: 1px solid #eee">{{ item.date }}</td>
               <td style="border-bottom: 1px solid #eee">{{ item.progress }}</td>
-              <td style="border-bottom: 1px solid #eee"><v-btn :to="item.route" small class="purple white--text"><v-icon size="22" class="fa">restore</v-icon>Resume</v-btn></td>
+              <td style="border-bottom: 1px solid #eee">
+                <v-btn @click="redirect(item.route)" small class="purple white--text"><v-icon size="22" class="fa">restore</v-icon>Resume</v-btn>
+              </td>
             </tr>
           </table>
           <v-btn @click="unfinishedForms = []" small color="info"><v-icon size="22" class="fa">new_releases</v-icon>Start a new one</v-btn>
@@ -35,7 +37,7 @@
       </v-layout>
     </v-card-text>
 
-    <v-card v-else class="animated fadeIn">
+    <v-card v-else class="animated fadeIn elevation-0">
       <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text dark slider-color="white">
         <v-tab :disabled="loading" v-for="(item, i) in items" :key="i + 1" ripple @click="submit(false, i)">
           <span class="hidden-xs-only non-uppercase">{{item.title}}</span>
@@ -404,11 +406,14 @@ export default {
     AxiosComponent
   },
   methods: {
+    redirect(route) {
+      this.$router.push(route);
+    },
     updateGUI(route) {
       this.pdfName = "Processing form...";
       this.univSlug = route.params.dsa_slug;
-      this.formSlug = route.params.form;
-      this.entityId = route.params.entity ? route.params.entity : 0;
+      this.formSlug = route.params.parameter;
+      this.entityId = route.params.id ? route.params.id : 0;
       this.loadingInitialElements = true;
 
       var config = {

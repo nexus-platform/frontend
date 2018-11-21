@@ -84,7 +84,7 @@
         <v-spacer></v-spacer>
         
         <v-toolbar-items class="hidden-sm-and-down">
-            <v-btn flat :to="this.$store.state.homeUrl">
+            <v-btn flat :to="`${this.$store.state.homeUrl}/index`">
             <v-icon class="white--text">home</v-icon><span class="white--text">Home</span>
           </v-btn>
           
@@ -647,7 +647,7 @@ export default {
         .then(function(response) {})
         .catch(function(error) {});
       this.$store.commit("logout");
-      this.$router.push(this.$store.state.homeUrl);
+      this.$router.push(`${this.$store.state.homeUrl}/index`);
 
       /*
       clearInterval(that.timer);

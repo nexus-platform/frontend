@@ -37,14 +37,6 @@
                   <span>{{validationMessage}}</span>
                 </v-tooltip>
               </v-card-actions>
-              
-              <v-layout row wrap>
-                <v-flex xs12 sm12 md12 lg12>
-                  <v-container fluid>
-                    <a><router-link :to="homeUrl" tag="span" style="cursor: pointer">&nbsp;Login</router-link></a>
-                  </v-container>
-                </v-flex>
-              </v-layout>
             </template>
           </template>
 

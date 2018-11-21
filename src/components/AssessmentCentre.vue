@@ -1,5 +1,5 @@
 <template>
-  <v-container class="animated fadeIn mt-3">
+  <v-container class="animated fadeIn mt-5">
     
     <template v-if="loadingInitialElements">
       <v-layout row wrap mt-2>
@@ -16,114 +16,7 @@
 
     <template v-else>
       <template v-if="isGuest">
-        <v-toolbar tabs color="indigo">
-          <v-toolbar-title class="white--text"><v-icon class="white--text">school</v-icon> {{ dsaName }}</v-toolbar-title>
-        </v-toolbar>
-        <v-card>
-          <v-tabs v-model="currTab" centered color="transparent" icons-and-text>
-            <v-tabs-slider color="indigo"></v-tabs-slider>
-            <v-tab @click="redirect('login')" href="#tab-login">Log in<v-icon>verified_user</v-icon></v-tab>
-            <v-tab @click="redirect('signup')" href="#tab-signup">Sign up<v-icon>account_circle</v-icon></v-tab>
-            <v-tab @click="redirect('reset-password')" href="#tab-reset-password">Reset password<v-icon>email</v-icon></v-tab>
-            
-            <v-tab-item id="tab-login">
-              <v-layout align-center justify-center>
-                <v-flex md6 mt-5>
-                  <v-card-text>
-                    <v-form v-model="loginValidationStatus" ref="loginForm">
-                      <v-layout row>
-                        <v-flex lg12>
-                          <v-text-field validate-on-blur @keyup.enter="login()" v-model="email" prepend-icon="mail" name="email" label="Email" type="text" required :rules="emailRules" hint="Enter your registered email address"></v-text-field>
-                          <v-text-field ref="loginPassword" @keyup.enter="login()" @input="showCapsLockMsg($event)" v-model="password" prepend-icon="lock" name="password" label="Password" type="password" required :rules="passwordRules" hint="Enter your password"></v-text-field>
-                        </v-flex>
-                      </v-layout>
-                    </v-form>
-                  </v-card-text>
-                  <v-card-actions class="pb-5">
-                    <v-spacer></v-spacer>
-                    <v-tooltip bottom :color="loginValidationColor">
-                      <v-btn :disabled="loading" v-on:click="login()" class="white--text" :class="{ red: !loginValidationStatus, indigo: loginValidationStatus }" slot="activator">
-                        <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                        <v-icon size="22" v-if="!loading && loginValidationStatus">done</v-icon>
-                        <v-icon size="22" v-if="!loading && !loginValidationStatus">error_outline</v-icon>
-                        &nbsp;Log in
-                      </v-btn>
-                      <span>{{loginValidationMessage}}</span>
-                    </v-tooltip>
-                  </v-card-actions>
-                </v-flex>
-              </v-layout>
-            </v-tab-item>
-
-            <v-tab-item id="tab-signup">
-              <v-layout justify-center>
-                <v-flex xs10>
-                  <v-card-text>
-                    <v-form v-model="signupValidationStatus" ref="signupForm">
-                      <v-layout row wrap>
-                        <v-flex sm12 md11 lg6>
-                          <v-text-field v-model="name" prepend-icon="edit" name="name" label="First name" type="text" :rules="nameRules"></v-text-field>
-                          <v-text-field v-model="last_name" prepend-icon="edit" name="last_name" label="Last name" type="text" :rules="lastNameRules"></v-text-field>
-                          <v-text-field v-model="password" prepend-icon="lock" name="password" label="Password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
-                          <v-text-field v-model="password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" :rules="passwordConfirmRules" :append-icon="e2 ? 'visibility' : 'visibility_off'" @click:append="() => (e2 = !e2)" :type="e2 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
-                        </v-flex>
-                        <v-flex sm12 md11 lg6>
-                          <v-text-field validate-on-blur v-model="email" prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
-                          <v-text-field @blur="test()" v-model="postcode" prepend-icon="place" name="postcode" label="Postcode" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" single-line type="text"></v-text-field>
-                          <v-text-field v-model="address" prepend-icon="fas fa-map-signs" name="address" label="Address" type="text" :rules="addressRules"></v-text-field>
-                        </v-flex>
-                      </v-layout>
-                    </v-form>
-                  </v-card-text>
-
-                  <v-card-actions class="pb-5">
-                    <v-spacer></v-spacer>
-                    <v-tooltip bottom :color="signupValidationColor">
-                      <v-btn @click="signup()" :disabled="loading" class="white--text" :class="{ red: !signupValidationStatus, indigo: signupValidationStatus }" slot="activator">
-                        <v-icon size="22" v-if="!loading && signupValidationStatus">done</v-icon>
-                        <v-icon size="22" v-if="!loading && !signupValidationStatus">error_outline</v-icon>
-                        <icon v-if="loading" name="circle-notch" spin style="color: gray;"></icon>
-                        &nbsp;Sign up
-                      </v-btn>
-                      <span>{{signupValidationMessage}}</span>
-                    </v-tooltip>
-                    <v-btn @click="resetSignupForm()" class="white--text primary ml-2" slot="activator">
-                      <v-icon size="22">cancel</v-icon>&nbsp;Reset
-                    </v-btn>
-                  </v-card-actions>
-                </v-flex>
-              </v-layout>
-            </v-tab-item>
-
-            <v-tab-item id="tab-reset-password">
-              <v-layout align-center justify-center row>
-                <v-flex xs6 mt-5>
-                  <v-card-text>
-                    <v-form v-model="resetPasswordValidationStatus" ref="resetPasswordForm">
-                      <v-layout row>
-                        <v-flex lg12>
-                          <v-text-field v-model="email" ref="resetPasswordEmail" @keyup.enter="requestPasswordReset()" validate-on-blur prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
-                        </v-flex>
-                      </v-layout>
-                    </v-form>
-                  </v-card-text>
-                  <v-card-actions class="pb-5">
-                    <v-spacer></v-spacer>
-                    <v-tooltip bottom :color="resetPasswordValidationColor">
-                      <v-btn :disabled="loading" v-on:click="requestPasswordReset()" class="white--text" :class="{ red: !resetPasswordValidationStatus, indigo: resetPasswordValidationStatus }" slot="activator">
-                        <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                        <v-icon size="22" v-if="!loading && resetPasswordValidationStatus">done</v-icon>
-                        <v-icon size="22" v-if="!loading && !resetPasswordValidationStatus">error_outline</v-icon>
-                        &nbsp;Send request
-                      </v-btn>
-                      <span>{{resetPasswordValidationMessage}}</span>
-                    </v-tooltip>
-                  </v-card-actions>
-                </v-flex>
-              </v-layout>
-            </v-tab-item>
-          </v-tabs>
-        </v-card>
+        <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" :currTab="currTab" :parentName="ac.name" :apiUrls="apiUrls" :slug="acSlug" />
       </template>
     </template>
 
@@ -432,6 +325,7 @@ import CameraCapture from "@/components/CameraCapture";
 import SignaturePad from "@/components/SignaturePad";
 import SignatureUpload from "@/components/SignatureUpload";
 import VueQrcode from "@xkeshi/vue-qrcode";
+import AuthComponent from "@/components/AuthComponent";
 
 export default {
   data() {
@@ -527,13 +421,6 @@ export default {
           name: "Validating Assessment Centre Information",
           admin: null
         }
-        /*appointment_restrictions: {
-          min_date: null,
-          max_date: null,
-          allowed_dates: [],
-          available_hours: [],
-          needs_assessors: []
-        }*/
       },
       currentServiceIndex: -1,
       currentService: {},
@@ -542,7 +429,13 @@ export default {
       eaUrl: "",
       componentMounted: false,
       anonymActions: ["login", "signup", "reset-password"],
-      authActions: ["index"]
+      authActions: ["index"],
+      loginValidationStatus: false,
+      apiUrls: {
+        login: "ac-login",
+        signup: "ac-signup",
+        resetPassword: "request-password-reset"
+      }
     };
   },
   components: {
@@ -551,7 +444,8 @@ export default {
     CameraCapture,
     SignaturePad,
     SignatureUpload,
-    VueQrcode
+    VueQrcode,
+    AuthComponent
   },
   mounted() {
     this.refreshInterface(this.$route);
@@ -563,17 +457,11 @@ export default {
     this.refreshInterface(to);
     next();
   },
-
   methods: {
+    redirect(action) {
+      this.$router.push(`/assessment-centre/${this.dsaSlug}/${action}`);
+    },
     refreshInterface(route) {
-      this.loadingInitialElements = true;
-      this.ac = {
-        id: null,
-        settings: {
-          name: "Validating Assessment Centre Information",
-          admin: null
-        }
-      };
       this.activationUrl = window.location.href.replace(
         route.path,
         "/activate-account"
@@ -597,6 +485,13 @@ export default {
           params: {
             slug: this.acSlug,
             invitation_token: this.invitationToken
+          }
+        };
+        this.ac = {
+          id: null,
+          settings: {
+            name: "Validating Assessment Centre",
+            admin: null
           }
         };
         this.$refs.axios.submit(config);
@@ -875,7 +770,7 @@ export default {
             }
           }
 
-          if (!this.ac.user_data.password) {
+          /*if (!this.ac.user_data.password) {
             this.operationMessage = "Password missing";
             this.validationStatus = false;
           } else if (!this.ac.user_data.password_confirm) {
@@ -894,7 +789,8 @@ export default {
             this.validationStatus = false;
           } else {
             this.validationStatus = true;
-          }
+          }*/
+          this.validationStatus = true;
         }
 
         if (this.validationStatus) {
@@ -936,10 +832,22 @@ export default {
               this.ac = response.data;
               this.items = this.ac.star_assessment_form;
               this.acRole = this.ac.role;
-              this.eaUrl = this.$store.state.eaUrl + (this.acRole === "student" ? "appointments/index/" : "backend/index/");
-              this.eaUrl += `?ac=${this.acSlug}&jwt=${this.$store.state.payload.jwt}&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${this.$store.state.baseUrl}`;
+              this.eaUrl =
+                this.$store.state.eaUrl +
+                (this.acRole === "student"
+                  ? "appointments/index/"
+                  : "backend/index/");
+              this.eaUrl += `?ac=${this.acSlug}&jwt=${
+                this.$store.state.payload.jwt
+              }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
+                this.$store.state.baseUrl
+              }`;
+              this.$store.state.homeUrl = `/assessment-centre/${this.acSlug}`;
+
               if (this.ac.registered && this.acAction === "signup") {
-                this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
+                this.$router.push(
+                  "/assessment-centre/" + this.acSlug + "/index/"
+                );
               } else if (!this.ac.registered && this.acAction === "index") {
                 var url = "/assessment-centre/" + this.acSlug + "/signup/";
                 var urlOk = true;
@@ -954,6 +862,7 @@ export default {
               } else if (this.ac.registered) {
                 this.loadingEA = true;
               }
+            } else if (response.code === "warning") {
             } else {
               this.$router.push("/not-found");
             }
@@ -961,9 +870,7 @@ export default {
             break;
           case "get-available-hours":
             this.ac.appointment_restrictions.available_hours =
-              response.code === "success"
-                ? response.data
-                : [];
+              response.code === "success" ? response.data : [];
             this.loadingHours = false;
             break;
           case "update-na-services":

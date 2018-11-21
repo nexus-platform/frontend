@@ -25,114 +25,7 @@
 
           <template v-else>
             <template v-if="isGuest">
-              <v-toolbar tabs color="indigo">
-                <v-toolbar-title class="white--text"><v-icon class="white--text">school</v-icon> {{ dsaName }}</v-toolbar-title>
-              </v-toolbar>
-              <v-card>
-                <v-tabs v-model="currTab" centered color="transparent" icons-and-text>
-                  <v-tabs-slider color="indigo"></v-tabs-slider>
-                  <v-tab @click="redirect('login')" href="#tab-login">Log in<v-icon>verified_user</v-icon></v-tab>
-                  <v-tab @click="redirect('signup')" href="#tab-signup">Sign up<v-icon>account_circle</v-icon></v-tab>
-                  <v-tab @click="redirect('reset-password')" href="#tab-reset-password">Reset password<v-icon>email</v-icon></v-tab>
-                  
-                  <v-tab-item id="tab-login">
-                    <v-layout align-center justify-center>
-                      <v-flex md6 mt-5>
-                        <v-card-text>
-                          <v-form v-model="loginValidationStatus" ref="loginForm">
-                            <v-layout row>
-                              <v-flex lg12>
-                                <v-text-field validate-on-blur @keyup.enter="login()" v-model="email" prepend-icon="mail" name="email" label="Email" type="text" required :rules="emailRules" hint="Enter your registered email address"></v-text-field>
-                                <v-text-field ref="loginPassword" @keyup.enter="login()" @input="showCapsLockMsg($event)" v-model="password" prepend-icon="lock" name="password" label="Password" type="password" required :rules="passwordRules" hint="Enter your password"></v-text-field>
-                              </v-flex>
-                            </v-layout>
-                          </v-form>
-                        </v-card-text>
-                        <v-card-actions class="pb-5">
-                          <v-spacer></v-spacer>
-                          <v-tooltip bottom :color="loginValidationColor">
-                            <v-btn :disabled="loading" v-on:click="login()" class="white--text" :class="{ red: !loginValidationStatus, indigo: loginValidationStatus }" slot="activator">
-                              <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                              <v-icon size="22" v-if="!loading && loginValidationStatus">done</v-icon>
-                              <v-icon size="22" v-if="!loading && !loginValidationStatus">error_outline</v-icon>
-                              &nbsp;Log in
-                            </v-btn>
-                            <span>{{loginValidationMessage}}</span>
-                          </v-tooltip>
-                        </v-card-actions>
-                      </v-flex>
-                    </v-layout>
-                  </v-tab-item>
-
-                  <v-tab-item id="tab-signup">
-                    <v-layout justify-center>
-                      <v-flex xs10>
-                        <v-card-text>
-                          <v-form v-model="signupValidationStatus" ref="signupForm">
-                            <v-layout row wrap>
-                              <v-flex sm12 md11 lg6>
-                                <v-text-field v-model="name" prepend-icon="edit" name="name" label="First name" type="text" :rules="nameRules"></v-text-field>
-                                <v-text-field v-model="last_name" prepend-icon="edit" name="last_name" label="Last name" type="text" :rules="lastNameRules"></v-text-field>
-                                <v-text-field v-model="password" prepend-icon="lock" name="password" label="Password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
-                                <v-text-field v-model="password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" :rules="passwordConfirmRules" :append-icon="e2 ? 'visibility' : 'visibility_off'" @click:append="() => (e2 = !e2)" :type="e2 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
-                              </v-flex>
-                              <v-flex sm12 md11 lg6>
-                                <v-text-field validate-on-blur v-model="email" prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
-                                <v-text-field @blur="test()" v-model="postcode" prepend-icon="place" name="postcode" label="Postcode" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" single-line type="text"></v-text-field>
-                                <v-text-field v-model="address" prepend-icon="fas fa-map-signs" name="address" label="Address" type="text" :rules="addressRules"></v-text-field>
-                              </v-flex>
-                            </v-layout>
-                          </v-form>
-                        </v-card-text>
-
-                        <v-card-actions class="pb-5">
-                          <v-spacer></v-spacer>
-                          <v-tooltip bottom :color="signupValidationColor">
-                            <v-btn @click="signup()" :disabled="loading" class="white--text" :class="{ red: !signupValidationStatus, indigo: signupValidationStatus }" slot="activator">
-                              <v-icon size="22" v-if="!loading && signupValidationStatus">done</v-icon>
-                              <v-icon size="22" v-if="!loading && !signupValidationStatus">error_outline</v-icon>
-                              <icon v-if="loading" name="circle-notch" spin style="color: gray;"></icon>
-                              &nbsp;Sign up
-                            </v-btn>
-                            <span>{{signupValidationMessage}}</span>
-                          </v-tooltip>
-                          <v-btn @click="resetSignupForm()" class="white--text primary ml-2" slot="activator">
-                            <v-icon size="22">cancel</v-icon>&nbsp;Reset
-                          </v-btn>
-                        </v-card-actions>
-                      </v-flex>
-                    </v-layout>
-                  </v-tab-item>
-
-                  <v-tab-item id="tab-reset-password">
-                    <v-layout align-center justify-center row>
-                      <v-flex xs6 mt-5>
-                        <v-card-text>
-                          <v-form v-model="resetPasswordValidationStatus" ref="resetPasswordForm">
-                            <v-layout row>
-                              <v-flex lg12>
-                                <v-text-field v-model="email" ref="resetPasswordEmail" @keyup.enter="requestPasswordReset()" validate-on-blur prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
-                              </v-flex>
-                            </v-layout>
-                          </v-form>
-                        </v-card-text>
-                        <v-card-actions class="pb-5">
-                          <v-spacer></v-spacer>
-                          <v-tooltip bottom :color="resetPasswordValidationColor">
-                            <v-btn :disabled="loading" v-on:click="requestPasswordReset()" class="white--text" :class="{ red: !resetPasswordValidationStatus, indigo: resetPasswordValidationStatus }" slot="activator">
-                              <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                              <v-icon size="22" v-if="!loading && resetPasswordValidationStatus">done</v-icon>
-                              <v-icon size="22" v-if="!loading && !resetPasswordValidationStatus">error_outline</v-icon>
-                              &nbsp;Send request
-                            </v-btn>
-                            <span>{{resetPasswordValidationMessage}}</span>
-                          </v-tooltip>
-                        </v-card-actions>
-                      </v-flex>
-                    </v-layout>
-                  </v-tab-item>
-                </v-tabs>
-              </v-card>
+              <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" :currTab="currTab" :parentName="dsaName" :apiUrls="apiUrls" :slug="dsaSlug" />
             </template>
 
             <template v-else>
@@ -177,12 +70,12 @@
 
 <script>
 import axios from "axios";
-import { now } from "moment";
 import AxiosComponent from "@/components/AxiosComponent";
 import MyInstitute from "@/components/MyInstitute";
 import DsaForms from "@/components/DSAForms";
 import DsaForm from "@/components/DSAForm";
 import SubmittedForms from "@/components/DOSubmittedForms";
+import AuthComponent from "@/components/AuthComponent";
 
 export default {
   data() {
@@ -190,7 +83,7 @@ export default {
       parameter: null,
       id: null,
       action: null,
-      currTab: "tab-3",
+      currTab: "tab-login",
       snackbar: false,
       e1: true,
       e2: true,
@@ -200,41 +93,26 @@ export default {
       loadingPostcodeInfo: false,
       operationMessage: null,
       operationMessageType: null,
-      name: "",
-      last_name: "",
-      password: "",
-      password_confirm: "",
-      email: "",
-      address: "",
-      postcode: "",
-      loginValidationStatus: false,
-      signupValidationStatus: false,
-      resetPasswordValidationStatus: false,
-      nameRules: [v => !!v || "This field is required"],
-      lastNameRules: [v => !!v || "This field is required"],
-      passwordRules: [
-        v => !!v || "This field is required"
-        //v => (v && v.length > 5) || "Password requires at least 6 characters"
-      ],
-      passwordConfirmRules: [
-        v => !!v || "This field is required",
-        v => v === this.password || "Passwords do not match"
-      ],
-      emailRules: [
-        v => !!v || "E-mail is required",
-        v =>
-          /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
-          "E-mail must be valid"
-      ],
-      addressRules: [v => !!v || "This field is required"],
       dsaName: "Validating Institute",
       loadingInitialElements: true,
       componentMounted: false,
       anonymActions: ["login", "signup", "reset-password"],
       authActions: ["dsa-forms", "my-dsa-forms"],
+      apiUrls: {
+        login: "dsa-login",
+        signup: "dsa-signup",
+        resetPassword: "request-password-reset"
+      }
     };
   },
-  components: { AxiosComponent, MyInstitute, DsaForms, DsaForm, SubmittedForms },
+  components: {
+    AxiosComponent,
+    MyInstitute,
+    DsaForms,
+    DsaForm,
+    SubmittedForms,
+    AuthComponent
+  },
   mounted() {
     this.refreshInterface(this.$route);
   },
@@ -243,9 +121,6 @@ export default {
     next();
   },
   methods: {
-    redirect(action) {
-      this.$router.push(`/dsa/${this.dsaSlug}/${action}`);
-    },
     refreshInterface(route) {
       this.dsaSlug = route.params.dsa_slug;
       this.action = route.params.action;
@@ -255,7 +130,7 @@ export default {
       if (this.isGuest && this.authActions.includes(this.action)) {
         this.$store.state.authRouteRequested = route.path;
       } else if (!this.isGuest && this.anonymActions.includes(this.action)) {
-        this.action = 'index';
+        this.action = "index";
       } else {
         this.currTab = `tab-${this.action}`;
       }
@@ -278,8 +153,8 @@ export default {
       }
     },
     handleHttpResponse(event) {
-      this.loading = false;
       this.loadingInitialElements = false;
+      this.loading = false;
 
       if (event.data.result.code === 200) {
         var response = event.data.result.response;
@@ -289,9 +164,7 @@ export default {
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case "get-dsa-info":
             if (response.code === "success") {
-              this.$store.state.homeUrl = `/dsa/${
-                this.$route.params.dsa_slug
-              }/index`;
+              this.$store.state.homeUrl = `/dsa/${this.$route.params.dsa_slug}`;
               this.$store.state.dsaFormsUrl = `/dsa/${
                 this.$route.params.dsa_slug
               }/dsa-forms/index`;
@@ -305,23 +178,21 @@ export default {
               this.$router.push("/not-found");
             }
             break;
-          case "dsa-login":
+          case this.apiUrls.login:
             if (response.code === "success") {
               this.$store.commit("updatePayload", response.data);
               var redirect = this.$store.state.authRouteRequested;
               this.$store.state.authRouteRequested = null;
               this.$router.push(
-                redirect ? redirect : this.$store.state.homeUrl
+                redirect ? redirect : `${this.$store.state.homeUrl}/index`
               );
             } else {
               this.snackbar = true;
               this.$store.commit("logout");
-              this.$nextTick(this.$refs.loginPassword.focus);
             }
             break;
-          case "request-password-reset":
+          case this.apiUrls.resetPassword:
             this.snackbar = true;
-            this.$nextTick(this.$refs.resetPasswordEmail.focus);
             break;
           default:
             this.snackbar = true;
@@ -332,113 +203,9 @@ export default {
         this.operationMessageType = "error";
         this.snackbar = true;
       }
-    },
-    showCapsLockMsg(e) {
-      var lastChar = e.substring(e.length - 1);
-      this.capsLockAlert =
-        lastChar.toUpperCase() === lastChar &&
-        lastChar.toLowerCase() !== lastChar;
-    },
-    login() {
-      if (this.$refs.loginForm.validate()) {
-        this.loading = true;
-        this.snackbar = false;
-
-        var config = {
-          url: "dsa-login",
-          method: "post",
-          params: {
-            slug: this.dsaSlug,
-            email: this.email,
-            password: this.password
-          }
-        };
-        this.$refs.axios.submit(config);
-      }
-    },
-    signup() {
-      if (this.$refs.signupForm.validate()) {
-        this.snackbar = false;
-        this.loading = true;
-        var activationUrl = window.location.href.replace(
-          this.$route.path,
-          "/activate-account"
-        );
-        var config = {
-          url: "dsa-signup",
-          method: "post",
-          params: {
-            name: this.name,
-            last_name: this.last_name,
-            email: this.email,
-            password: this.password,
-            address: this.address,
-            postcode: this.postcode,
-            activation_url: activationUrl,
-            home_url: window.location.href.replace(
-              this.$route.path,
-              this.$store.state.homeUrl
-            ),
-            dsa: this.dsaSlug,
-            form_url: this.$store.state.authRouteRequested
-          }
-        };
-        this.$refs.axios.submit(config);
-      }
-    },
-    requestPasswordReset() {
-      if (this.$refs.resetPasswordForm.validate()) {
-        this.snackbar = false;
-        this.loading = true;
-        var activationUrl = window.location.href.replace(
-          this.$route.path,
-          "/reset-password"
-        );
-        var config = {
-          url: "request-password-reset",
-          method: "post",
-          params: {
-            email: this.email,
-            activation_url: activationUrl,
-            home_url: window.location.href.replace(
-              this.$route.path,
-              this.$store.state.homeUrl
-            )
-          }
-        };
-        this.$refs.axios.submit(config);
-      }
-    },
-    resetSignupForm() {
-      this.$refs.signupForm.reset();
-    },
-    test() {
-      console.log("Looking up postcode...");
     }
   },
   computed: {
-    loginValidationMessage: function() {
-      return this.loginValidationStatus
-        ? "Good to go!"
-        : "Verify your information";
-    },
-    loginValidationColor: function() {
-      return this.loginValidationStatus ? "indigo" : "red";
-    },
-    signupValidationMessage: function() {
-      return this.signupValidationStatus ? "Good to go!" : "Verify your data";
-    },
-    signupValidationColor: function() {
-      return this.signupValidationStatus ? "indigo" : "red";
-    },
-    resetPasswordValidationMessage: function() {
-      return this.resetPasswordValidationStatus
-        ? "Good to go!"
-        : "Verify your data";
-    },
-    resetPasswordValidationColor: function() {
-      return this.resetPasswordValidationStatus ? "indigo" : "red";
-    },
     isGuest() {
       return this.$store.state.payload.is_guest;
     },

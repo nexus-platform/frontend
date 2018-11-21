@@ -38,7 +38,7 @@
     </v-card-text>
 
     <v-card v-else class="animated fadeIn elevation-0">
-      <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text dark slider-color="white">
+      <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text dark slider-color="yellow">
         <v-tab :disabled="loading" v-for="(item, i) in items" :key="i + 1" ripple @click="submit(false, i)">
           <span class="hidden-xs-only non-uppercase">{{item.title}}</span>
           <span class="hidden-sm-and-up">{{i + 1}}</span>

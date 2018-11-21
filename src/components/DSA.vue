@@ -261,7 +261,7 @@ export default {
       }
 
       if (!this.componentMounted) {
-        this.dsaName = "Validating Institute";
+        this.dsaName = "Validating Information";
         this.loadingInitialElements = true;
         var config = {
           url: "get-dsa-info",

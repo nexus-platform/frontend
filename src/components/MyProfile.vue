@@ -145,7 +145,7 @@
             <v-expansion-panel-content>
               <div slot="header"><icon name="layer-group" class="fa"></icon><b>Registration</b></div>
               <v-card>
-                <v-container pl-5>
+                <v-container pl-3>
                   <v-layout row wrap>
                     <v-flex sm10>
                       <v-btn @click="dlgCancelReg = true" color="error"><v-icon class="fa">cancel</v-icon>Cancel registration with {{ this.$store.state.payload.institute.name }}</v-btn>
@@ -156,8 +156,6 @@
                     <v-card>
                       <v-card-title class="headline grey lighten-2">
                         Cancel Registration
-                        <v-spacer></v-spacer>
-                        <a @click="dlgCancelReg = false"><icon name="times" class="fa"></icon></a>
                       </v-card-title>
                       <v-container>
                         <v-layout row wrap>
@@ -169,10 +167,10 @@
                           <v-spacer></v-spacer>
                           <v-btn :disabled="loading" @click="cancelRegistration()" color="error">
                             <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                            <v-icon size="22" v-else>done</v-icon> Yes
+                            <v-icon class="fa" size="22" v-else>done</v-icon>Yes
                           </v-btn>
                           <v-btn @click="dlgCancelReg = false" color="info">
-                            <v-icon size="22">cancel</v-icon> No
+                            <v-icon class="fa" size="22">cancel</v-icon>No
                           </v-btn>
                         </v-card-actions>
                       </v-container>

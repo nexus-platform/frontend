@@ -1,9 +1,9 @@
 <template>
-  <v-container style="margin-top: 60px;" class="animated fadeIn">
+  <v-container class="animated fadeIn mt-3">
     
     <template v-if="loadingInitialElements">
       <v-layout row wrap mt-2>
-        <v-flex xs12 sm8 offset-sm2 mt-4>
+        <v-flex xs12 sm8 offset-sm2 mt-5>
           <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''">
             <v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.settings.name}}
           </h3>
@@ -15,7 +15,123 @@
     </template>
 
     <template v-else>
-      
+      <template v-if="isGuest">
+        <v-toolbar tabs color="indigo">
+          <v-toolbar-title class="white--text"><v-icon class="white--text">school</v-icon> {{ dsaName }}</v-toolbar-title>
+        </v-toolbar>
+        <v-card>
+          <v-tabs v-model="currTab" centered color="transparent" icons-and-text>
+            <v-tabs-slider color="indigo"></v-tabs-slider>
+            <v-tab @click="redirect('login')" href="#tab-login">Log in<v-icon>verified_user</v-icon></v-tab>
+            <v-tab @click="redirect('signup')" href="#tab-signup">Sign up<v-icon>account_circle</v-icon></v-tab>
+            <v-tab @click="redirect('reset-password')" href="#tab-reset-password">Reset password<v-icon>email</v-icon></v-tab>
+            
+            <v-tab-item id="tab-login">
+              <v-layout align-center justify-center>
+                <v-flex md6 mt-5>
+                  <v-card-text>
+                    <v-form v-model="loginValidationStatus" ref="loginForm">
+                      <v-layout row>
+                        <v-flex lg12>
+                          <v-text-field validate-on-blur @keyup.enter="login()" v-model="email" prepend-icon="mail" name="email" label="Email" type="text" required :rules="emailRules" hint="Enter your registered email address"></v-text-field>
+                          <v-text-field ref="loginPassword" @keyup.enter="login()" @input="showCapsLockMsg($event)" v-model="password" prepend-icon="lock" name="password" label="Password" type="password" required :rules="passwordRules" hint="Enter your password"></v-text-field>
+                        </v-flex>
+                      </v-layout>
+                    </v-form>
+                  </v-card-text>
+                  <v-card-actions class="pb-5">
+                    <v-spacer></v-spacer>
+                    <v-tooltip bottom :color="loginValidationColor">
+                      <v-btn :disabled="loading" v-on:click="login()" class="white--text" :class="{ red: !loginValidationStatus, indigo: loginValidationStatus }" slot="activator">
+                        <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
+                        <v-icon size="22" v-if="!loading && loginValidationStatus">done</v-icon>
+                        <v-icon size="22" v-if="!loading && !loginValidationStatus">error_outline</v-icon>
+                        &nbsp;Log in
+                      </v-btn>
+                      <span>{{loginValidationMessage}}</span>
+                    </v-tooltip>
+                  </v-card-actions>
+                </v-flex>
+              </v-layout>
+            </v-tab-item>
+
+            <v-tab-item id="tab-signup">
+              <v-layout justify-center>
+                <v-flex xs10>
+                  <v-card-text>
+                    <v-form v-model="signupValidationStatus" ref="signupForm">
+                      <v-layout row wrap>
+                        <v-flex sm12 md11 lg6>
+                          <v-text-field v-model="name" prepend-icon="edit" name="name" label="First name" type="text" :rules="nameRules"></v-text-field>
+                          <v-text-field v-model="last_name" prepend-icon="edit" name="last_name" label="Last name" type="text" :rules="lastNameRules"></v-text-field>
+                          <v-text-field v-model="password" prepend-icon="lock" name="password" label="Password" :rules="passwordRules" :append-icon="e1 ? 'visibility' : 'visibility_off'" @click:append="() => (e1 = !e1)" :type="e1 ? 'password' : 'text'" hint="At least 6 characters" min="6"></v-text-field>
+                          <v-text-field v-model="password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" :rules="passwordConfirmRules" :append-icon="e2 ? 'visibility' : 'visibility_off'" @click:append="() => (e2 = !e2)" :type="e2 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
+                        </v-flex>
+                        <v-flex sm12 md11 lg6>
+                          <v-text-field validate-on-blur v-model="email" prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
+                          <v-text-field @blur="test()" v-model="postcode" prepend-icon="place" name="postcode" label="Postcode" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" single-line type="text"></v-text-field>
+                          <v-text-field v-model="address" prepend-icon="fas fa-map-signs" name="address" label="Address" type="text" :rules="addressRules"></v-text-field>
+                        </v-flex>
+                      </v-layout>
+                    </v-form>
+                  </v-card-text>
+
+                  <v-card-actions class="pb-5">
+                    <v-spacer></v-spacer>
+                    <v-tooltip bottom :color="signupValidationColor">
+                      <v-btn @click="signup()" :disabled="loading" class="white--text" :class="{ red: !signupValidationStatus, indigo: signupValidationStatus }" slot="activator">
+                        <v-icon size="22" v-if="!loading && signupValidationStatus">done</v-icon>
+                        <v-icon size="22" v-if="!loading && !signupValidationStatus">error_outline</v-icon>
+                        <icon v-if="loading" name="circle-notch" spin style="color: gray;"></icon>
+                        &nbsp;Sign up
+                      </v-btn>
+                      <span>{{signupValidationMessage}}</span>
+                    </v-tooltip>
+                    <v-btn @click="resetSignupForm()" class="white--text primary ml-2" slot="activator">
+                      <v-icon size="22">cancel</v-icon>&nbsp;Reset
+                    </v-btn>
+                  </v-card-actions>
+                </v-flex>
+              </v-layout>
+            </v-tab-item>
+
+            <v-tab-item id="tab-reset-password">
+              <v-layout align-center justify-center row>
+                <v-flex xs6 mt-5>
+                  <v-card-text>
+                    <v-form v-model="resetPasswordValidationStatus" ref="resetPasswordForm">
+                      <v-layout row>
+                        <v-flex lg12>
+                          <v-text-field v-model="email" ref="resetPasswordEmail" @keyup.enter="requestPasswordReset()" validate-on-blur prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
+                        </v-flex>
+                      </v-layout>
+                    </v-form>
+                  </v-card-text>
+                  <v-card-actions class="pb-5">
+                    <v-spacer></v-spacer>
+                    <v-tooltip bottom :color="resetPasswordValidationColor">
+                      <v-btn :disabled="loading" v-on:click="requestPasswordReset()" class="white--text" :class="{ red: !resetPasswordValidationStatus, indigo: resetPasswordValidationStatus }" slot="activator">
+                        <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
+                        <v-icon size="22" v-if="!loading && resetPasswordValidationStatus">done</v-icon>
+                        <v-icon size="22" v-if="!loading && !resetPasswordValidationStatus">error_outline</v-icon>
+                        &nbsp;Send request
+                      </v-btn>
+                      <span>{{resetPasswordValidationMessage}}</span>
+                    </v-tooltip>
+                  </v-card-actions>
+                </v-flex>
+              </v-layout>
+            </v-tab-item>
+          </v-tabs>
+        </v-card>
+      </template>
+    </template>
+
+
+
+    <!--
+
+    <template v-else>
       <template v-if="!ac.registered">
         <v-container pa-5>
           <v-form v-model="validationStatus" ref="form">
@@ -50,129 +166,131 @@
             </template>
 
             <v-layout row wrap v-else-if="acRole === 'student'">
-              <v-card class="animated fadeIn">
-                <v-tabs color="blue-grey darken-3" v-model="active" show-arrows icons-and-text fixed-tabs dark slider-color="yellow">
-                  <v-tab v-for="(item, i) in items" :key="i + 1" ripple>
-                    <span class="hidden-xs-only non-uppercase">{{item.title}}</span>
-                    <span class="hidden-sm-and-up">{{i + 1}}</span>
-                    <v-tooltip v-if="tabComplete(i) === 2" top color="success">
-                      <v-icon slot="activator" color="success">check_circle</v-icon>
-                      <span>No empty fields</span>
-                    </v-tooltip>
-                    <v-tooltip v-else-if="tabComplete(i) === 1" top color="warning">
-                      <v-icon slot="activator" color="warning">warning</v-icon>
-                      <span>{{missingFields(i)}} empty field(s)</span>
-                    </v-tooltip>
-                    <v-tooltip v-else top color="error">
-                      <v-icon slot="activator" color="error">warning</v-icon>
-                      <span>{{missingFields(i)}} empty field(s)</span>
-                    </v-tooltip>
-                  </v-tab>
-                  
-                  <v-tab-item v-for="(item, i) in items" :key="i + 1" :id="'tab-' + (i + 1)">
-                    <v-card flat>
-                      <div class="text-xs-justify padding-20">
-                        <p class="header-title hidden-sm-and-up">{{item.title}}</p>
-                        <v-layout row wrap v-for="(row, j) in item.components" :key="row.id">
-                      
-                          <v-flex v-for="(col, k) in row" :key="col.id" xs12 :md1="col.class === 'md1'" :md2="col.class === 'md2'" :md3="col.class === 'md3'" :md4="col.class === 'md4'" :md5="col.class === 'md5'" :md6="col.class === 'md6'" :md7="col.class === 'md7'" :md8="col.class === 'md8'" :md9="col.class === 'md9'" :md10="col.class === 'md10'" :md11="col.class === 'md11'" :md12="col.class === 'md12'">
-                            <p v-if="col.content_type === 'html'" v-html="col.html"></p>
+              <v-flex sm12>
+                <v-card class="animated fadeIn">
+                  <v-tabs color="blue-grey darken-3" v-model="active" centered icons-and-text dark slider-color="yellow">
+                    <v-tab v-for="(item, i) in items" :key="i + 1" ripple>
+                      <span class="hidden-xs-only non-uppercase">{{item.title}}</span>
+                      <span class="hidden-sm-and-up">{{i + 1}}</span>
+                      <v-tooltip v-if="tabComplete(i) === 2" top color="success">
+                        <v-icon slot="activator" color="success">check_circle</v-icon>
+                        <span>No empty fields</span>
+                      </v-tooltip>
+                      <v-tooltip v-else-if="tabComplete(i) === 1" top color="warning">
+                        <v-icon slot="activator" color="warning">warning</v-icon>
+                        <span>{{missingFields(i)}} empty field(s)</span>
+                      </v-tooltip>
+                      <v-tooltip v-else top color="error">
+                        <v-icon slot="activator" color="error">warning</v-icon>
+                        <span>{{missingFields(i)}} empty field(s)</span>
+                      </v-tooltip>
+                    </v-tab>
+                    
+                    <v-tab-item v-for="(item, i) in items" :key="i + 1" :id="'tab-' + (i + 1)">
+                      <v-card flat>
+                        <div class="text-xs-justify padding-20">
+                          <p class="header-title hidden-sm-and-up">{{item.title}}</p>
+                          <v-layout row wrap v-for="(row, j) in item.components" :key="row.id">
+                        
+                            <v-flex v-for="(col, k) in row" :key="col.id" xs12 :md1="col.class === 'md1'" :md2="col.class === 'md2'" :md3="col.class === 'md3'" :md4="col.class === 'md4'" :md5="col.class === 'md5'" :md6="col.class === 'md6'" :md7="col.class === 'md7'" :md8="col.class === 'md8'" :md9="col.class === 'md9'" :md10="col.class === 'md10'" :md11="col.class === 'md11'" :md12="col.class === 'md12'">
+                              <p v-if="col.content_type === 'html'" v-html="col.html"></p>
 
-                            <template v-if="col.content_type === 'input'">
+                              <template v-if="col.content_type === 'input'">
 
-                              <template v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length <= 255">
-                                <v-text-field outline :type="col.input.type === 'number' ? 'number' : 'text'" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
+                                <template v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length <= 255">
+                                  <v-text-field outline :type="col.input.type === 'number' ? 'number' : 'text'" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
+                                </template>
+
+                                <template v-if="col.input.type === 'password'">
+                                  <v-text-field outline :type="col.input.type" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
+                                </template>
+
+                                <template v-if="col.input.max_length > 255">
+                                  <v-textarea outline v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
+                                </template>
+
+                                <template v-if="col.input.type === 'date' || col.input.type === 'month'">
+                                  <v-menu :disabled="col.input.read_only" v-model="col.input.modal" :close-on-content-click="false" :nudge-right="40" :return-value.sync="date" lazy transition="scale-transition" full-width min-width="290px">
+                                    <v-text-field outline :required="col.input.required" :disabled="col.input.disabled" :hint="col.input.hint ? col.input.hint : col.input.title" slot="activator" v-model="col.input.value" :label="col.input.title" readonly></v-text-field>
+                                    <v-date-picker v-if="!col.input.disabled" no-title :show-current="true" :disabled="col.input.disabled" :readonly="col.input.read_only" v-model="col.input.value" :type="col.input.type">
+                                      <v-spacer></v-spacer>
+                                      <v-btn flat color="primary" @click="col.input.modal = !col.input.modal">OK</v-btn>
+                                    </v-date-picker>
+                                  </v-menu>
+                                </template>
+
+                                <template v-if="col.input.type === 'checkbox'">
+                                  <v-checkbox v-model="col.input.value" :label="col.input.title" :hint="col.input.title"></v-checkbox>
+                                </template>
+
+                                <template v-if="col.input.type === 'signature' || col.input.type === 'image'">
+                                  <v-flex>
+                                    <v-tooltip right color="black">
+                                      <img v-if="col.input.value" slot="activator" class="mt-3 thumbnail" :src="col.input.value" />
+                                      <span v-html="'Image preview'"></span>
+                                    </v-tooltip>
+                                  </v-flex>
+                                  <v-flex>
+                                    <v-tooltip right color="black">
+                                      <v-menu slot="activator" bottom offset-y>
+                                        <v-btn slot="activator" class="primary" style="margin-left: 0;">
+                                          <icon name="edit" class="fa"></icon>{{col.input.title}}
+                                        </v-btn>
+                                        <v-list class="primary--text">
+                                          <v-list-tile v-on:click="showDrawpad(i, j, k)" v-if="col.input.type === 'signature'"><v-list-tile-title><icon name="edit" class="fa"></icon>Drawpad</v-list-tile-title></v-list-tile>
+                                          <v-list-tile v-on:click="showUpload(i, j, k)"><v-list-tile-title><icon name="upload" class="fa"></icon>Local drive</v-list-tile-title></v-list-tile>
+                                          <v-list-tile v-on:click="showCamera(i, j, k)"><v-list-tile-title><icon name="camera" class="fa"></icon>Device camera</v-list-tile-title></v-list-tile>
+                                          <v-list-tile v-on:click="showQrCode(i, j, k)" :disabled="loadingQrCode" ><v-list-tile-title><icon name="mobile-alt" class="fa"></icon>Import from mobile</v-list-tile-title></v-list-tile>
+                                        </v-list>
+                                      </v-menu>
+                                      <span v-html="'Choose your input method'"></span>
+                                    </v-tooltip>
+                                  </v-flex>
+                                </template>
+
                               </template>
+                            </v-flex>
+                          </v-layout>
+                        </div>
+                        
+                        <template v-if="i === items.length - 1">
+                          <v-layout row wrap>
+                            <v-flex md4 style="margin-left: 33px;">
+                              <v-tooltip right color="black">
+                                <v-text-field slot="activator" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDlg = true" @click:append="() => (uploadDlg = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
+                                <span>Attach a copy of your DSA Letter</span>
+                              </v-tooltip>
+                            </v-flex>
+                          </v-layout>
+                          <v-layout row wrap mt-5>
+                            <v-flex xs12>
+                              <v-btn :disabled="loading" v-on:click="registerWithAC()" class="white--text indigo" slot="activator">
+                                <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
+                                <v-icon v-else size="22">done</v-icon>&nbsp;Register with this Centre
+                              </v-btn>
+                            </v-flex>
+                          </v-layout>
+                          <p></p>
+                        </template>
+                      </v-card>
+                    </v-tab-item>
+                  </v-tabs>
 
-                              <template v-if="col.input.type === 'password'">
-                                <v-text-field outline :type="col.input.type" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
-                              </template>
+                  <v-tooltip bottom color="black">
+                    <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="previousTab()">
+                      <v-icon>chevron_left</v-icon>
+                    </v-btn>
+                    <span>Previous tab</span>
+                  </v-tooltip>
 
-                              <template v-if="col.input.max_length > 255">
-                                <v-textarea outline v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
-                              </template>
-
-                              <template v-if="col.input.type === 'date' || col.input.type === 'month'">
-                                <v-menu :disabled="col.input.read_only" v-model="col.input.modal" :close-on-content-click="false" :nudge-right="40" :return-value.sync="date" lazy transition="scale-transition" full-width min-width="290px">
-                                  <v-text-field outline :required="col.input.required" :disabled="col.input.disabled" :hint="col.input.hint ? col.input.hint : col.input.title" slot="activator" v-model="col.input.value" :label="col.input.title" readonly></v-text-field>
-                                  <v-date-picker v-if="!col.input.disabled" no-title :show-current="true" :disabled="col.input.disabled" :readonly="col.input.read_only" v-model="col.input.value" :type="col.input.type">
-                                    <v-spacer></v-spacer>
-                                    <v-btn flat color="primary" @click="col.input.modal = !col.input.modal">OK</v-btn>
-                                  </v-date-picker>
-                                </v-menu>
-                              </template>
-
-                              <template v-if="col.input.type === 'checkbox'">
-                                <v-checkbox v-model="col.input.value" :label="col.input.title" :hint="col.input.title"></v-checkbox>
-                              </template>
-
-                              <template v-if="col.input.type === 'signature' || col.input.type === 'image'">
-                                <v-flex>
-                                  <v-tooltip right color="black">
-                                    <img v-if="col.input.value" slot="activator" class="mt-3 thumbnail" :src="col.input.value" />
-                                    <span v-html="'Image preview'"></span>
-                                  </v-tooltip>
-                                </v-flex>
-                                <v-flex>
-                                  <v-tooltip right color="black">
-                                    <v-menu slot="activator" bottom offset-y>
-                                      <v-btn slot="activator" class="primary" style="margin-left: 0;">
-                                        <icon name="edit" class="fa"></icon>{{col.input.title}}
-                                      </v-btn>
-                                      <v-list class="primary--text">
-                                        <v-list-tile v-on:click="showDrawpad(i, j, k)" v-if="col.input.type === 'signature'"><v-list-tile-title><icon name="edit" class="fa"></icon>Drawpad</v-list-tile-title></v-list-tile>
-                                        <v-list-tile v-on:click="showUpload(i, j, k)"><v-list-tile-title><icon name="upload" class="fa"></icon>Local drive</v-list-tile-title></v-list-tile>
-                                        <v-list-tile v-on:click="showCamera(i, j, k)"><v-list-tile-title><icon name="camera" class="fa"></icon>Device camera</v-list-tile-title></v-list-tile>
-                                        <v-list-tile v-on:click="showQrCode(i, j, k)" :disabled="loadingQrCode" ><v-list-tile-title><icon name="mobile-alt" class="fa"></icon>Import from mobile</v-list-tile-title></v-list-tile>
-                                      </v-list>
-                                    </v-menu>
-                                    <span v-html="'Choose your input method'"></span>
-                                  </v-tooltip>
-                                </v-flex>
-                              </template>
-
-                            </template>
-                          </v-flex>
-                        </v-layout>
-                      </div>
-                      
-                      <template v-if="i === items.length - 1">
-                        <v-layout row wrap>
-                          <v-flex md4 style="margin-left: 33px;">
-                            <v-tooltip right color="black">
-                              <v-text-field slot="activator" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDlg = true" @click:append="() => (uploadDlg = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
-                              <span>Attach a copy of your DSA Letter</span>
-                            </v-tooltip>
-                          </v-flex>
-                        </v-layout>
-                        <v-layout row wrap mt-5>
-                          <v-flex xs12>
-                            <v-btn :disabled="loading" v-on:click="registerWithAC()" class="white--text indigo" slot="activator">
-                              <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                              <v-icon v-else size="22">done</v-icon>&nbsp;Register with this Centre
-                            </v-btn>
-                          </v-flex>
-                        </v-layout>
-                        <p></p>
-                      </template>
-                    </v-card>
-                  </v-tab-item>
-                </v-tabs>
-
-                <v-tooltip bottom color="black">
-                  <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="previousTab()">
-                    <v-icon>chevron_left</v-icon>
-                  </v-btn>
-                  <span>Previous tab</span>
-                </v-tooltip>
-
-                <v-tooltip bottom color="black">
-                  <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="nextTab()">
-                    <v-icon>chevron_right</v-icon>
-                  </v-btn>
-                  <span>Next tab</span>
-                </v-tooltip>
-              </v-card>
+                  <v-tooltip bottom color="black">
+                    <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="nextTab()">
+                      <v-icon>chevron_right</v-icon>
+                    </v-btn>
+                    <span>Next tab</span>
+                  </v-tooltip>
+                </v-card>
+              </v-flex>
             </v-layout>
           </v-form>
 
@@ -231,6 +349,8 @@
       </template>
       
     </template>
+
+    -->
 
     <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
       <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
@@ -419,7 +539,10 @@ export default {
       currentService: {},
       invitationToken: null,
       currentServiceAction: "",
-      eaUrl: ""
+      eaUrl: "",
+      componentMounted: false,
+      anonymActions: ["login", "signup", "reset-password"],
+      authActions: ["index"]
     };
   },
   components: {
@@ -431,52 +554,55 @@ export default {
     VueQrcode
   },
   mounted() {
-    this.activationUrl = window.location.href.replace(
-      this.$route.path,
-      "/activate-account"
-    );
-    this.acSlug = this.$route.params.slug;
-    this.acAction = this.$route.params.action;
-    this.invitationToken = this.$route.params.token;
-
-    var config = {
-      url: "get-ac-info",
-      params: {
-        slug: this.acSlug,
-        invitation_token: this.invitationToken
-      }
-    };
-    this.$refs.axios.submit(config);
-
+    this.refreshInterface(this.$route);
     if (window.addEventListener) {
       window.addEventListener("message", this.eaFrameResize, false);
     }
   },
   beforeRouteUpdate(to, from, next) {
-    this.ac = {
-      id: null,
-      settings: {
-        name: "Validating Assessment Centre Information",
-        admin: null
-      }
-    };
-    this.loadingInitialElements = true;
-    this.acSlug = to.params.slug;
-    this.acAction = to.params.action;
-    this.invitationToken = to.params.token;
-
-    var config = {
-      url: "get-ac-info",
-      params: {
-        slug: this.acSlug,
-        invitation_token: this.invitationToken
-      }
-    };
-    this.$refs.axios.submit(config);
+    this.refreshInterface(to);
     next();
   },
 
   methods: {
+    refreshInterface(route) {
+      this.loadingInitialElements = true;
+      this.ac = {
+        id: null,
+        settings: {
+          name: "Validating Assessment Centre Information",
+          admin: null
+        }
+      };
+      this.activationUrl = window.location.href.replace(
+        route.path,
+        "/activate-account"
+      );
+      this.acSlug = route.params.slug;
+      this.acAction = route.params.action;
+      this.invitationToken = route.params.token;
+
+      if (this.isGuest && this.authActions.includes(this.acAction)) {
+        this.$store.state.authRouteRequested = route.path;
+      } else if (!this.isGuest && this.anonymActions.includes(this.acAction)) {
+        this.acAction = "index";
+      } else {
+        this.currTab = `tab-${this.acAction}`;
+      }
+
+      if (!this.componentMounted) {
+        this.loadingInitialElements = true;
+        var config = {
+          url: "get-ac-info",
+          params: {
+            slug: this.acSlug,
+            invitation_token: this.invitationToken
+          }
+        };
+        this.$refs.axios.submit(config);
+        this.componentMounted = true;
+      }
+    },
     eaFrameResize(event) {
       this.loadingEA = false;
       if (this.$refs.iframe) {
@@ -798,31 +924,22 @@ export default {
     },
     handleHttpResponse(event) {
       if (event.data.result.code === 200) {
-        this.operationMessage = event.data.result.response.msg;
-        this.operationMessageType = event.data.result.response.code;
+        var response = event.data.result.response;
+        this.operationMessage = response.msg;
+        this.operationMessageType = response.code;
         this.loading = false;
         this.loadingHours = false;
 
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case "get-ac-info":
-            if (event.data.result.response.code === "success") {
-              this.ac = event.data.result.response.data;
+            if (response.code === "success") {
+              this.ac = response.data;
               this.items = this.ac.star_assessment_form;
               this.acRole = this.ac.role;
-              this.eaUrl =
-                this.$store.state.eaUrl +
-                (this.acRole === "student"
-                  ? "appointments/index/"
-                  : "backend/index/");
-              this.eaUrl += `?ac=${this.acSlug}&jwt=${
-                this.$store.state.payload.jwt
-              }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
-                this.$store.state.baseUrl
-              }`;
+              this.eaUrl = this.$store.state.eaUrl + (this.acRole === "student" ? "appointments/index/" : "backend/index/");
+              this.eaUrl += `?ac=${this.acSlug}&jwt=${this.$store.state.payload.jwt}&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${this.$store.state.baseUrl}`;
               if (this.ac.registered && this.acAction === "signup") {
-                this.$router.push(
-                  "/assessment-centre/" + this.acSlug + "/index/"
-                );
+                this.$router.push("/assessment-centre/" + this.acSlug + "/index/");
               } else if (!this.ac.registered && this.acAction === "index") {
                 var url = "/assessment-centre/" + this.acSlug + "/signup/";
                 var urlOk = true;
@@ -844,13 +961,13 @@ export default {
             break;
           case "get-available-hours":
             this.ac.appointment_restrictions.available_hours =
-              event.data.result.response.code === "success"
-                ? event.data.result.response.data
+              response.code === "success"
+                ? response.data
                 : [];
             this.loadingHours = false;
             break;
           case "update-na-services":
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               this.currentNA.services = this.selectedServices;
               this.naServicesDlg = false;
             }
@@ -859,7 +976,7 @@ export default {
           case "update-ac-settings":
           case "create-appointment":
           case "set-unavailable-period":
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               //Appointments
               this.confirmAppointmentDlg = false;
               this.naServicesDlg = false;
@@ -872,10 +989,10 @@ export default {
             this.snackbar = true;
             break;
           case "update-ac-service":
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               switch (this.currentServiceAction) {
                 case "Add service":
-                  this.currentService.id = event.data.result.response.data;
+                  this.currentService.id = response.data;
                   this.ac.services.push(this.currentService);
                   this.currentService = { id: -1, currency: "GBP" };
                   this.$nextTick(this.$refs.currentServiceName.focus);
@@ -899,13 +1016,13 @@ export default {
             this.snackbar = true;
             break;
           case "invite-user":
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               this.inviteUsersDlg = false;
             }
             this.snackbar = true;
             break;
           case "unregister-user-from-ac":
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               if (this.currentUserType === "student") {
                 this.ac.students.splice(this.currentUserIndex, 1);
               } else {
@@ -916,7 +1033,7 @@ export default {
             this.snackbar = true;
             break;
           case "unregister-from-ac":
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               this.ac.registered = false;
               this.cancelRegistrationDlg = false;
             }
@@ -924,7 +1041,7 @@ export default {
             break;
           case "register-with-ac":
             this.snackbar = true;
-            if (event.data.result.response.code === "success") {
+            if (response.code === "success") {
               this.ac.registered = true;
               var newRoute = "/assessment-centre/" + this.acSlug + "/index";
               if (this.isGuest) {

@@ -1,13 +1,9 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '@/components/Home';
-import RequestPasswordReset from '@/components/RequestPasswordReset';
 import Contact from '@/components/Contact';
 import NotFound from '@/components/NotFound';
 import MyProfile from '@/components/MyProfile';
-import DSAForms from '@/components/DSAForms';
-import DSAForm from '@/components/DSAForm';
-import MyDSAForms from '@/components/MyDSAForms';
 import ActivateAccount from '@/components/ActivateAccount';
 import ResetPassword from '@/components/ResetPassword';
 import TestComponent from '@/components/TestComponent';
@@ -47,32 +43,6 @@ const routes = [
       requiresAuth: false
     }
   },
-  /*{
-    path: '/dsa/:dsa_slug/dsa-forms/index',
-    name: 'DSAForms',
-    component: DSAForms,
-    meta: {
-      requiresAuth: false
-    }
-  },
-  {
-    path: '/dsa/:dsa_slug/dsa-forms/:form/:entity?',
-    name: 'DSAForm',
-    component: DSAForm,
-    meta: {
-      requiresAuth: false,
-      roles: ['do', 'student']
-    }
-  },*/
-  /*{
-    path: '/dsa/:dsa_slug/my-dsa-forms/index',
-    name: 'MyDSAForms',
-    component: MyDSAForms,
-    meta: {
-      requiresAuth: true,
-      roles: ['student']
-    }
-  },*/
   {
     path: '/contact',
     name: 'Contact',
@@ -136,11 +106,11 @@ const routes = [
     name: 'AssessmentCentre',
     component: AssessmentCentre
   },
-  {
+  /*{
     path: '/accept-invitation/:token',
     name: 'AcceptInvitation',
     component: AcceptInvitation
-  },
+  },*/
   {
     path: '/my-bookings',
     name: 'MyBookings',

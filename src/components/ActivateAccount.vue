@@ -54,7 +54,7 @@ export default {
       axios
         .post(
           this.$store.state.baseUrl +
-            "dsa-activate-account?XDEBUG_SESSION_START=netbeans-xdebug",
+            "activate-account?XDEBUG_SESSION_START=netbeans-xdebug",
           {
             token: this.token,
             login_url: this.loginUrl

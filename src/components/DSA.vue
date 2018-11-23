@@ -25,7 +25,7 @@
 
           <template v-else>
             <template v-if="isGuest">
-              <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" :currTab="currTab" :parentName="dsaName" :apiUrls="apiUrls" :slug="dsaSlug" />
+              <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" target="dsa" :currTab="currTab" :parentName="dsaName" :apiUrls="apiUrls" :slug="dsaSlug" />
             </template>
 
             <template v-else>
@@ -99,8 +99,8 @@ export default {
       anonymActions: ["login", "signup", "reset-password"],
       authActions: ["dsa-forms", "my-dsa-forms"],
       apiUrls: {
-        login: "dsa-login",
-        signup: "dsa-signup",
+        login: "login",
+        signup: "signup",
         resetPassword: "request-password-reset"
       }
     };

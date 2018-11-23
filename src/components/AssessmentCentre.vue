@@ -2,8 +2,8 @@
   <v-container class="animated fadeIn mt-5">
     
     <template v-if="loadingInitialElements">
-      <v-layout row wrap mt-2>
-        <v-flex xs12 sm8 offset-sm2 mt-5>
+      <v-layout row wrap mt-5>
+        <v-flex xs12 sm8 offset-sm2>
           <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''">
             <v-icon v-if="!loadingInitialElements" color="primary">location_city</v-icon> {{ac.settings.name}}
           </h3>
@@ -15,12 +15,42 @@
     </template>
 
     <template v-else>
-      <template v-if="isGuest">
-        <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" :currTab="currTab" :parentName="ac.name" :apiUrls="apiUrls" :slug="acSlug" />
+      <template v-if="validParams">
+        <template v-if="isGuest">
+          <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" target="ac" :invitationToken="invitationToken" :emailProp="ac.user_data.email" :currTab="currTab" :parentName="ac.name" :apiUrls="apiUrls" :slug="acSlug" />
+        </template>
+        <template v-else>
+          <v-layout row wrap mt-5 v-if="loadingEA">
+            <v-flex xs12 sm8 offset-sm2>
+              <h3 class="primary--text uppercase">Loading Appointments information</h3>
+            </v-flex>
+            <v-flex xs12 mt-3>
+              <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
+            </v-flex>
+          </v-layout>
+          <v-layout row wrap mt-3>
+            <v-flex xs12>
+              <iframe class="animated fadeIn" ref="iframe" style="border: none; width: 100%; padding-bottom: 5px;" :src="eaUrl" scrolling="no"></iframe>
+            </v-flex>
+          </v-layout>
+        </template>
+      </template>
+      
+      <template v-else>
+        <v-container fluid>
+          <v-layout align-center justify-center class="animated fadeIn">
+            <v-flex md10>
+              <v-toolbar tabs :color="operationMessageType">
+                <v-toolbar-title class="white--text"><v-icon class="white--text fa">warning</v-icon>Oops!</v-toolbar-title>
+              </v-toolbar>
+              <v-card>
+                <v-card-text><h3 v-html="operationMessage"></h3></v-card-text>
+              </v-card>
+            </v-flex>
+          </v-layout>
+        </v-container>
       </template>
     </template>
-
-
 
     <!--
 
@@ -224,21 +254,7 @@
           </v-layout>
         </template>
         
-        <template v-else>
-          <v-layout row wrap mt-2 v-if="loadingEA">
-            <v-flex xs12 sm8 offset-sm2 mt-4>
-              <h3 class="primary--text uppercase">Loading Appointments information</h3>
-            </v-flex>
-            <v-flex xs12 mt-3>
-              <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
-            </v-flex>
-          </v-layout>
-          <v-layout row wrap>
-            <v-flex xs12>
-              <iframe class="animated fadeIn" ref="iframe" style="border: none; width: 100%; padding-bottom: 5px;" :src="eaUrl" scrolling="no"></iframe>
-            </v-flex>
-          </v-layout>
-        </template>
+        
       </template>
       
     </template>
@@ -326,10 +342,12 @@ import SignaturePad from "@/components/SignaturePad";
 import SignatureUpload from "@/components/SignatureUpload";
 import VueQrcode from "@xkeshi/vue-qrcode";
 import AuthComponent from "@/components/AuthComponent";
+import AcceptInvitation from "@/components/AcceptInvitation";
 
 export default {
   data() {
     return {
+      validParams: false,
       loadingSignatureByQrCode: false,
       loadingQrCode: false,
       qrCodeDialog: false,
@@ -432,8 +450,8 @@ export default {
       authActions: ["index"],
       loginValidationStatus: false,
       apiUrls: {
-        login: "ac-login",
-        signup: "ac-signup",
+        login: "login",
+        signup: "signup",
         resetPassword: "request-password-reset"
       }
     };
@@ -445,7 +463,8 @@ export default {
     SignaturePad,
     SignatureUpload,
     VueQrcode,
-    AuthComponent
+    AuthComponent,
+    AcceptInvitation
   },
   mounted() {
     this.refreshInterface(this.$route);
@@ -819,29 +838,23 @@ export default {
       }
     },
     handleHttpResponse(event) {
+      this.loading = false;
+      this.loadingInitialElements = false;
+
       if (event.data.result.code === 200) {
         var response = event.data.result.response;
         this.operationMessage = response.msg;
         this.operationMessageType = response.code;
-        this.loading = false;
-        this.loadingHours = false;
 
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case "get-ac-info":
             if (response.code === "success") {
+              this.validParams = true;
               this.ac = response.data;
               this.items = this.ac.star_assessment_form;
               this.acRole = this.ac.role;
-              this.eaUrl =
-                this.$store.state.eaUrl +
-                (this.acRole === "student"
-                  ? "appointments/index/"
-                  : "backend/index/");
-              this.eaUrl += `?ac=${this.acSlug}&jwt=${
-                this.$store.state.payload.jwt
-              }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
-                this.$store.state.baseUrl
-              }`;
+              this.eaUrl = this.$store.state.eaUrl + (this.acRole === "student" ? "appointments/index/" : "backend/index/");
+              this.eaUrl += `?ac=${this.acSlug}&jwt=${this.$store.state.payload.jwt}&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${this.$store.state.baseUrl}`;
               this.$store.state.homeUrl = `/assessment-centre/${this.acSlug}`;
 
               if (this.ac.registered && this.acAction === "signup") {
@@ -849,7 +862,7 @@ export default {
                   "/assessment-centre/" + this.acSlug + "/index/"
                 );
               } else if (!this.ac.registered && this.acAction === "index") {
-                var url = "/assessment-centre/" + this.acSlug + "/signup/";
+                var url = "/assessment-centre/" + this.acSlug + "/login/";
                 var urlOk = true;
                 if (this.acRole === "na") {
                   if (this.invitationToken) {
@@ -862,107 +875,28 @@ export default {
               } else if (this.ac.registered) {
                 this.loadingEA = true;
               }
-            } else if (response.code === "warning") {
             } else {
-              this.$router.push("/not-found");
+              this.$store.state.homeUrl = "";
             }
             this.loadingInitialElements = false;
             break;
-          case "get-available-hours":
-            this.ac.appointment_restrictions.available_hours =
-              response.code === "success" ? response.data : [];
-            this.loadingHours = false;
-            break;
-          case "update-na-services":
+          case this.apiUrls.login:
             if (response.code === "success") {
-              this.currentNA.services = this.selectedServices;
-              this.naServicesDlg = false;
-            }
-            this.snackbar = true;
-            break;
-          case "update-ac-settings":
-          case "create-appointment":
-          case "set-unavailable-period":
-            if (response.code === "success") {
-              //Appointments
-              this.confirmAppointmentDlg = false;
-              this.naServicesDlg = false;
-              this.newAppointment = { service: null, assessor: null };
-              //Unavailable periods
-              this.dlgSetUnavPeriod = false;
-              this.newUnavailablePeriod = {};
-              this.newUnavPeriodError = true;
-            }
-            this.snackbar = true;
-            break;
-          case "update-ac-service":
-            if (response.code === "success") {
-              switch (this.currentServiceAction) {
-                case "Add service":
-                  this.currentService.id = response.data;
-                  this.ac.services.push(this.currentService);
-                  this.currentService = { id: -1, currency: "GBP" };
-                  this.$nextTick(this.$refs.currentServiceName.focus);
-                  break;
-                case "Update service":
-                  this.ac.services.splice(
-                    this.currentServiceIndex,
-                    1,
-                    this.currentService
-                  );
-                  this.$nextTick(this.$refs.currentServiceName.focus);
-                  break;
-                case "Delete service":
-                  this.ac.services.splice(this.currentServiceIndex, 1);
-                  break;
-                default:
-                  break;
-              }
-              this.updateServiceDlg = false;
-            }
-            this.snackbar = true;
-            break;
-          case "invite-user":
-            if (response.code === "success") {
-              this.inviteUsersDlg = false;
-            }
-            this.snackbar = true;
-            break;
-          case "unregister-user-from-ac":
-            if (response.code === "success") {
-              if (this.currentUserType === "student") {
-                this.ac.students.splice(this.currentUserIndex, 1);
-              } else {
-                this.ac.needs_assessors.splice(this.currentUserIndex, 1);
-              }
-              this.cancelUserRegDlg = false;
-            }
-            this.snackbar = true;
-            break;
-          case "unregister-from-ac":
-            if (response.code === "success") {
-              this.ac.registered = false;
-              this.cancelRegistrationDlg = false;
-            }
-            this.snackbar = true;
-            break;
-          case "register-with-ac":
-            this.snackbar = true;
-            if (response.code === "success") {
-              this.ac.registered = true;
-              var newRoute = "/assessment-centre/" + this.acSlug + "/index";
-              if (this.isGuest) {
-                this.$store.state.authRouteRequested = newRoute;
-                var that = this;
-                setTimeout(function() {
-                  that.$router.push("/login");
-                }, 7000);
-              } else {
-                this.$router.push(newRoute);
-              }
+              this.$store.commit("updatePayload", response.data);
+              this.eaUrl = this.$store.state.eaUrl + (this.isStudent ? "appointments/index/" : "backend/index/");
+              this.eaUrl += `?ac=${this.acSlug}&jwt=${this.$store.state.payload.jwt}&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${this.$store.state.baseUrl}`;
+              this.loadingEA = true;
+              var redirect = this.$store.state.authRouteRequested;
+              this.$store.state.authRouteRequested = null;
+              this.$router.push(
+                redirect ? redirect : `${this.$store.state.homeUrl}/index`
+              );
+            } else {
+              this.snackbar = true;
+              this.$store.commit("logout");
             }
             break;
-          case "set-ac-user-status":
+          case this.apiUrls.resetPassword:
             this.snackbar = true;
             break;
           default:
@@ -1214,21 +1148,7 @@ export default {
     }
   },
   computed: {
-    serviceDurationHint() {
-      var res =
-        this.currentService.duration % 60 === 0
-          ? this.currentService.duration / 60
-          : (this.currentService.duration / 60).toFixed(2);
-      return res + (res > 1 ? " hours" : " hour");
-    },
-    isGuest() {
-      return this.$store.state.payload.is_guest;
-    },
-    settingsValidationMessage: function() {
-      return this.settingsValidationStatus
-        ? "Good to go!"
-        : "The form is incomplete";
-    },
+    
     validationMessage: function() {
       return this.validationStatus ? "Good to go!" : "The form is incomplete";
     },
@@ -1237,6 +1157,15 @@ export default {
     },
     settingsValidationColor: function() {
       return this.settingsValidationStatus ? "indigo" : "red";
+    },
+    isGuest() {
+      return this.$store.state.payload.is_guest;
+    },
+    isAC() {
+      return this.$store.state.payload.roles.includes("ac");
+    },
+    isStudent() {
+      return this.$store.state.payload.roles.includes("student");
     }
   }
 };

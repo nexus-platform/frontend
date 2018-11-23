@@ -54,7 +54,7 @@
                           <v-text-field v-model="password_confirm" prepend-icon="lock" name="passwordConfirm" label="Password Confirmation" :rules="passwordConfirmRules" :append-icon="e2 ? 'visibility' : 'visibility_off'" @click:append="() => (e2 = !e2)" :type="e2 ? 'password' : 'text'" hint="Re-type your password"></v-text-field>
                         </v-flex>
                         <v-flex sm12 md11 lg6>
-                          <v-text-field validate-on-blur v-model="email" prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
+                          <v-text-field :disabled="emailDisabled" validate-on-blur v-model="email" prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
                           <v-text-field @blur="test()" v-model="postcode" prepend-icon="place" name="postcode" label="Postcode" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" single-line type="text"></v-text-field>
                           <v-text-field v-model="address" prepend-icon="fas fa-map-signs" name="address" label="Address" type="text" :rules="addressRules"></v-text-field>
                         </v-flex>
@@ -159,13 +159,18 @@ export default {
           "E-mail must be valid"
       ],
       addressRules: [v => !!v || "This field is required"],
-      activeTab: null
+      activeTab: null,
+      emailDisabled: false
     };
   },
   components: { AxiosComponent },
-  props: ["parentName", "apiUrls", "slug", "currTab"],
+  props: ["parentName", "apiUrls", "slug", "currTab", "target", "emailProp", "invitationToken"],
   mounted() {
     this.activeTab = this.currTab;
+    if (this.emailProp) {
+      this.email = this.emailProp;
+      this.emailDisabled = true;
+    }
   },
   methods: {
     redirect(action) {
@@ -192,7 +197,8 @@ export default {
           params: {
             slug: this.slug,
             email: this.email,
-            password: this.password
+            password: this.password,
+            target: this.target
           }
         };
         this.$refs.axios.submit(config);
@@ -202,10 +208,9 @@ export default {
       if (this.$refs.signupForm.validate()) {
         this.snackbar = false;
         this.loading = true;
-        var activationUrl = window.location.href.replace(
-          this.$route.path,
-          "/activate-account"
-        );
+        var activationUrl = window.location.href.replace(this.$route.path, "/activate-account");
+        var homeUrl = window.location.href.replace(this.$route.path, `${this.$store.state.homeUrl}/index`);
+        //var homeUrl = `${this.$store.state.homeUrl}/index`;
         var config = {
           url: this.apiUrls.signup,
           method: "post",
@@ -217,12 +222,11 @@ export default {
             address: this.address,
             postcode: this.postcode,
             activation_url: activationUrl,
-            home_url: window.location.href.replace(
-              this.$route.path,
-              this.$store.state.homeUrl
-            ),
-            dsa: this.slug,
-            form_url: this.$store.state.authRouteRequested
+            home_url: homeUrl,
+            slug: this.slug,
+            redirect_url: this.$store.state.authRouteRequested ? this.$store.state.authRouteRequested : homeUrl,
+            target: this.target,
+            invitation_token: this.invitationToken,
           }
         };
         this.$refs.axios.submit(config);
@@ -280,8 +284,7 @@ export default {
     },
     resetPasswordValidationColor: function() {
       return this.resetPasswordValidationStatus ? "indigo" : "red";
-    },
-    
+    }
   }
 };
 </script>

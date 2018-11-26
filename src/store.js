@@ -11,10 +11,10 @@ const vuexLocal = new VuexPersistence({
 export default new Vuex.Store({
   state: {
     env: 'dev',
-    baseUrl: "http://localhost:8082/nexus/deploy/backend-sf4-api/public/api/",
-    eaUrl: 'http://localhost:8082/nexus/deploy/ea/index.php/',
-	  /*baseUrl: "http://nexus.enaebl.com/api/",
-    eaUrl: "http://nexusea.enaebl.com/",*/
+    /*baseUrl: "http://localhost:8082/nexus/deploy/backend-sf4-api/public/api/",
+    eaUrl: 'http://localhost:8082/nexus/deploy/ea/index.php/',*/
+	baseUrl: "http://nexus.enaebl.com/api/",
+    eaUrl: "http://nexusea.enaebl.com/",
     authRouteRequested: '',
     debug: true,
     homeUrl: '/',

@@ -7,7 +7,6 @@
 </template>
 
 <script>
-import Vue from "vue";
 import Speech from "speak-tts";
 import Loader from "vue-spinner/src/ScaleLoader.vue";
 

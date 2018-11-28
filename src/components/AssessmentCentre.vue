@@ -26,10 +26,10 @@
         <template v-else>
           
           <!--The user has submitted the form-->
-          <template v-if="ac.user_data.assessment_form_sent || !isStudent">
+          <template v-if="ac.user_data.dsa_letter_full_submit || !isStudent">
             
             <!--Booking enabled for user-->
-            <template v-if="ac.user_data.booking_available || !isStudent">
+            <template v-if="ac.user_data.ac_booking_enabled || !isStudent">
               <v-layout row wrap mt-5 v-if="loadingEA">
                 <v-flex xs12 sm8 offset-sm2>
                   <h3 class="primary--text uppercase">Loading Appointments information</h3>
@@ -53,10 +53,25 @@
           
           <!--The user needs to submit the form-->
           <template v-else>
-            
             <v-container pa-5>
-              <v-form v-model="validationStatus" ref="form">
-                
+              <v-layout row wrap>
+                <v-flex sm12>
+                  <v-card-text><h3>You need to submit the following Assessment Form before booking an appointment.</h3></v-card-text>
+                </v-flex>
+              </v-layout>
+              
+              <v-layout row wrap>
+                <v-flex sm12>
+                  <v-alert :value="acFormErrors.length > 0" type="error" transition="scale-transition">
+                    <h4>Your form contains the following errors:</h4>
+                    <div v-for="(acError, acErrorIndex) in acFormErrors" :key="`acError-${acErrorIndex}`">
+                      <a class="white--text" @click="setActiveTab(acError.tab)" v-html="acError.error"></a>
+                    </div>
+                  </v-alert>
+                </v-flex>
+              </v-layout>
+              
+              <v-form v-model="validationStatus" ref="acForm">
                 <v-layout row wrap>
                   <v-flex sm12>
                     <v-card class="animated fadeIn">
@@ -82,28 +97,26 @@
                           <v-card flat>
                             <div class="text-xs-justify padding-20">
                               <p class="header-title hidden-sm-and-up">{{item.title}}</p>
-                              <v-layout row wrap v-for="(row, j) in item.components" :key="row.id">
+                              <v-layout row wrap v-for="(row) in item.components" :key="row.id">
                             
-                                <v-flex v-for="(col, k) in row" :key="col.id" xs12 :md1="col.class === 'md1'" :md2="col.class === 'md2'" :md3="col.class === 'md3'" :md4="col.class === 'md4'" :md5="col.class === 'md5'" :md6="col.class === 'md6'" :md7="col.class === 'md7'" :md8="col.class === 'md8'" :md9="col.class === 'md9'" :md10="col.class === 'md10'" :md11="col.class === 'md11'" :md12="col.class === 'md12'">
-                                  <p v-if="col.content_type === 'html'" v-html="col.html"></p>
+                                <v-flex v-for="(col) in row" :key="col.id" xs12 :md1="col.class === 'md1'" :md2="col.class === 'md2'" :md3="col.class === 'md3'" :md4="col.class === 'md4'" :md5="col.class === 'md5'" :md6="col.class === 'md6'" :md7="col.class === 'md7'" :md8="col.class === 'md8'" :md9="col.class === 'md9'" :md10="col.class === 'md10'" :md11="col.class === 'md11'" :md12="col.class === 'md12'">
+                                  <template v-if="col.content_type === 'html'">
+                                    <p v-html="col.html"></p>
+                                  </template>
 
-                                  <template v-if="col.content_type === 'input'">
+                                  <template v-else>
 
                                     <template v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length <= 255">
-                                      <v-text-field outline :type="col.input.type === 'number' ? 'number' : 'text'" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
+                                      <v-text-field outline :background-color="col.input.has_error ? 'error' : 'default'" :type="col.input.type === 'number' ? 'number' : 'text'" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.title" :label="col.input.title + (col.input.required ? ' (*)' : '')" :maxlength="col.input.max_length"></v-text-field>
                                     </template>
 
-                                    <template v-if="col.input.type === 'password'">
-                                      <v-text-field outline :type="col.input.type" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length"></v-text-field>
+                                    <template v-else-if="col.input.max_length > 255">
+                                      <v-textarea outline :background-color="col.input.has_error ? 'error' : 'default'" v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.title" :label="col.input.title + (col.input.required ? ' (*)' : '')" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
                                     </template>
 
-                                    <template v-if="col.input.max_length > 255">
-                                      <v-textarea outline v-if="(col.input.type === 'text' || col.input.type === 'number' || col.input.type === 'double') && col.input.max_length > 255" :readonly="col.input.read_only" :required="col.input.required" :disabled="col.input.disabled" v-model="col.input.value" :hint="col.input.hint ? col.input.hint : col.input.title" :label="col.input.title" :maxlength="col.input.max_length" :rows="col.input.rows"></v-textarea>
-                                    </template>
-
-                                    <template v-if="col.input.type === 'date' || col.input.type === 'month'">
+                                    <template v-else-if="col.input.type === 'date' || col.input.type === 'month'">
                                       <v-menu :disabled="col.input.read_only" v-model="col.input.modal" :close-on-content-click="false" :nudge-right="40" :return-value.sync="date" lazy transition="scale-transition" full-width min-width="290px">
-                                        <v-text-field outline :required="col.input.required" :disabled="col.input.disabled" :hint="col.input.hint ? col.input.hint : col.input.title" slot="activator" v-model="col.input.value" :label="col.input.title" readonly></v-text-field>
+                                        <v-text-field outline :background-color="col.input.has_error ? 'error' : 'default'" :required="col.input.required" :disabled="col.input.disabled" :hint="col.input.title" slot="activator" v-model="col.input.value" :label="col.input.title + (col.input.required ? ' (*)' : '')" readonly></v-text-field>
                                         <v-date-picker v-if="!col.input.disabled" no-title :show-current="true" :disabled="col.input.disabled" :readonly="col.input.read_only" v-model="col.input.value" :type="col.input.type">
                                           <v-spacer></v-spacer>
                                           <v-btn flat color="primary" @click="col.input.modal = !col.input.modal">OK</v-btn>
@@ -111,72 +124,34 @@
                                       </v-menu>
                                     </template>
 
-                                    <template v-if="col.input.type === 'checkbox'">
-                                      <v-checkbox v-model="col.input.value" :label="col.input.title" :hint="col.input.title"></v-checkbox>
+                                    <template v-else-if="col.input.type === 'checkbox'">
+                                      <v-checkbox :background-color="col.input.has_error ? 'error' : 'default'" v-model="col.input.value" :label="col.input.title" :hint="col.input.title"></v-checkbox>
                                     </template>
 
-                                    <template v-if="col.input.type === 'signature' || col.input.type === 'image'">
-                                      <v-flex>
-                                        <v-tooltip right color="black">
-                                          <img v-if="col.input.value" slot="activator" class="mt-3 thumbnail" :src="col.input.value" />
-                                          <span v-html="'Image preview'"></span>
-                                        </v-tooltip>
-                                      </v-flex>
-                                      <v-flex>
-                                        <v-tooltip right color="black">
-                                          <v-menu slot="activator" bottom offset-y>
-                                            <v-btn slot="activator" class="primary" style="margin-left: 0;">
-                                              <icon name="edit" class="fa"></icon>{{col.input.title}}
-                                            </v-btn>
-                                            <v-list class="primary--text">
-                                              <v-list-tile v-on:click="showDrawpad(i, j, k)" v-if="col.input.type === 'signature'"><v-list-tile-title><icon name="edit" class="fa"></icon>Drawpad</v-list-tile-title></v-list-tile>
-                                              <v-list-tile v-on:click="showUpload(i, j, k)"><v-list-tile-title><icon name="upload" class="fa"></icon>Local drive</v-list-tile-title></v-list-tile>
-                                              <v-list-tile v-on:click="showCamera(i, j, k)"><v-list-tile-title><icon name="camera" class="fa"></icon>Device camera</v-list-tile-title></v-list-tile>
-                                              <v-list-tile v-on:click="showQrCode(i, j, k)" :disabled="loadingQrCode" ><v-list-tile-title><icon name="mobile-alt" class="fa"></icon>Import from mobile</v-list-tile-title></v-list-tile>
-                                            </v-list>
-                                          </v-menu>
-                                          <span v-html="'Choose your input method'"></span>
-                                        </v-tooltip>
-                                      </v-flex>
+                                    <template v-if="col.input.type === 'radio_group'">
+                                      <p v-html="col.input.title" style="width: 100%"></p>
+                                      <v-radio-group v-model="col.input.value">
+                                        <v-radio v-for="l in col.input.options" :key="l" :label="l" :value="l"></v-radio>
+                                      </v-radio-group>
                                     </template>
-
+                                    
                                   </template>
                                 </v-flex>
                               </v-layout>
                             </div>
-                            
-                            <template v-if="i === items.length - 1">
-                              <v-layout row wrap>
-                                <v-flex md4 style="margin-left: 33px;">
-                                  <v-tooltip right color="black">
-                                    <v-text-field slot="activator" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDlg = true" @click:append="() => (uploadDlg = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
-                                    <span>Attach a copy of your DSA Letter</span>
-                                  </v-tooltip>
-                                </v-flex>
-                              </v-layout>
-                              <v-layout row wrap mt-5>
-                                <v-flex xs12>
-                                  <v-btn :disabled="loading" v-on:click="registerWithAC()" class="white--text indigo" slot="activator">
-                                    <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
-                                    <v-icon v-else size="22">done</v-icon>&nbsp;Register with this Centre
-                                  </v-btn>
-                                </v-flex>
-                              </v-layout>
-                              <p></p>
-                            </template>
                           </v-card>
                         </v-tab-item>
                       </v-tabs>
 
                       <v-tooltip bottom color="black">
-                        <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="previousTab()">
+                        <v-btn slot="activator" color="blue-grey darken-3" :disabled="loading" class="mb-5 white--text" @click="previousTab()">
                           <v-icon>chevron_left</v-icon>
                         </v-btn>
                         <span>Previous tab</span>
                       </v-tooltip>
 
                       <v-tooltip bottom color="black">
-                        <v-btn slot="activator" color="cyan" :disabled="loading" class="mb-5 white--text" @click="nextTab()">
+                        <v-btn slot="activator" color="blue-grey darken-3" :disabled="loading" class="mb-5 white--text" @click="nextTab()">
                           <v-icon>chevron_right</v-icon>
                         </v-btn>
                         <span>Next tab</span>
@@ -184,7 +159,22 @@
                     </v-card>
                   </v-flex>
                 </v-layout>
+                <v-layout row wrap>
+                  <v-flex sm4 offset-sm4 mt-3>
+                    <v-tooltip bottom color="black">
+                      <v-text-field slot="activator" :readonly="true" v-model="dsaLetterName" label="DSA Letter" :rules="dsaLetterRules" prepend-icon="attach_file" append-icon="folder" @click="uploadDlg = true" @click:append="() => (uploadDlg = true)" type="text" hint="Upload a copy of your DSA letter"></v-text-field>
+                      <span>Attach a copy of your DSA Letter</span>
+                    </v-tooltip>
+                  </v-flex>
+                  <v-flex sm4 offset-sm4 mt-3>
+                    <v-btn :disabled="loading" large v-on:click="submitACForm(true, active)" class="white--text indigo full-width" slot="activator">
+                      <icon v-if="loading" name="circle-notch" spin class="fa gray--text"></icon>
+                      <v-icon v-else class="fa" size="22">done</v-icon>Submit form
+                    </v-btn>
+                  </v-flex>
+                </v-layout>
               </v-form>
+
             </v-container>
 
             <v-dialog width="500" v-model="uploadDlg" persistent>
@@ -219,43 +209,6 @@
         </v-container>
       </template>
     </template>
-
-    <!--
-
-    <template v-else>
-      <template v-if="!ac.registered">
-        
-
-        
-      </template>
-      
-      <template v-else>
-        <template v-if="isGuest">
-          <v-layout row wrap>
-            <v-flex xs12>
-              <v-card-text align-center justify-center class="animated fadeIn">
-                <h3 color="primary">Congratulations!</h3>
-                <h4>
-                  You have successfully registered with this Centre.<br />
-                  Your browser will redirect you to the login page in a few seconds.
-                </h4>
-                <v-tooltip bottom color="black">
-                  <v-btn to="/login" slot="activator" color="cyan" class="mb-2">
-                    <v-icon class="white--text">lock</v-icon><span class="white--text">Go to Login Page</span>
-                  </v-btn>
-                  <span>Take me to the login page now</span>
-                </v-tooltip>
-              </v-card-text>
-            </v-flex>
-          </v-layout>
-        </template>
-        
-        
-      </template>
-      
-    </template>
-
-    -->
 
     <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
       <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
@@ -343,6 +296,8 @@ import AcceptInvitation from "@/components/AcceptInvitation";
 export default {
   data() {
     return {
+      formSent : false,
+      acFormErrors: [],
       validParams: false,
       loadingSignatureByQrCode: false,
       loadingQrCode: false,
@@ -357,32 +312,11 @@ export default {
       scannerUrl: "",
       bus: new Vue(),
       items: [],
-      appointments: [],
       loadingEA: false,
-      dlgViewCalendar: false,
-      dlgWorkingPlan: false,
-      newUnavPeriodError: false,
-      calendarEvents: [],
-      newUnavPeriodErrors: [],
-      newUnavailablePeriod: {},
-      unavPeriodValidation: false,
-      dlgSetUnavPeriod: false,
-      confirmAppointmentDlg: false,
-      newAppointmentValidation: false,
-      loadingHours: false,
-      newAppointment: { service: {}, assessor: {}, date: null, hour: null },
       tabs: null,
       e1: true,
-      selectedServices: [],
-      showBookingDlg: false,
       uploadDlg: false,
-      naServicesDlg: false,
-      cancelRegistrationDlg: false,
-      updateServiceDlg: false,
-      cancelUserRegDlg: false,
-      inviteUsersDlg: false,
       validationStatus: false,
-      settingsValidationStatus: false,
       loadingInitialElements: true,
       currentUser: { name: "" },
       acSlug: null,
@@ -390,37 +324,7 @@ export default {
       snackbar: false,
       loading: false,
       loadingPostcodeInfo: false,
-      nameRules: [v => !!v || "This field is required"],
-      lastNameRules: [v => !!v || "This field is required"],
       dsaLetterRules: [v => !!v || "This field is required"],
-      passwordRules: [
-        v => !!v || "This field is required",
-        v => (v && v.length > 5) || "Password requires at least 6 characters"
-      ],
-      durationRules: [
-        v => !!v || "This field is required",
-        v => (v && v > 4 && v < 481) || "This value is not allowed"
-      ],
-      attendantsRules: [
-        v => !!v || "This field is required",
-        v => (v && v > 0) || "This value is not allowed"
-      ],
-      priceRules: [
-        v => !!v || "This field is required",
-        v => (v && v >= 0) || "This value is not allowed"
-      ],
-      passwordConfirmRules: [
-        v => !!v || "This field is required",
-        v => v === this.ac.user_data.password || "Passwords do not match"
-      ],
-      emailRules: [
-        v => !!v || "E-mail is required",
-        v =>
-          /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
-          "E-mail must be valid"
-      ],
-      postcodeRules: [v => !!v || "This field is required"],
-      addressRules: [v => !!v || "This field is required"],
       operationMessage: "Enter your credentials",
       operationMessageType: "warning",
       dsaLetterName: "",
@@ -495,18 +399,18 @@ export default {
 
       if (!this.componentMounted) {
         this.loadingInitialElements = true;
-        var config = {
-          url: "get-ac-info",
-          params: {
-            slug: this.acSlug,
-            invitation_token: this.invitationToken
-          }
-        };
         this.ac = {
           id: null,
           settings: {
             name: "Validating Assessment Centre",
             admin: null
+          }
+        };
+        var config = {
+          url: "get-ac-info",
+          params: {
+            slug: this.acSlug,
+            invitation_token: this.invitationToken
           }
         };
         this.$refs.axios.submit(config);
@@ -519,202 +423,6 @@ export default {
         this.$refs.iframe.style.height = event.data.height + "px";
       }
     },
-    toggleUserStatus(userId, status) {
-      var config = {
-        method: "post",
-        url: "set-ac-user-status",
-        params: {
-          user_id: userId,
-          ac_id: this.ac.id,
-          status: status
-        }
-      };
-      this.loading = true;
-      this.$refs.axios.submit(config);
-    },
-    validateUnavailablePeriod() {
-      var startDate = moment(
-        this.newUnavailablePeriod.start_date +
-          " " +
-          this.newUnavailablePeriod.start_hour,
-        "YYYY-MM-DD HH:mm"
-      );
-      var endDate = moment(
-        this.newUnavailablePeriod.end_date +
-          " " +
-          this.newUnavailablePeriod.end_hour,
-        "YYYY-MM-DD HH:mm"
-      );
-      if (startDate.isValid() && endDate.isValid()) {
-        var diff = endDate.diff(startDate) / 60000;
-        if (diff < 1) {
-          this.newUnavPeriodErrors = ["Invalid date range"];
-          this.newUnavPeriodError = true;
-        } else if (diff < 5) {
-          this.newUnavPeriodErrors = ["Select a range greater than 5 minutes"];
-          this.newUnavPeriodError = true;
-        } else {
-          this.newUnavPeriodErrors = [];
-          this.newUnavPeriodError = false;
-        }
-      } else {
-        this.newUnavPeriodError = true;
-      }
-    },
-    setUnavailablePeriod() {
-      this.validateUnavailablePeriod();
-      if (!this.newUnavPeriodError) {
-        var config = {
-          method: "post",
-          url: "set-unavailable-period",
-          params: {
-            period: this.newUnavailablePeriod,
-            ac_id: this.ac.id
-          }
-        };
-        this.loading = true;
-        this.$refs.axios.submit(config);
-      }
-    },
-    resetNewAppointmentInfo() {
-      this.resetNewAppDateAndTime();
-      this.ac.appointment_restrictions.needs_assessors = [];
-      this.newAppointment.assessor = null;
-      if (
-        this.newAppointment.service &&
-        this.ac.settings.availability_type !== "Combined"
-      ) {
-        this.ac.needs_assessors.forEach(assessor => {
-          if (assessor.status === 1) {
-            assessor.services.forEach(service => {
-              if (service.id === this.newAppointment.service.id) {
-                this.ac.appointment_restrictions.needs_assessors.push({
-                  id: assessor.id,
-                  name: assessor.name
-                });
-              }
-            });
-          }
-        });
-      }
-    },
-    saveAppointment() {
-      var config = {
-        method: "post",
-        url: "create-appointment",
-        params: {
-          appointment: this.newAppointment,
-          home_url: window.location.href.replace(this.$route.path, "")
-        }
-      };
-      this.loading = true;
-      this.$refs.axios.submit(config);
-    },
-    resetNewAppDateAndTime() {
-      this.newAppointment.date = null;
-      this.newAppointment.hour = null;
-    },
-    allowedDates(val) {
-      return this.ac.appointment_restrictions.allowed_dates.includes(val);
-    },
-    getAvailableHours() {
-      this.newAppointment.hour = null;
-      if (
-        this.newAppointment.service &&
-        this.newAppointment.date &&
-        (this.newAppointment.assessor ||
-          this.ac.settings.availability_type === "Combined")
-      ) {
-        var config = {
-          url: "get-available-hours",
-          params: {
-            service_id: this.newAppointment.service.id,
-            assessor_id: this.newAppointment.assessor
-              ? this.newAppointment.assessor.id
-              : null,
-            date: this.newAppointment.date
-          }
-        };
-        this.loadingHours = true;
-        this.$refs.axios.submit(config);
-      } else {
-        this.snackbar = true;
-        this.operationMessageType = "warning";
-        this.operationMessage = "Select a service and an assessor -if allowed";
-      }
-    },
-    toggleBookingDlg() {
-      if (this.showBookingDlg) {
-        this.ac.needs_assessors.splice(this.ac.needs_assessors.length - 1, 1);
-      } else {
-        this.ac.needs_assessors.push({ id: -1, name: "- Any assessor -" });
-      }
-      this.newAppointment = {};
-      this.showBookingDlg = !this.showBookingDlg;
-    },
-    updateACSettings() {
-      if (this.$refs.settingsForm.validate()) {
-        this.loading = true;
-        var config = {
-          method: "post",
-          url: "update-ac-settings",
-          params: {
-            ac_id: this.ac.id,
-            settings: this.ac.settings
-          }
-        };
-        this.$refs.axios.submit(config);
-      }
-    },
-    updateNAServices() {
-      this.loading = true;
-      var config = {
-        method: "post",
-        url: "update-na-services",
-        params: {
-          ac_id: this.ac.id,
-          user_id: this.currentNA.id,
-          services: this.selectedServices
-        }
-      };
-      this.$refs.axios.submit(config);
-    },
-    showNAServices(index, item) {
-      this.currentNAIndex = index;
-      this.currentNA = item;
-      this.selectedServices = this.currentNA.services;
-      this.naServicesDlg = true;
-    },
-    updateService() {
-      if (this.$refs.updateServiceForm.validate()) {
-        this.loading = true;
-        var config = {
-          method: "post",
-          url: "update-ac-service",
-          params: {
-            ac_id: this.ac.id,
-            item: this.currentService,
-            action: this.currentServiceAction
-          }
-        };
-        this.$refs.axios.submit(config);
-      }
-    },
-    showUpdateServiceForm(index, item, mode) {
-      this.currentServiceIndex = index;
-      this.currentService = JSON.parse(JSON.stringify(item));
-      this.currentServiceAction = mode;
-      this.updateServiceDlg = true;
-      if (mode !== "Delete service") {
-        this.$nextTick(this.$refs.currentServiceName.focus);
-      }
-    },
-    setCurrentUser(index, user, userType) {
-      this.currentUserIndex = index;
-      this.currentUser = user;
-      this.currentUserType = userType;
-      this.cancelUserRegDlg = true;
-    },
     setDSALetter(event) {
       this.ac.user_data.dsa_letter = event;
       if (event) {
@@ -722,115 +430,6 @@ export default {
         this.uploadDlg = false;
       } else {
         this.dsaLetterName = "";
-      }
-    },
-    inviteUser() {
-      if (this.$refs.inviteForm.validate()) {
-        this.loading = true;
-        var config = {
-          method: "post",
-          url: "invite-user",
-          params: {
-            invitation: this.invitation,
-            ac_id: this.ac.id,
-            url: window.location.href.replace(
-              this.$route.path,
-              "/assessment-centre/" + this.ac.settings.token + "/signup/"
-            )
-          }
-        };
-        this.$refs.axios.submit(config);
-      }
-    },
-    cancelUserRegistration() {
-      this.loading = true;
-      var config = {
-        method: "post",
-        url: "unregister-user-from-ac",
-        params: {
-          user_id: this.currentUser.id,
-          ac_id: this.ac.id
-        }
-      };
-      this.$refs.axios.submit(config);
-    },
-    cancelRegistration() {
-      this.loading = true;
-      var config = {
-        method: "post",
-        url: "unregister-from-ac",
-        params: {
-          ac_id: this.ac.id
-        }
-      };
-      this.$refs.axios.submit(config);
-    },
-    registerWithAC() {
-      if (this.$refs.form.validate()) {
-        if (this.acRole === "student") {
-          for (var i in this.items) {
-            var rows = this.items[i].components;
-            for (var j in rows) {
-              var row = rows[j];
-              for (var k in row) {
-                var component = row[k];
-                if (
-                  component.content_type ===
-                  "input" /* && component.input.value*/
-                ) {
-                  this.ac.user_data[component.input.name] =
-                    component.input.value;
-                }
-              }
-            }
-          }
-
-          /*if (!this.ac.user_data.password) {
-            this.operationMessage = "Password missing";
-            this.validationStatus = false;
-          } else if (!this.ac.user_data.password_confirm) {
-            this.operationMessage = "Password confirmation missing";
-            this.validationStatus = false;
-          } else if (!this.ac.user_data.name) {
-            this.operationMessage = "Student's name missing";
-            this.validationStatus = false;
-          } else if (!this.ac.user_data.email) {
-            this.operationMessage = "Email missing";
-            this.validationStatus = false;
-          } else if (
-            this.ac.user_data.password !== this.ac.user_data.password_confirm
-          ) {
-            this.operationMessage = "Passwords do not match";
-            this.validationStatus = false;
-          } else {
-            this.validationStatus = true;
-          }*/
-          this.validationStatus = true;
-        }
-
-        if (this.validationStatus) {
-          this.loading = true;
-          var headers = {
-            "Content-Type": "multipart/form-data"
-          };
-          var formData = new FormData();
-          formData.append("dsa_letter", this.ac.user_data.dsa_letter);
-          //formData.append("data", JSON.stringify(data));
-          formData.append("ac", JSON.stringify(this.ac));
-          formData.append("url", this.activationUrl);
-          formData.append("role", this.acRole);
-          formData.append("invitation_token", this.invitationToken);
-          var config = {
-            method: "form",
-            url: "register-with-ac",
-            params: formData,
-            headers: headers
-          };
-          this.$refs.axios.submit(config);
-        } else {
-          this.operationMessageType = "warning";
-          this.snackbar = true;
-        }
       }
     },
     handleHttpResponse(event) {
@@ -849,8 +448,16 @@ export default {
               this.ac = response.data;
               this.items = this.ac.star_assessment_form;
               this.acRole = this.ac.role;
-              this.eaUrl = this.$store.state.eaUrl + (this.acRole === "student" ? "appointments/index/" : "backend/index/");
-              this.eaUrl += `?ac=${this.acSlug}&jwt=${this.$store.state.payload.jwt}&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${this.$store.state.baseUrl}`;
+              this.eaUrl =
+                this.$store.state.eaUrl +
+                (this.acRole === "student"
+                  ? "appointments/index/"
+                  : "backend/index/");
+              this.eaUrl += `?ac=${this.acSlug}&jwt=${
+                this.$store.state.payload.jwt
+              }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
+                this.$store.state.baseUrl
+              }`;
               this.$store.state.homeUrl = `/assessment-centre/${this.acSlug}`;
 
               if (this.ac.registered && this.acAction === "signup") {
@@ -879,8 +486,14 @@ export default {
           case this.apiUrls.login:
             if (response.code === "success") {
               this.$store.commit("updatePayload", response.data);
-              this.eaUrl = this.$store.state.eaUrl + (this.isStudent ? "appointments/index/" : "backend/index/");
-              this.eaUrl += `?ac=${this.acSlug}&jwt=${this.$store.state.payload.jwt}&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${this.$store.state.baseUrl}`;
+              this.eaUrl =
+                this.$store.state.eaUrl +
+                (this.isStudent ? "appointments/index/" : "backend/index/");
+              this.eaUrl += `?ac=${this.acSlug}&jwt=${
+                this.$store.state.payload.jwt
+              }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
+                this.$store.state.baseUrl
+              }`;
               this.loadingEA = true;
               var redirect = this.$store.state.authRouteRequested;
               this.$store.state.authRouteRequested = null;
@@ -894,6 +507,15 @@ export default {
             break;
           case this.apiUrls.resetPassword:
             this.snackbar = true;
+            break;
+          case "submit-ac-form":
+            this.loading = false;
+            this.snackbar = true;
+            if (response.code === "success") {
+              this.formSent = true;
+              this.ac.user_data.dsa_letter_full_submit = response.dsa_letter_full_submit;
+              this.ac.user_data.ac_booking_enabled = response.ac_booking_enabled;
+            }
             break;
           default:
             this.snackbar = true;
@@ -970,15 +592,92 @@ export default {
       }
       return inputsCount === inputsFilled ? 2 : inputsFilled === 0 ? 0 : 1;
     },
+    setActiveTab(tab) {
+      this.active = tab;
+    },
     nextTab(i) {
-      const active = parseInt(this.active);
-      this.active = active < this.items.length - 1 ? active + 1 : 0;
-      this.submit(false, i);
+      var active = parseInt(this.active);
+      this.setActiveTab(active < this.items.length - 1 ? active + 1 : 0);
+      this.submitACForm(false, i);
     },
     previousTab(i) {
-      const active = parseInt(this.active);
-      this.active = active > 0 ? active - 1 : this.items.length - 1;
-      this.submit(false, i);
+      var active = parseInt(this.active);
+      this.setActiveTab(active > 0 ? active - 1 : this.items.length - 1);
+      this.submitACForm(false, i);
+    },
+    submitACForm(fullSubmit, step) {
+      if ((this.isStudent && this.$refs.acForm.validate()) && !this.formSent && (step != this.active || fullSubmit) ) {
+        var totalInputs = 0;
+        var filledInputs = 0;
+
+        var data = {};
+        this.acFormErrors = [];
+
+        for (var i in this.items) {
+          var rows = this.items[i].components;
+          for (var j in rows) {
+            var row = rows[j];
+            for (var k in row) {
+              var component = row[k];
+              if (component.content_type === "input") {
+                totalInputs++;
+                if (component.input.required && !component.input.value) {
+                  this.acFormErrors.push({tab: parseInt(i), error: `${component.input.title} is required.`});
+                  this.items[i].components[j][k].input.has_error = true;
+                }
+                else if (component.input.value) {
+                  this.items[i].components[j][k].input.has_error = false;
+                  filledInputs++;
+                  data[component.input.name] = component.input.value;
+                }
+              } else if (component.content_type === "input_group") {
+                for (var l in component.rows) {
+                  var inputRow = component.rows[l];
+                  for (var m in inputRow) {
+                    var inputItem = inputRow[m];
+                    if (
+                      inputItem.content_type === "input" &&
+                      inputItem.input.value
+                    ) {
+                      totalInputs++;
+                      if (inputItem.input.value) {
+                        filledInputs++;
+                        data[inputItem.input.name] = inputItem.input.value;
+                        data[component.name] = component.rows.length; //saving rows number
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        if (this.acFormErrors.length === 0) {
+          
+          data.full_submit = fullSubmit;
+          data.total_inputs = totalInputs;
+          data.filled_inputs = filledInputs;
+          this.loading = true;
+
+          var headers = {
+            "Content-Type": "multipart/form-data"
+          };
+
+          var formData = new FormData();
+          formData.append("dsa_letter", this.ac.user_data.dsa_letter);
+          formData.append("data", JSON.stringify(data));
+          formData.append("slug", this.acSlug);
+
+          var config = {
+            method: "form",
+            url: "submit-ac-form",
+            params: formData,
+            headers: headers
+          };
+          this.$refs.axios.submit(config);
+        }
+      }
     },
     setCurrentCoordinates(iVal, jVal, kVal) {
       this.i = iVal;
@@ -1144,7 +843,6 @@ export default {
     }
   },
   computed: {
-    
     validationMessage: function() {
       return this.validationStatus ? "Good to go!" : "The form is incomplete";
     },
@@ -1178,5 +876,65 @@ export default {
 }
 .padding-20 {
   padding: 20px 40px;
+}
+
+pre {
+  overflow: auto;
+}
+pre .string {
+  color: #885800;
+}
+pre .number {
+  color: blue;
+}
+pre .boolean {
+  color: magenta;
+}
+pre .null {
+  color: red;
+}
+pre .key {
+  color: green;
+}
+
+h1 {
+  text-align: center;
+  font-size: 36px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+fieldset {
+  border: 0;
+}
+
+.panel {
+  margin-bottom: 20px;
+  background-color: #fff;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  border-color: #ddd;
+}
+
+.panel-heading {
+  color: #333;
+  background-color: #f5f5f5;
+  border-color: #ddd;
+
+  padding: 10px 15px;
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.panel-body {
+  padding: 15px;
+}
+
+.field-checklist .wrapper {
+  width: 100%;
 }
 </style>

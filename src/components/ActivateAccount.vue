@@ -68,6 +68,7 @@ export default {
             that.$store.commit("updatePayload", response.data.data);
             that.$store.state.authRouteRequested = null;
             setTimeout(function() {
+              console.log(response.data.data.redirect);
               that.$router.push(response.data.data.redirect);
             }, 5000);
           }

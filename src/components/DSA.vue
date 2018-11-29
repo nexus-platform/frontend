@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid mt-5>
+  <v-container fluid mt-5 class="animated fadeIn">
 
     <template v-if="loadingInitialElements">
       <v-layout row wrap mt-2>
@@ -171,6 +171,7 @@ export default {
               this.$store.state.myDsaFormsUrl = `/dsa/${
                 this.$route.params.dsa_slug
               }/my-dsa-forms/index`;
+              this.$store.state.authType = 'dsa';
               this.dsaName = response.data.dsaName;
             } else if (response.code === "warning") {
               this.dsaName = response.data.dsaName;
@@ -185,6 +186,7 @@ export default {
               this.$store.state.authRouteRequested = null;
               this.$router.push(
                 redirect ? redirect : `${this.$store.state.homeUrl}/index`
+                //redirect ? redirect : '/dashboard'
               );
             } else {
               this.snackbar = true;

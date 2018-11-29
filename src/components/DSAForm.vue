@@ -269,8 +269,15 @@
           <template v-else>
             <v-layout row>
               <v-flex xs12>
-                <img :src="qrCodeImage" class="animated fadeIn" alt="Scan this code with your smartphone" />
-                <h3>Scan this code from <a>{{scannerUrl}}</a> and follow the instructions on screen.<br/><span class="red--text">DO NOT close this window. Press the button below after submitting your signature from your mobile device.</span></h3>
+                <img :src="qrCodeImage" class="animated fadeIn" alt="Scan this code with your smartphone" :title="randomQrCode" />
+                <v-card-text style="text-align: justify;">
+                  <h4>
+                    <b>INSTRUCTIONS:</b><br/>
+                    1. Scan this code from <a>{{ scannerUrl }}</a> and follow the instructions on screen.<br/>
+                    2. Open the Web browser in your mobile device and navigate to this URL: <a>{{ scannerUrl.replace('/qrscan', `/sign-from-mobile/${randomQrCode}`) }}</a>.<br/>
+                    <span justify-center class="red--text uppercase">DO NOT close this modal.</span><br/>Press the button below after submitting your signature from your mobile device.
+                  </h4>
+                </v-card-text>
               </v-flex>
             </v-layout>
             <v-layout row>
@@ -278,7 +285,7 @@
                 <v-btn :disabled="loadingSignatureByQrCode" @click="setSignatureFromQr()" color="info">
                   <icon v-if="loadingSignatureByQrCode" name="circle-notch" spin class="gray--text fa"></icon>
                   <icon v-else name="download" class="fa"></icon>
-                  Retrieve data
+                  Retrieve signature
                 </v-btn>
               </v-flex>
             </v-layout>

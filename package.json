@@ -13,7 +13,7 @@
   "dependencies": {
     "@xkeshi/image-compressor": "^0.5.3",
     "@xkeshi/vue-qrcode": "^1.0.0",
-    "animate.css": "^3.6.1",
+    "animate.css": "^3.7.0",
     "axios": "^0.18.0",
     "buefy": "^0.7.1",
     "classlist": "^2.0.0",

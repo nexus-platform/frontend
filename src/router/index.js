@@ -11,9 +11,10 @@ import SignFromMobile from '@/components/SignFromMobile';
 import QRCodeScanner from '@/components/QRCodeScanner';
 import NotAllowed from '@/components/NotAllowed';
 import AssessmentCentre from '@/components/AssessmentCentre';
-import AcceptInvitation from '@/components/AcceptInvitation';
 import MyBookings from '@/components/MyBookings';
 import DSA from '@/components/DSA';
+import Dashboard from '@/components/Dashboard';
+
 import store from '../store';
 
 Vue.use(Router);
@@ -106,15 +107,15 @@ const routes = [
     name: 'AssessmentCentre',
     component: AssessmentCentre
   },
-  /*{
-    path: '/accept-invitation/:token',
-    name: 'AcceptInvitation',
-    component: AcceptInvitation
-  },*/
   {
     path: '/my-bookings',
     name: 'MyBookings',
     component: MyBookings
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard
   }
 ];
 

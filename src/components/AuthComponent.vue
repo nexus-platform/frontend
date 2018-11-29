@@ -178,6 +178,10 @@ export default {
     },
     handleHttpResponse(event) {
       this.loading = false;
+      var response = event.data.result.response;
+      if (response.code === 'success') {
+        this.$store.state.registrations = response.data.registrations;
+      }
       this.$emit("finish", event);
     },
     showCapsLockMsg(e) {

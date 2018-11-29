@@ -18,7 +18,7 @@
 
       <v-layout row v-if="!isMobile">
         <v-flex xs8 offset-xs2>
-          <v-alert outline v-model="alert" type="warning" icon="warning" transition="scale-transition" dismissible>Looks like you're not using a mobile device...</v-alert>
+          <v-alert v-model="alert" type="warning" icon="warning" transition="scale-transition" dismissible>Oops! Looks like you're not using a mobile device...</v-alert>
         </v-flex>
       </v-layout>
       

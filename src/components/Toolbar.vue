@@ -1,8 +1,13 @@
 <template>
   <v-layout row wrap>
     <v-flex xs12 sm12 md12 lg12>
-      
-      <v-navigation-drawer class="hidden-md-and-up" v-model="drawer" :mini-variant="drawerMini" absolute temporary>
+      <v-navigation-drawer
+        class="hidden-md-and-up"
+        v-model="drawer"
+        :mini-variant="drawerMini"
+        absolute
+        temporary
+      >
         <v-list class="pa-1">
           <v-list-tile-action v-if="drawerMini">
             <v-btn icon @click.stop="drawerMini = !drawerMini">
@@ -11,7 +16,7 @@
           </v-list-tile-action>
           <v-list-tile avatar tag="div">
             <v-list-tile-avatar>
-              <img src="static/img/logo_color.png" />
+              <img src="static/img/logo_color.png">
             </v-list-tile-avatar>
 
             <v-list-tile-content>
@@ -40,7 +45,7 @@
 
           <template v-else>
             <template v-if="isStudent">
-              <v-list-tile :to="this.$store.state.dsaFormsUrl">
+              <v-list-tile :to="`${$store.state.homeUrl}/dsa-forms/index`">
                 <v-list-tile-action>
                   <v-icon>picture_as_pdf</v-icon>
                 </v-list-tile-action>
@@ -54,14 +59,7 @@
               </v-list-tile-action>
               <v-list-tile-content>My Profile</v-list-tile-content>
             </v-list-tile>
-
-            <v-list-tile v-if="isStudent" :to="this.$store.state.myDsaFormsUrl">
-              <v-list-tile-action>
-                <v-icon>picture_as_pdf</v-icon>
-              </v-list-tile-action>
-              <v-list-tile-content>My DSA Forms</v-list-tile-content>
-            </v-list-tile>
-
+            
             <v-list-tile v-on:click="logout()">
               <v-list-tile-action>
                 <v-icon>power_settings_new</v-icon>
@@ -74,29 +72,68 @@
 
       <v-toolbar class="indigo animated slideInDown" fixed>
         <v-toolbar-side-icon @click.stop="drawer = !drawer" class="white--text hidden-md-and-up"></v-toolbar-side-icon>
-        
+
         <v-toolbar-title class="white--text">
           <router-link to="/" tag="span" style="cursor: pointer">
-            <img src="static/img/logo_text.png" />
+            <img src="static/img/logo_text.png">
           </router-link>
         </v-toolbar-title>
-        
+
         <v-spacer></v-spacer>
-        
+
         <v-toolbar-items class="hidden-sm-and-down">
-
           <v-btn flat :to="`${this.$store.state.homeUrl}/index`">
-            <v-icon class="white--text">home</v-icon><span class="white--text">Home</span>
+            <v-icon class="white--text">home</v-icon>
+            <span class="white--text">Home</span>
           </v-btn>
-          
-          <template v-if="!isGuest" >
+
+          <template v-if="!isGuest">
             <v-btn flat to="/dashboard">
-              <v-icon class="white--text">dashboard</v-icon><span class="white--text">My dashboard</span>
+              <v-icon class="white--text">dashboard</v-icon>
+              <span class="white--text">Dashboard</span>
             </v-btn>
 
-            <v-btn v-if="isStudent && this.$store.state.authType === 'dsa'" flat :to="this.$store.state.dsaFormsUrl">
-              <v-icon class="white--text">picture_as_pdf</v-icon><span class="white--text">DSA Forms</span>
-            </v-btn>
+            <template v-if="$store.state.authType === 'dsa'">
+              <v-menu offset-y transition="fade-transition" bottom>
+                <v-btn class="white--text" flat slot="activator">
+                  <v-icon class="menu-icon">school</v-icon>
+                  <span class="white--text">DSA Office</span>
+                </v-btn>
+                <v-list v-if="isStudent">
+                  <v-list-tile :to="`${$store.state.homeUrl}/dsa-forms/index`" class="dropdown-menu-item">
+                    <v-icon class="menu-icon">picture_as_pdf</v-icon>
+                    <span>DSA Forms</span>
+                  </v-list-tile>
+                  <v-list-tile :to="`${$store.state.homeUrl}/my-dsa-forms/index`" class="dropdown-menu-item">
+                    <v-icon class="menu-icon">picture_as_pdf</v-icon>
+                    <span>My Forms</span>
+                  </v-list-tile>
+                </v-list>
+                <v-list v-else-if="isDO">
+                  <v-list-tile v-if="$store.state.payload.is_univ_manager" :to="`${$store.state.homeUrl}/admin`" class="dropdown-menu-item">
+                    <v-icon class="menu-icon">fas fa-cog</v-icon>Manage
+                  </v-list-tile>
+                  <v-list-tile :to="`${$store.state.homeUrl}/submitted-forms`" class="dropdown-menu-item">
+                    <v-icon class="menu-icon">mail</v-icon>In-progress forms
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
+            </template>
+
+            <template v-if="$store.state.authType === 'ac'">
+              <v-menu offset-y transition="fade-transition" bottom>
+                <v-btn class="white--text" flat slot="activator">
+                  <v-icon class="menu-icon">assessment</v-icon>
+                  <span class="white--text">Assessment Centre</span>
+                </v-btn>
+                <v-list>
+                  <v-list-tile v-if="isAC || isStudent" :to="`${$store.state.homeUrl}/ac-forms/index`" class="dropdown-menu-item">
+                    <v-icon class="menu-icon">insert_drive_file</v-icon>
+                    <span>{{isAC ? 'Assessment Forms' : 'My Assessment Form'}}</span>
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
+            </template>
 
             <!--<template v-if="isStudent || isNA">
               <v-btn flat to="/my-bookings">
@@ -104,231 +141,288 @@
               </v-btn>
             </template>-->
 
-            <v-menu v-if="isDO" offset-y transition="fade-transition" bottom>
-              <v-btn class="white--text" flat slot="activator">
-                <v-icon class="menu-icon">fas fa-cog</v-icon><span class="white--text">Manage</span>
-              </v-btn>
-              <v-list>
-                <v-list-tile v-if="this.$store.state.payload.is_univ_manager" :to="$store.state.homeUrl.replace('/index', '/admin')" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">fas fa-graduation-cap</v-icon>My Institute
-                </v-list-tile>
-                <v-list-tile :to="$store.state.homeUrl.replace('/index', '/submitted-forms')" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">mail</v-icon>In-progress forms
-                </v-list-tile>
-              </v-list>
-            </v-menu>
-
-            <v-menu v-if="isAC || isNA" offset-y transition="fade-transition" bottom>
-              <v-btn class="white--text" flat slot="activator">
-                <v-icon class="menu-icon">assessment</v-icon><span class="white--text">My Assessment Centres</span>
-              </v-btn>
-              <v-list>
-                <v-list-tile v-for="(ac, acIndex) in this.$store.state.payload.acs" :key="`ac-${acIndex}`" :to="'/assessment-centre/' + ac.slug + '/index/'" class="dropdown-menu-item">
-                  <span class="text-xs-left" style="max-width: 400px; font-size: 14px;">{{ac.name}}</span>
-                </v-list-tile>
-              </v-list>
-            </v-menu>
-
             <v-menu offset-y transition="slide-down" bottom :close-on-content-click="false">
               <v-btn color="primary" class="white--text" flat slot="activator">
-                <v-badge id="badge_notif" ref="badge_notif" v-model="showNotificationsCount" color="red">
+                <v-badge
+                  id="badge_notif"
+                  ref="badge_notif"
+                  v-model="showNotificationsCount"
+                  color="red"
+                >
                   <span slot="badge">{{notificationsCount}}</span>
                   <v-icon v-if="notificationsCount > 0" medium color="white">notifications_active</v-icon>
                   <v-icon v-else medium color="white">notifications_none</v-icon>
                 </v-badge>
               </v-btn>
-              
+
               <v-list class="general-notif-container">
-                  
-                  <v-tabs v-model="tabs" fixed-tabs icons-and-text color="transparent" slider-color="primary">
-                    <v-tab href="#notifications-list" class="primary--text">
-                      Notifications
-                      <v-icon>notifications_none</v-icon>
-                    </v-tab>
-                    <v-tab href="#activities-list" class="primary--text">
-                      Activities
-                      <v-icon>alarm</v-icon>
-                    </v-tab>
-                  </v-tabs>
+                <v-tabs
+                  v-model="tabs"
+                  fixed-tabs
+                  icons-and-text
+                  color="transparent"
+                  slider-color="primary"
+                >
+                  <v-tab href="#notifications-list" class="primary--text">Notifications
+                    <v-icon>notifications_none</v-icon>
+                  </v-tab>
+                  <v-tab href="#activities-list" class="primary--text">Activities
+                    <v-icon>alarm</v-icon>
+                  </v-tab>
+                </v-tabs>
 
-                  <v-tabs-items v-model="tabs" class="white">
-                    <v-tab-item id="notifications-list">
-                      <v-card>
-                        <template v-if="notifications.length === 0">
-                          <v-card-text>
-                            <v-list-tile-content>
-                              <v-list-tile-title class="text-xs-center info--text">
-                                <icon name="info-circle" class="fa"></icon>
-                                No items found
-                              </v-list-tile-title>
-                            </v-list-tile-content>
-                          </v-card-text>
-                        </template>
+                <v-tabs-items v-model="tabs" class="white">
+                  <v-tab-item id="notifications-list">
+                    <v-card>
+                      <template v-if="notifications.length === 0">
+                        <v-card-text>
+                          <v-list-tile-content>
+                            <v-list-tile-title class="text-xs-center info--text">
+                              <icon name="info-circle" class="fa"></icon>No items found
+                            </v-list-tile-title>
+                          </v-list-tile-content>
+                        </v-card-text>
+                      </template>
 
-                        <template v-else>
-                          <div v-for="(item, index) in notifications" :key="`N-${index}`">
-                            <v-container class="text-xs-left notif-container" :class="selectedNotifications.indexOf(index) >= 0 ? 'selected' : ''">
-                              <v-layout row wrap>
-                                <v-flex xs12>
-                                  <v-layout row wrap>
-                                    <v-flex xs12 @click="selectNotification(index)">
-                                      <span class="primary--text notif-title" v-html="item.title"></span>
-                                      <a class="notif-dismiss" @click="deleteNotification(index)">
-                                        <v-tooltip left>
-                                          <icon v-if="item.deleting" slot="activator" name="circle-notch" spin class="red--text"></icon>
-                                          <icon v-else slot="activator" name="times" class="red--text"></icon>
-                                          <span>Remove</span>
-                                        </v-tooltip>
-                                      </a>
-                                      <v-tooltip left v-if="selectedNotifications.indexOf(index) >= 0" class="red--text notif-check">
-                                        <icon slot="activator" name="check-square"></icon>
-                                        <span>Unselect</span>
+                      <template v-else>
+                        <div v-for="(item, index) in notifications" :key="`N-${index}`">
+                          <v-container
+                            class="text-xs-left notif-container"
+                            :class="selectedNotifications.indexOf(index) >= 0 ? 'selected' : ''"
+                          >
+                            <v-layout row wrap>
+                              <v-flex xs12>
+                                <v-layout row wrap>
+                                  <v-flex xs12 @click="selectNotification(index)">
+                                    <span class="primary--text notif-title" v-html="item.title"></span>
+                                    <a class="notif-dismiss" @click="deleteNotification(index)">
+                                      <v-tooltip left>
+                                        <icon
+                                          v-if="item.deleting"
+                                          slot="activator"
+                                          name="circle-notch"
+                                          spin
+                                          class="red--text"
+                                        ></icon>
+                                        <icon
+                                          v-else
+                                          slot="activator"
+                                          name="times"
+                                          class="red--text"
+                                        ></icon>
+                                        <span>Remove</span>
                                       </v-tooltip>
-                                      <v-tooltip left v-else class="grey--text notif-check">
-                                        <icon slot="activator" name="square"></icon>
-                                        <span>Select</span>
-                                      </v-tooltip>
-                                    </v-flex>
-                                  </v-layout>
-                                  <v-layout row wrap>
-                                    <v-flex xs6>
-                                      <span class="notif-text grey--text"><icon class="fa" name="calendar-alt"></icon><span v-html="item.created_at"></span></span>
-                                    </v-flex>
-                                    <v-flex xs6>
-                                      <span style="float:right;" class="notif-text grey--text"><i><span v-html="item.headline"></span> ago</i></span>
-                                    </v-flex>
-                                  </v-layout>
-                                  <v-layout row wrap>
-                                    <v-flex xs12 class="notif-content">
-                                      <span v-html="item.subtitle"></span>
-                                    </v-flex>
-                                  </v-layout>
-                                </v-flex>
-                              </v-layout>
-                            </v-container>
-                            <v-divider :key="`notif-divider-${index}`"></v-divider>
-                          </div>
+                                    </a>
+                                    <v-tooltip
+                                      left
+                                      v-if="selectedNotifications.indexOf(index) >= 0"
+                                      class="red--text notif-check"
+                                    >
+                                      <icon slot="activator" name="check-square"></icon>
+                                      <span>Unselect</span>
+                                    </v-tooltip>
+                                    <v-tooltip left v-else class="grey--text notif-check">
+                                      <icon slot="activator" name="square"></icon>
+                                      <span>Select</span>
+                                    </v-tooltip>
+                                  </v-flex>
+                                </v-layout>
+                                <v-layout row wrap>
+                                  <v-flex xs6>
+                                    <span class="notif-text grey--text">
+                                      <icon class="fa" name="calendar-alt"></icon>
+                                      <span v-html="item.created_at"></span>
+                                    </span>
+                                  </v-flex>
+                                  <v-flex xs6>
+                                    <span style="float:right;" class="notif-text grey--text">
+                                      <i>
+                                        <span v-html="item.headline"></span> ago
+                                      </i>
+                                    </span>
+                                  </v-flex>
+                                </v-layout>
+                                <v-layout row wrap>
+                                  <v-flex xs12 class="notif-content">
+                                    <span v-html="item.subtitle"></span>
+                                  </v-flex>
+                                </v-layout>
+                              </v-flex>
+                            </v-layout>
+                          </v-container>
+                          <v-divider :key="`notif-divider-${index}`"></v-divider>
+                        </div>
 
-                          <v-list-tile>
-                            <v-list-tile-content>
-                              <v-layout>
-                                <v-flex lg6>
-                                  <v-btn small flat color="info" style="margin-top: 10px;"><icon name="bell" class="fa"></icon>View all</v-btn>
-                                </v-flex>
-                              </v-layout>
-                            </v-list-tile-content>
-                            <v-list-tile-action>
-                              <v-layout row>
-                                <v-flex lg12>
-                                  <v-btn @click="deleteNotifications()" small :disabled="selectedNotifications.length < 1 || deletingNotifications" color="error">
-                                    <icon v-if="deletingNotifications" name="circle-notch" class="fa" spin></icon>
-                                    <v-icon size="large" v-else>notifications_off</v-icon>
-                                  </v-btn>
-                                </v-flex>
-                              </v-layout>
-                            </v-list-tile-action>
-                          </v-list-tile>
-                        </template>
-                      </v-card>
-                    </v-tab-item>
-                    
-                    <v-tab-item id="activities-list">
-                      <v-card>
-                        <template v-if="activities.length === 0">
-                          <v-card-text>
-                            <v-list-tile-content>
-                              <v-list-tile-title class="text-xs-center info--text">
-                                <icon name="info-circle" class="fa"></icon>
-                                No items found
-                              </v-list-tile-title>
-                            </v-list-tile-content>
-                          </v-card-text>
-                        </template>
+                        <v-list-tile>
+                          <v-list-tile-content>
+                            <v-layout>
+                              <v-flex lg6>
+                                <v-btn small flat color="info" style="margin-top: 10px;">
+                                  <icon name="bell" class="fa"></icon>View all
+                                </v-btn>
+                              </v-flex>
+                            </v-layout>
+                          </v-list-tile-content>
+                          <v-list-tile-action>
+                            <v-layout row>
+                              <v-flex lg12>
+                                <v-btn
+                                  @click="deleteNotifications()"
+                                  small
+                                  :disabled="selectedNotifications.length < 1 || deletingNotifications"
+                                  color="error"
+                                >
+                                  <icon
+                                    v-if="deletingNotifications"
+                                    name="circle-notch"
+                                    class="fa"
+                                    spin
+                                  ></icon>
+                                  <v-icon size="large" v-else>notifications_off</v-icon>
+                                </v-btn>
+                              </v-flex>
+                            </v-layout>
+                          </v-list-tile-action>
+                        </v-list-tile>
+                      </template>
+                    </v-card>
+                  </v-tab-item>
 
-                        <template v-else>
-                          <div v-for="(item, index) in activities" :key="`N-${index}`">
-                            <v-container class="text-xs-left notif-container" :class="selectedActivities.indexOf(index) >= 0 ? 'selected' : ''">
-                              <v-layout row wrap>
-                                <v-flex xs12>
-                                  <v-layout row wrap>
-                                    <v-flex xs12 @click="selectActivity(index)">
-                                      <span class="primary--text notif-title" v-html="item.title"></span>
-                                      <a class="notif-dismiss" @click="deleteActivity(index)">
-                                        <v-tooltip left>
-                                          <icon v-if="item.deleting" slot="activator" name="circle-notch" spin class="red--text"></icon>
-                                          <icon v-else slot="activator" name="times" class="red--text"></icon>
-                                          <span>Remove</span>
-                                        </v-tooltip>
-                                      </a>
-                                      <v-tooltip left v-if="selectedActivities.indexOf(index) >= 0" class="red--text notif-check">
-                                        <icon slot="activator" name="check-square"></icon>
-                                        <span>Unselect</span>
-                                      </v-tooltip>
-                                      <v-tooltip left v-else class="grey--text notif-check">
-                                        <icon slot="activator" name="square"></icon>
-                                        <span>Select</span>
-                                      </v-tooltip>
-                                    </v-flex>
-                                  </v-layout>
-                                  <v-layout row wrap>
-                                    <v-flex xs6>
-                                      <span class="notif-text grey--text"><icon class="fa" name="calendar-alt"></icon><span v-html="item.created_at"></span></span>
-                                    </v-flex>
-                                    <v-flex xs6>
-                                      <span style="float:right;" class="notif-text grey--text"><i><span v-html="item.headline"></span> ago</i></span>
-                                    </v-flex>
-                                  </v-layout>
-                                  <v-layout row wrap>
-                                    <v-flex xs12 class="notif-content">
-                                      <span v-html="item.subtitle"></span>
-                                    </v-flex>
-                                  </v-layout>
-                                </v-flex>
-                              </v-layout>
-                            </v-container>
-                            <v-divider :key="`notif-divider-${index}`"></v-divider>
-                          </div>
+                  <v-tab-item id="activities-list">
+                    <v-card>
+                      <template v-if="activities.length === 0">
+                        <v-card-text>
+                          <v-list-tile-content>
+                            <v-list-tile-title class="text-xs-center info--text">
+                              <icon name="info-circle" class="fa"></icon>No items found
+                            </v-list-tile-title>
+                          </v-list-tile-content>
+                        </v-card-text>
+                      </template>
 
-                          <v-list-tile>
-                            <v-list-tile-content>
-                              <v-layout row>
-                                <v-flex lg6>
-                                  <v-btn small flat color="info" style="margin-top: 10px;"><icon name="bell" class="fa"></icon>View all</v-btn>
-                                </v-flex>
-                              </v-layout>
-                            </v-list-tile-content>
-                            <v-list-tile-action>
-                              <v-layout row>
-                                <v-flex lg12>
-                                  <v-btn @click="deleteActivities()" small :disabled="selectedActivities.length < 1 || deletingActivities" color="error">
-                                    <icon v-if="deletingActivities" name="circle-notch" class="fa" spin></icon>
-                                    <v-icon size="large" v-else>alarm_off</v-icon>
-                                  </v-btn>
-                                </v-flex>
-                              </v-layout>
-                            </v-list-tile-action>
-                          </v-list-tile>
-                        </template>
-                      </v-card>
-                    </v-tab-item>
-                  </v-tabs-items>
+                      <template v-else>
+                        <div v-for="(item, index) in activities" :key="`N-${index}`">
+                          <v-container
+                            class="text-xs-left notif-container"
+                            :class="selectedActivities.indexOf(index) >= 0 ? 'selected' : ''"
+                          >
+                            <v-layout row wrap>
+                              <v-flex xs12>
+                                <v-layout row wrap>
+                                  <v-flex xs12 @click="selectActivity(index)">
+                                    <span class="primary--text notif-title" v-html="item.title"></span>
+                                    <a class="notif-dismiss" @click="deleteActivity(index)">
+                                      <v-tooltip left>
+                                        <icon
+                                          v-if="item.deleting"
+                                          slot="activator"
+                                          name="circle-notch"
+                                          spin
+                                          class="red--text"
+                                        ></icon>
+                                        <icon
+                                          v-else
+                                          slot="activator"
+                                          name="times"
+                                          class="red--text"
+                                        ></icon>
+                                        <span>Remove</span>
+                                      </v-tooltip>
+                                    </a>
+                                    <v-tooltip
+                                      left
+                                      v-if="selectedActivities.indexOf(index) >= 0"
+                                      class="red--text notif-check"
+                                    >
+                                      <icon slot="activator" name="check-square"></icon>
+                                      <span>Unselect</span>
+                                    </v-tooltip>
+                                    <v-tooltip left v-else class="grey--text notif-check">
+                                      <icon slot="activator" name="square"></icon>
+                                      <span>Select</span>
+                                    </v-tooltip>
+                                  </v-flex>
+                                </v-layout>
+                                <v-layout row wrap>
+                                  <v-flex xs6>
+                                    <span class="notif-text grey--text">
+                                      <icon class="fa" name="calendar-alt"></icon>
+                                      <span v-html="item.created_at"></span>
+                                    </span>
+                                  </v-flex>
+                                  <v-flex xs6>
+                                    <span style="float:right;" class="notif-text grey--text">
+                                      <i>
+                                        <span v-html="item.headline"></span> ago
+                                      </i>
+                                    </span>
+                                  </v-flex>
+                                </v-layout>
+                                <v-layout row wrap>
+                                  <v-flex xs12 class="notif-content">
+                                    <span v-html="item.subtitle"></span>
+                                  </v-flex>
+                                </v-layout>
+                              </v-flex>
+                            </v-layout>
+                          </v-container>
+                          <v-divider :key="`notif-divider-${index}`"></v-divider>
+                        </div>
+
+                        <v-list-tile>
+                          <v-list-tile-content>
+                            <v-layout row>
+                              <v-flex lg6>
+                                <v-btn small flat color="info" style="margin-top: 10px;">
+                                  <icon name="bell" class="fa"></icon>View all
+                                </v-btn>
+                              </v-flex>
+                            </v-layout>
+                          </v-list-tile-content>
+                          <v-list-tile-action>
+                            <v-layout row>
+                              <v-flex lg12>
+                                <v-btn
+                                  @click="deleteActivities()"
+                                  small
+                                  :disabled="selectedActivities.length < 1 || deletingActivities"
+                                  color="error"
+                                >
+                                  <icon
+                                    v-if="deletingActivities"
+                                    name="circle-notch"
+                                    class="fa"
+                                    spin
+                                  ></icon>
+                                  <v-icon size="large" v-else>alarm_off</v-icon>
+                                </v-btn>
+                              </v-flex>
+                            </v-layout>
+                          </v-list-tile-action>
+                        </v-list-tile>
+                      </template>
+                    </v-card>
+                  </v-tab-item>
+                </v-tabs-items>
               </v-list>
             </v-menu>
 
             <v-menu offset-y transition="fade-transition" bottom>
               <v-btn color="primary" class="white--text" flat slot="activator">
-                <v-icon class="white--text">account_circle</v-icon><span class="white--text">My Account</span>
+                <v-icon class="white--text">account_circle</v-icon>
+                <span class="white--text">My Account</span>
               </v-btn>
               <v-list>
                 <v-list-tile to="/my-profile" class="dropdown-menu-item">
                   <v-icon class="menu-icon">person</v-icon>
                   <span>My Profile</span>
                 </v-list-tile>
-                <v-list-tile v-if="isStudent" :to="this.$store.state.myDsaFormsUrl" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">picture_as_pdf</v-icon>
-                  <span>My DSA Forms</span>
-                </v-list-tile>
-                <v-list-tile :disabled="loggingOut" v-on:click="logout()" class="dropdown-menu-item">
+
+                <v-list-tile
+                  :disabled="loggingOut"
+                  v-on:click="logout()"
+                  class="dropdown-menu-item"
+                >
                   <icon v-if="loggingOut" class="menu-icon fa" name="circle-notch" spin></icon>
                   <v-icon v-else class="menu-icon">power_settings_new</v-icon>
                   <span>Log out</span>
@@ -337,14 +431,21 @@
             </v-menu>
           </template>
         </v-toolbar-items>
-        
       </v-toolbar>
 
-      <v-snackbar :timeout="10000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
-        <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
-        <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
+      <v-snackbar
+        :timeout="10000"
+        :bottom="true"
+        :right="true"
+        v-model="snackbar"
+        :color="operationMessageType"
+      >
+        <icon class="fa" name="info-circle"></icon>
+        {{ operationMessage }}
+        <v-btn flat @click.native="snackbar = false">
+          <icon name="times"></icon>
+        </v-btn>
       </v-snackbar>
-
     </v-flex>
   </v-layout>
 </template>
@@ -372,20 +473,24 @@ export default {
       notifications: [],
       activities: [],
       audioPlayer: null,
-      beepUrl: this.$store.state.beep,
       tabs: null,
       text:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
     };
   },
   mounted() {
-    this.audioPlayer = new Audio(this.beepUrl);
     this.updateNotifications();
-    this.timer = setInterval(this.updateNotifications, 10000);
+    this.timer = setInterval(this.updateNotifications, 3000);
   },
   methods: {
-    test() {
-      console.log("This is a test!");
+    initAudioPlayer() {
+      if (!this.audioPlayer) {
+        this.audioPlayer = new Audio(this.$store.state.beepFile);
+      }
+    },
+    playNotifSound() {
+      this.initAudioPlayer();
+      this.audioPlayer.play();
     },
     updateNotifications() {
       if (
@@ -427,10 +532,7 @@ export default {
                 return b.id - a.id;
               });
               if (!this.isGuest) {
-                if (!this.audioPlayer) {
-                  this.audioPlayer = new Audio(this.beepUrl);
-                }
-                this.audioPlayer.play();
+                this.playNotifSound();
                 var badge_notif = document.getElementById("badge_notif");
                 var list = classList(badge_notif);
                 list.add("animated");
@@ -634,14 +736,17 @@ export default {
           });
       });
     },
-    logout() {
+    clearNotifications() {
       this.notifications = [];
       this.activities = [];
       this.notificationsCount = 0;
       this.showNotificationsCount = false;
       this.selectedNotifications = [];
       this.selectedActivities = [];
-
+      console.log("Notifications cleared");
+    },
+    logout() {
+      clearInterval(this.timer);
       axios
         .get(this.$store.state.eaUrl + "user/logout", {
           params: { XDEBUG_SESSION_START: "netbeans-xdebug" }
@@ -710,6 +815,14 @@ export default {
     },
     notificationsCountClass() {
       return this.showNotificationsCount ? "animated rubberBand" : "";
+    }
+  },
+  watch: {
+    isGuest: function(newValue, oldValue) {
+      this.clearNotifications();
+      if (!newValue) {
+        this.timer = setInterval(this.updateNotifications, 15000);
+      }
     }
   }
 };

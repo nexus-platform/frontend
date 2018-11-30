@@ -38,8 +38,18 @@
               </template>
 
               <template v-else-if="action === 'dsa-forms' && (isDO || isStudent)">
-                <v-card v-if="parameter === 'index'"><dsa-forms></dsa-forms></v-card>
-                <v-card v-else><dsa-form ref="dsaForm"></dsa-form></v-card>
+                <v-card v-if="parameter === 'index'">
+                  <dsa-forms></dsa-forms>
+                </v-card>
+                <v-card v-else>
+                  <dsa-form></dsa-form>
+                </v-card>
+              </template>
+
+              <template v-else-if="action === 'my-dsa-forms' && isStudent">
+                <v-card v-if="parameter === 'index'">
+                  <my-dsa-forms></my-dsa-forms>
+                </v-card>
               </template>
               
               <template v-else>
@@ -73,6 +83,7 @@ import axios from "axios";
 import AxiosComponent from "@/components/AxiosComponent";
 import MyInstitute from "@/components/MyInstitute";
 import DsaForms from "@/components/DSAForms";
+import MyDsaForms from "@/components/MyDSAForms";
 import DsaForm from "@/components/DSAForm";
 import SubmittedForms from "@/components/DOSubmittedForms";
 import AuthComponent from "@/components/AuthComponent";
@@ -111,7 +122,8 @@ export default {
     DsaForms,
     DsaForm,
     SubmittedForms,
-    AuthComponent
+    AuthComponent,
+    MyDsaForms
   },
   mounted() {
     this.refreshInterface(this.$route);
@@ -122,6 +134,7 @@ export default {
   },
   methods: {
     refreshInterface(route) {
+      this.$store.state.authType = 'dsa';
       this.dsaSlug = route.params.dsa_slug;
       this.action = route.params.action;
       this.parameter = route.params.parameter;
@@ -147,10 +160,6 @@ export default {
         this.$refs.axios.submit(config);
         this.componentMounted = true;
       }
-
-      if (this.id) {
-        this.$refs.dsaForm.updateGUI(route);
-      }
     },
     handleHttpResponse(event) {
       this.loadingInitialElements = false;
@@ -165,13 +174,6 @@ export default {
           case "get-dsa-info":
             if (response.code === "success") {
               this.$store.state.homeUrl = `/dsa/${this.$route.params.dsa_slug}`;
-              this.$store.state.dsaFormsUrl = `/dsa/${
-                this.$route.params.dsa_slug
-              }/dsa-forms/index`;
-              this.$store.state.myDsaFormsUrl = `/dsa/${
-                this.$route.params.dsa_slug
-              }/my-dsa-forms/index`;
-              this.$store.state.authType = 'dsa';
               this.dsaName = response.data.dsaName;
             } else if (response.code === "warning") {
               this.dsaName = response.data.dsaName;

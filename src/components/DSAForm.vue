@@ -415,6 +415,7 @@ export default {
   methods: {
     redirect(route) {
       this.$router.push(route);
+      this.updateGUI(this.$route);
     },
     updateGUI(route) {
       this.pdfName = "Processing form...";

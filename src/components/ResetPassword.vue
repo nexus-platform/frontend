@@ -27,10 +27,10 @@
                 </v-form>
               </v-card-text>
               
-              <v-card-actions>
+              <v-card-actions class="pb-3">
                 <v-spacer></v-spacer>
                 <v-tooltip bottom :color="validationColor">
-                  <v-btn v-on:click="submit" :disabled="loading" class="white--text mr-2" :class="{ red: !validationStatus, indigo: validationStatus }" slot="activator">
+                  <v-btn @click="submit()" :disabled="loading" class="white--text mr-2" :class="{ red: !validationStatus, indigo: validationStatus }" slot="activator">
                     <icon v-if="loading" name="circle-notch" spin class="gray--text"></icon>
                     <v-icon v-else size="22">done</v-icon>&nbsp;Submit
                   </v-btn>

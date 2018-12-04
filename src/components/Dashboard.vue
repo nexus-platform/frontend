@@ -3,7 +3,7 @@
     <v-layout row wrap justify-center mt-4>
       <v-flex xs12 sm6 md3 mr-2 mb-2 class="animated fadeIn" v-for="(registration, i) in registrations" :key="`reg-${i}`">
         <v-card slot="activator" class="elevation-1" :to="`/${registration.component}/${registration.slug}/index`">
-          <v-toolbar dark color="deep-purple">
+          <v-toolbar dark :color="registration.component === 'dsa' ? 'blue' : 'deep-purple'">
             <v-icon v-if="registration.component === 'dsa'">school</v-icon>
             <v-icon v-else-if="registration.component === 'assessment-centre'">assessment</v-icon>
             <v-toolbar-title style="font-size: 16px;">

@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-layout align-center justify-center class="animated fadeIn">
+    <v-layout justify-center class="animated fadeIn">
       <v-flex md10>
         <v-toolbar tabs color="indigo">
           <v-toolbar-title class="white--text"><v-icon class="white--text">school</v-icon> {{ parentName }}</v-toolbar-title>
@@ -9,7 +9,7 @@
           <v-tabs v-model="activeTab" centered color="transparent" icons-and-text>
             <v-tabs-slider color="indigo"></v-tabs-slider>
             <v-tab @click="redirect('login')" href="#tab-login">Log in<v-icon>verified_user</v-icon></v-tab>
-            <v-tab @click="redirect('signup')" href="#tab-signup">Sign up<v-icon>account_circle</v-icon></v-tab>
+            <v-tab v-if="target !== 'public'" @click="redirect('signup')" href="#tab-signup">Sign up<v-icon>account_circle</v-icon></v-tab>
             <v-tab @click="redirect('reset-password')" href="#tab-reset-password">Reset password<v-icon>email</v-icon></v-tab>
             
             <v-tab-item id="tab-login">
@@ -41,7 +41,7 @@
               </v-layout>
             </v-tab-item>
 
-            <v-tab-item id="tab-signup">
+            <v-tab-item v-if="target !== 'public'" id="tab-signup">
               <v-layout justify-center>
                 <v-flex xs10 mt-3>
                   <v-card-text>
@@ -55,6 +55,7 @@
                         </v-flex>
                         <v-flex sm12 md11 lg6>
                           <v-text-field :disabled="emailDisabled" validate-on-blur v-model="email" prepend-icon="email" name="email" label="Email" type="email" :rules="emailRules"></v-text-field>
+                          <v-text-field v-model="telephone" prepend-icon="phone" name="telephone" label="Telephone" single-line type="text"></v-text-field>
                           <v-text-field @blur="test()" v-model="postcode" prepend-icon="place" name="postcode" label="Postcode" :hint="loadingPostcodeInfo ? 'Loading postcode...' : 'Enter a postcode to lookup'" single-line type="text"></v-text-field>
                           <v-text-field v-model="address" prepend-icon="fas fa-map-signs" name="address" label="Address" type="text" :rules="addressRules"></v-text-field>
                         </v-flex>
@@ -137,6 +138,7 @@ export default {
       password: "",
       password_confirm: "",
       email: "",
+      telephone: "",
       address: "",
       postcode: "",
       loginValidationStatus: false,
@@ -179,7 +181,7 @@ export default {
     handleHttpResponse(event) {
       this.loading = false;
       var response = event.data.result.response;
-      if (response.code === 'success') {
+      if (response.data.registrations && response.code === 'success') {
         this.$store.state.registrations = response.data.registrations;
       }
       this.$emit("finish", event);
@@ -222,6 +224,7 @@ export default {
             name: this.name,
             last_name: this.last_name,
             email: this.email,
+            telephone: this.telephone,
             password: this.password,
             address: this.address,
             postcode: this.postcode,

@@ -120,14 +120,14 @@
               </v-menu>
             </template>
 
-            <template v-if="$store.state.authType === 'ac'">
+            <template v-if="$store.state.authType === 'ac' && (isAC || isStudent)">
               <v-menu offset-y transition="fade-transition" bottom>
                 <v-btn class="white--text" flat slot="activator">
                   <v-icon class="menu-icon">assessment</v-icon>
                   <span class="white--text">Assessment Centre</span>
                 </v-btn>
                 <v-list>
-                  <v-list-tile v-if="isAC || isStudent" :to="`${$store.state.homeUrl}/ac-forms/index`" class="dropdown-menu-item">
+                  <v-list-tile :to="`${$store.state.homeUrl}/ac-forms/index`" class="dropdown-menu-item">
                     <v-icon class="menu-icon">insert_drive_file</v-icon>
                     <span>{{isAC ? 'Assessment Forms' : 'My Assessment Form'}}</span>
                   </v-list-tile>

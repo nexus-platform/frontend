@@ -532,10 +532,6 @@ export default {
     next();
   },
   methods: {
-    finishLoadingSubmittedForm(event) {
-      alert("cargado");
-      this.loadingSubmittedForm = false;
-    },
     showACSubmittedForm(event) {
       this.loadingSubmittedForm = true;
       var config = {
@@ -557,9 +553,6 @@ export default {
         this.dsaLetterName = null;
       }
       this.ac.user_data.ac_form = null;
-    },
-    redirect(action) {
-      this.$router.push(`/assessment-centre/${this.dsaSlug}/${action}`);
     },
     refreshInterface(route) {
       this.$store.state.authType = "ac";
@@ -676,6 +669,7 @@ export default {
           case this.apiUrls.login:
             if (response.code === "success") {
               this.ac = response.data.ac_info;
+              this.items = this.ac.star_assessment_form;
               this.$store.commit("updatePayload", response.data);
               this.eaUrl =
                 this.$store.state.eaUrl +

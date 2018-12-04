@@ -14,6 +14,7 @@ import AssessmentCentre from '@/components/AssessmentCentre';
 import MyBookings from '@/components/MyBookings';
 import DSA from '@/components/DSA';
 import Dashboard from '@/components/Dashboard';
+import PublicAuth from '@/components/PublicAuth';
 
 import store from '../store';
 
@@ -116,6 +117,14 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard
+  },
+  {
+    path: '/auth/:action',
+    name: 'PublicAuth',
+    component: PublicAuth,
+    meta: {
+      requiresAnon: true
+    }
   }
 ];
 

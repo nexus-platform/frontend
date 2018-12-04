@@ -1,5 +1,5 @@
 <template>
-  <v-container style="margin-top: 60px;" class="animated fadeIn">
+  <v-container class="animated fadeIn" mt-5>
     <v-layout row wrap>
       <v-flex xs12>
         <v-card-text>

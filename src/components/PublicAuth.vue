@@ -49,10 +49,9 @@ export default {
       operationMessage: "Enter your credentials",
       operationMessageType: "warning",
       action: null,
-      actions: ["login", "signup", "reset-password"],
+      actions: ["login", "reset-password"],
       apiUrls: {
         login: "login",
-        signup: "signup",
         resetPassword: "request-password-reset"
       }
     };

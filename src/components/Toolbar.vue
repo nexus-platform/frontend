@@ -82,7 +82,7 @@
         <v-spacer></v-spacer>
 
         <v-toolbar-items class="hidden-sm-and-down">
-          <v-btn flat :to="`${this.$store.state.homeUrl}/index`">
+          <v-btn flat :to="this.$store.state.homeUrl ? `${this.$store.state.homeUrl}/index` : '/'">
             <v-icon class="white--text">home</v-icon>
             <span class="white--text">Home</span>
           </v-btn>

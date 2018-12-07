@@ -15,9 +15,9 @@ export default new Vuex.Store({
     eaUrl: 'http://localhost:8082/nexus/deploy/ea/index.php/',*/
 	  baseUrl: "http://nexus.enaebl.com/api/",
     eaUrl: "http://nexusea.enaebl.com/",
-    authRouteRequested: '',
+    authRouteRequested: null,
     debug: true,
-    homeUrl: '/',
+    homeUrl: null,
     dsaFormsUrl: null,
     registrations: [],
     authType: null,
@@ -34,6 +34,9 @@ export default new Vuex.Store({
     },
     logout(state) {
       state.registrations = [];
+      state.authRouteRequested = null;
+      //state.homeUrl = null;
+      state.dsaFormsUrl = null;
       state.authType = null;
       state.payload = {
         is_guest: true,

@@ -754,7 +754,7 @@ export default {
         .then(function(response) {})
         .catch(function(error) {});
       this.$store.commit("logout");
-      this.$router.push(`${this.$store.state.homeUrl}/index`);
+      this.$router.push(this.isStudent ? `${this.$store.state.homeUrl}/index` : '/auth/login');
 
       /*
       clearInterval(that.timer);

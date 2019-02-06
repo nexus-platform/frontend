@@ -9,7 +9,7 @@
             target="public"
             :emailProp="null"
             :currTab="currTab"
-            :parentName="'Nexus'"
+            :parentName="'Welcome to Nexus'"
             :apiUrls="apiUrls"
             :slug="null"
           />

@@ -47,15 +47,16 @@
                   </v-flex>
                 </v-layout>
                 <v-layout row wrap mt-4>
-                  <v-flex sm10 offset-sm1>
-                    <iframe
+                  
+                    <!--<iframe
                       class="animated fadeIn"
                       ref="iframe"
                       style="border: none; width: 100%; padding-bottom: 5px;"
                       :src="eaUrl"
                       scrolling="no"
-                    ></iframe>
-                  </v-flex>
+                    ></iframe>-->
+                    <iframe-component :eaUrl="eaUrl" />
+                  
                 </v-layout>
               </template>
 
@@ -466,6 +467,7 @@ import AuthComponent from "@/components/AuthComponent";
 import AcceptInvitation from "@/components/AcceptInvitation";
 import AcSubmittedForms from "@/components/ACSubmittedForms";
 import AcSubmittedForm from "@/components/ACSubmittedForm";
+import IframeComponent from "@/components/IframeComponent";
 
 export default {
   data() {
@@ -519,7 +521,8 @@ export default {
     AuthComponent,
     AcceptInvitation,
     AcSubmittedForms,
-    AcSubmittedForm
+    AcSubmittedForm,
+    IframeComponent
   },
   mounted() {
     this.refreshInterface(this.$route);

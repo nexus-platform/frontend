@@ -34,6 +34,7 @@ export default {
   created() {
     this.$store.state.authType = null;
     this.registrations = this.$store.state.registrations;
+    console.log(this.registrations[0]);
   },
 };
 </script>

@@ -1,21 +1,15 @@
 <template>
-  <v-container style="margin-top: 60px;" class="animated fadeIn">
-    <v-layout row wrap>
-      <v-flex xs12>
-        <v-card-text>
-          <h2 class="text-md-center">My Profile</h2>
-        </v-card-text>
-      </v-flex>
-    </v-layout>
+  <v-container fluid mt-5 class="animated fadeIn">
 
     <v-layout v-if="loadingInitialElements">
       <v-card-text class="text-xs-center">
+        <h3 mb-1 class="primary--text uppercase">Loading information</h3>
         <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
       </v-card-text>
     </v-layout>
 
     <v-layout row wrap v-else>
-      <v-flex xs12>
+      <v-flex xs12 md10 offset-md1 mt-4 class="animated fadeIn">
         <v-expansion-panel>
           <v-expansion-panel-content>
             <div slot="header"><icon name="user" class="fa"></icon><b>Personal information</b></div>

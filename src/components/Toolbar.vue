@@ -151,12 +151,7 @@
                 </v-list>
               </v-menu>
             </template>
-
-            <!--<template v-if="isStudent || isNA">
-              <v-btn flat to="/my-bookings">
-                <v-icon class="white--text">event_available</v-icon><span class="white--text">My Bookings</span>
-              </v-btn>
-            </template>-->
+            
             <v-menu offset-y transition="slide-down" bottom :close-on-content-click="false">
               <v-btn color="primary" class="white--text" flat slot="activator">
                 <v-badge

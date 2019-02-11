@@ -59,7 +59,7 @@
               </v-list-tile-action>
               <v-list-tile-content>My Profile</v-list-tile-content>
             </v-list-tile>
-            
+
             <v-list-tile v-on:click="logout()">
               <v-list-tile-action>
                 <v-icon>power_settings_new</v-icon>
@@ -82,12 +82,13 @@
         <v-spacer></v-spacer>
 
         <v-toolbar-items class="hidden-sm-and-down">
-          <v-btn flat :to="this.$store.state.homeUrl ? `${this.$store.state.homeUrl}/index` : '/'">
-            <v-icon class="white--text">home</v-icon>
-            <span class="white--text">Home</span>
-          </v-btn>
-
           <template v-if="!isGuest">
+
+            <v-btn flat :to="isNA || isAC ? '/assessment-centre/calendar' : `${this.$store.state.homeUrl}/index`">
+              <v-icon class="white--text">today</v-icon>
+              <span class="white--text">Calendar</span>
+            </v-btn>
+
             <v-btn flat to="/dashboard">
               <v-icon class="white--text">dashboard</v-icon>
               <span class="white--text">Dashboard</span>
@@ -100,20 +101,33 @@
                   <span class="white--text">DSA Office</span>
                 </v-btn>
                 <v-list v-if="isStudent">
-                  <v-list-tile :to="`${$store.state.homeUrl}/dsa-forms/index`" class="dropdown-menu-item">
+                  <v-list-tile
+                    :to="`${$store.state.homeUrl}/dsa-forms/index`"
+                    class="dropdown-menu-item"
+                  >
                     <v-icon class="menu-icon">picture_as_pdf</v-icon>
                     <span>DSA Forms</span>
                   </v-list-tile>
-                  <v-list-tile :to="`${$store.state.homeUrl}/my-dsa-forms/index`" class="dropdown-menu-item">
+                  <v-list-tile
+                    :to="`${$store.state.homeUrl}/my-dsa-forms/index`"
+                    class="dropdown-menu-item"
+                  >
                     <v-icon class="menu-icon">picture_as_pdf</v-icon>
                     <span>My Forms</span>
                   </v-list-tile>
                 </v-list>
                 <v-list v-else-if="isDO">
-                  <v-list-tile v-if="$store.state.payload.is_univ_manager" :to="`${$store.state.homeUrl}/admin`" class="dropdown-menu-item">
+                  <v-list-tile
+                    v-if="$store.state.payload.is_univ_manager"
+                    :to="`${$store.state.homeUrl}/admin`"
+                    class="dropdown-menu-item"
+                  >
                     <v-icon class="menu-icon">fas fa-cog</v-icon>Manage
                   </v-list-tile>
-                  <v-list-tile :to="`${$store.state.homeUrl}/submitted-forms`" class="dropdown-menu-item">
+                  <v-list-tile
+                    :to="`${$store.state.homeUrl}/submitted-forms`"
+                    class="dropdown-menu-item"
+                  >
                     <v-icon class="menu-icon">mail</v-icon>In-progress forms
                   </v-list-tile>
                 </v-list>
@@ -127,7 +141,10 @@
                   <span class="white--text">Assessment Centre</span>
                 </v-btn>
                 <v-list>
-                  <v-list-tile :to="`${$store.state.homeUrl}/ac-forms/index`" class="dropdown-menu-item">
+                  <v-list-tile
+                    :to="`${$store.state.homeUrl}/ac-forms/index`"
+                    class="dropdown-menu-item"
+                  >
                     <v-icon class="menu-icon">insert_drive_file</v-icon>
                     <span>{{isAC ? 'Assessment Forms' : 'My Assessment Form'}}</span>
                   </v-list-tile>
@@ -140,7 +157,6 @@
                 <v-icon class="white--text">event_available</v-icon><span class="white--text">My Bookings</span>
               </v-btn>
             </template>-->
-
             <v-menu offset-y transition="slide-down" bottom :close-on-content-click="false">
               <v-btn color="primary" class="white--text" flat slot="activator">
                 <v-badge
@@ -416,6 +432,11 @@
                 <v-list-tile to="/my-profile" class="dropdown-menu-item">
                   <v-icon class="menu-icon">person</v-icon>
                   <span>My Profile</span>
+                </v-list-tile>
+
+                <v-list-tile v-if="isNA" to="/assessment-centre/settings" class="dropdown-menu-item">
+                  <v-icon class="menu-icon">assessment</v-icon>
+                  <span>AC Settings</span>
                 </v-list-tile>
 
                 <v-list-tile
@@ -754,7 +775,9 @@ export default {
         .then(function(response) {})
         .catch(function(error) {});
       this.$store.commit("logout");
-      this.$router.push(this.isStudent ? `${this.$store.state.homeUrl}/index` : '/auth/login');
+      this.$router.push(
+        this.isStudent ? `${this.$store.state.homeUrl}/index` : "/auth/login"
+      );
 
       /*
       clearInterval(that.timer);

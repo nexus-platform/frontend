@@ -33,30 +33,21 @@
 
         <!--Authenticated user-->
         <template v-else>
-          <template v-if="acAction === 'index'">
+          <template v-if="acAction === 'booking'">
             <!--The user has submitted the form-->
-            <template v-if="ac.user_data.ac_form_full_submit || !isStudent">
+            <template v-if="ac.user_data.ac_form_full_submit">
               <!--Booking enabled for user-->
-              <template v-if="ac.user_data.ac_booking_enabled || !isStudent">
+              <template v-if="ac.user_data.ac_booking_enabled">
                 <v-layout v-if="loadingEA" row wrap mt-4>
                   <v-flex xs12 sm10 offset-sm1>
-                    <h3 class="primary--text uppercase">Loading Appointments information</h3>
+                    <h3 class="primary--text uppercase">Loading Information</h3>
                   </v-flex>
                   <v-flex xs12 mt-3>
                     <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
                   </v-flex>
                 </v-layout>
                 <v-layout row wrap mt-4>
-                  
-                    <!--<iframe
-                      class="animated fadeIn"
-                      ref="iframe"
-                      style="border: none; width: 100%; padding-bottom: 5px;"
-                      :src="eaUrl"
-                      scrolling="no"
-                    ></iframe>-->
-                    <iframe-component :eaUrl="eaUrl" />
-                  
+                  <iframe-component :eaUrl="eaUrl"/>
                 </v-layout>
               </template>
 
@@ -393,7 +384,7 @@
             <v-layout row wrap mt-4>
               <v-flex sm10 offset-sm1>
                 <!--Viewing a specific form-->
-                <template v-if="userToken !== 'index'">
+                <template v-if="userToken !== 'booking'">
                   <v-card-text v-if="loadingSubmittedForm">
                     <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
                   </v-card-text>
@@ -502,7 +493,7 @@ export default {
       eaUrl: "",
       componentMounted: false,
       anonymActions: ["login", "signup", "reset-password"],
-      authActions: ["index", "ac-forms"],
+      authActions: ["booking", "ac-forms"],
       apiUrls: {
         login: "login",
         signup: "signup",

@@ -15,6 +15,8 @@ import MyBookings from '@/components/MyBookings';
 import DSA from '@/components/DSA';
 import Dashboard from '@/components/Dashboard';
 import PublicAuth from '@/components/PublicAuth';
+import ACSettings from '@/components/ACSettings';
+import ACCalendar from '@/components/ACCalendar';
 
 import store from '../store';
 
@@ -107,6 +109,24 @@ const routes = [
     path: '/assessment-centre/:slug/:action/:token?',
     name: 'AssessmentCentre',
     component: AssessmentCentre
+  },
+  {
+    path: '/assessment-centre/calendar',
+    name: 'ACCalendar',
+    component: ACCalendar,
+    meta: {
+      requiresAuth: true,
+      roles: ['ac', 'na']
+    }
+  },
+  {
+    path: '/assessment-centre/settings',
+    name: 'ACSettings',
+    component: ACSettings,
+    meta: {
+      requiresAuth: true,
+      roles: ['ac', 'na']
+    }
   },
   {
     path: '/my-bookings',

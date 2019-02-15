@@ -17,6 +17,10 @@ import Dashboard from '@/components/Dashboard';
 import PublicAuth from '@/components/PublicAuth';
 import ACSettings from '@/components/ACSettings';
 import ACCalendar from '@/components/ACCalendar';
+import ACCustomers from '@/components/ACCustomers';
+import ACServices from '@/components/ACServices';
+import ACUsers from '@/components/ACUsers';
+import ACForms from '@/components/ACForms';
 
 import store from '../store';
 
@@ -117,6 +121,42 @@ const routes = [
     meta: {
       requiresAuth: true,
       roles: ['ac', 'na']
+    }
+  },
+  {
+    path: '/assessment-centre/customers',
+    name: 'ACCustomers',
+    component: ACCustomers,
+    meta: {
+      requiresAuth: true,
+      roles: ['ac']
+    }
+  },
+  {
+    path: '/assessment-centre/services',
+    name: 'ACServices',
+    component: ACServices,
+    meta: {
+      requiresAuth: true,
+      roles: ['ac']
+    }
+  },
+  {
+    path: '/assessment-centre/users',
+    name: 'ACUsers',
+    component: ACUsers,
+    meta: {
+      requiresAuth: true,
+      roles: ['ac']
+    }
+  },
+  {
+    path: '/assessment-centre/ac-forms',
+    name: 'ACForms',
+    component: ACForms,
+    meta: {
+      requiresAuth: true,
+      roles: ['ac']
     }
   },
   {

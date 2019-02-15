@@ -1,11 +1,5 @@
 <template>
   <v-container fluid mt-5 class="animated fadeIn">
-    <v-layout row wrap mt-4 v-if="isNA">
-      <v-flex xs12 md6 lg4 offset-sm1>
-        <v-select :disabled="loadingEA" v-model="acSlug" :items="registrations" item-value="slug" item-text="name" label="Pick a Centre" @change="switchAC()"></v-select>
-      </v-flex>
-    </v-layout>
-    
     <v-layout v-if="loadingEA" row wrap mt-4>
       <v-flex xs12 sm10 offset-sm1>
         <h3 class="primary--text uppercase">Loading Settings</h3>
@@ -56,8 +50,7 @@ export default {
       this.loadingEA = true;
       this.eaUrl =
       this.$store.state.eaUrl +
-      (this.isNA ? "backend/profile/" : "backend/settings/");
-    this.eaUrl += `?ac=${this.acSlug}&jwt=${
+      "backend/services" + `?ac=${this.acSlug}&jwt=${
       this.$store.state.payload.jwt
     }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
       this.$store.state.baseUrl

@@ -134,22 +134,26 @@
               </v-menu>
             </template>
 
-            <template v-if="$store.state.authType === 'ac' && (isAC || isStudent)">
+            <template v-if="/*$store.state.authType === 'ac' &&*/ (isAC || isStudent)">
               <v-menu offset-y transition="fade-transition" bottom>
                 <v-btn class="white--text" flat slot="activator">
                   <v-icon class="menu-icon">assessment</v-icon>
                   <span class="white--text">Assessment Centre</span>
                 </v-btn>
                 <v-list>
-                  <v-list-tile
-                    :to="`${$store.state.homeUrl}/ac-forms/index`"
-                    class="dropdown-menu-item"
-                  >
+                  <v-list-tile to="/assessment-centre/ac-forms" class="dropdown-menu-item">
                     <v-icon class="menu-icon">insert_drive_file</v-icon>
                     <span>{{isAC ? 'Assessment Forms' : 'My Assessment Form'}}</span>
                   </v-list-tile>
                 </v-list>
               </v-menu>
+
+              <template v-if="isAC">
+                <v-btn flat to="/assessment-centre/customers">
+                  <v-icon class="white--text">person</v-icon>
+                  <span class="white--text">Students</span>
+                </v-btn>
+              </template>
             </template>
             
             <v-menu offset-y transition="slide-down" bottom :close-on-content-click="false">
@@ -429,10 +433,22 @@
                   <span>My Profile</span>
                 </v-list-tile>
 
-                <v-list-tile v-if="isNA" to="/assessment-centre/settings" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">assessment</v-icon>
-                  <span>AC Settings</span>
+                <v-list-tile v-if="isNA || isAC" to="/assessment-centre/settings" class="dropdown-menu-item">
+                  <v-icon class="menu-icon">settings</v-icon>
+                  <span>Settings</span>
                 </v-list-tile>
+
+                <v-list-tile v-if="isAC" to="/assessment-centre/services" class="dropdown-menu-item">
+                  <v-icon class="menu-icon">room_service</v-icon>
+                  <span>Services</span>
+                </v-list-tile>
+
+                <v-list-tile v-if="isAC" to="/assessment-centre/users" class="dropdown-menu-item">
+                  <v-icon class="menu-icon">assignment_ind</v-icon>
+                  <span>Assessors</span>
+                </v-list-tile>
+
+                <v-divider></v-divider>
 
                 <v-list-tile
                   :disabled="loggingOut"

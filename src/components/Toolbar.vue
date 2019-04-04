@@ -16,7 +16,7 @@
           </v-list-tile-action>
           <v-list-tile avatar tag="div">
             <v-list-tile-avatar>
-              <img src="static/img/logo_color.png">
+              <img :src="require('../assets/img/logo_text.png')" alt="Nexus">
             </v-list-tile-avatar>
 
             <v-list-tile-content>
@@ -34,7 +34,7 @@
         <v-list class="pt-0" dense>
           <v-divider light></v-divider>
 
-          <template v-if="isGuest">
+          <template v-if="$store.getters.isGuest">
             <v-list-tile :to="$store.state.homeUrl">
               <v-list-tile-action>
                 <v-icon>lock</v-icon>
@@ -44,7 +44,7 @@
           </template>
 
           <template v-else>
-            <template v-if="isStudent">
+            <template v-if="$store.getters.isStudent">
               <v-list-tile :to="`${$store.state.homeUrl}/dsa-forms/index`">
                 <v-list-tile-action>
                   <v-icon>picture_as_pdf</v-icon>
@@ -75,100 +75,137 @@
 
         <v-toolbar-title class="white--text">
           <router-link to="/" tag="span" style="cursor: pointer">
-            <img src="static/img/logo_text.png">
+            <img :src="require('../assets/img/logo_text.png')" alt="Nexus">
           </router-link>
         </v-toolbar-title>
 
         <v-spacer></v-spacer>
 
         <v-toolbar-items class="hidden-sm-and-down">
-          <template v-if="!isGuest">
-
-            <v-btn flat :to="isNA || isAC ? '/assessment-centre/calendar' : `${this.$store.state.homeUrl}/index`">
-              <v-icon class="white--text">today</v-icon>
-              <span class="white--text">Calendar</span>
-            </v-btn>
-
+          <template v-if="!$store.getters.isGuest">
             <v-btn flat to="/dashboard">
               <v-icon class="white--text">dashboard</v-icon>
               <span class="white--text">Dashboard</span>
             </v-btn>
 
-            <template v-if="$store.state.authType === 'dsa'">
+            <template v-if="($store.getters.isStudent && $store.getters.getRegistrations.dsa) || $store.getters.isDO">
               <v-menu offset-y transition="fade-transition" bottom>
                 <v-btn class="white--text" flat slot="activator">
-                  <v-icon class="menu-icon">school</v-icon>
+                  <v-icon class="fa">school</v-icon>
                   <span class="white--text">DSA Office</span>
                 </v-btn>
-                <v-list v-if="isStudent">
+                <v-list v-if="$store.getters.isStudent">
                   <v-list-tile
-                    :to="`${$store.state.homeUrl}/dsa-forms/index`"
+                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/dsa-forms/index`"
                     class="dropdown-menu-item"
                   >
-                    <v-icon class="menu-icon">picture_as_pdf</v-icon>
+                    <v-icon class="fa">picture_as_pdf</v-icon>
                     <span>DSA Forms</span>
                   </v-list-tile>
                   <v-list-tile
-                    :to="`${$store.state.homeUrl}/my-dsa-forms/index`"
+                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/my-dsa-forms/index`"
                     class="dropdown-menu-item"
                   >
-                    <v-icon class="menu-icon">picture_as_pdf</v-icon>
-                    <span>My Forms</span>
+                    <v-icon class="fa">picture_as_pdf</v-icon>
+                    <span>In-progress forms</span>
                   </v-list-tile>
                 </v-list>
-                <v-list v-else-if="isDO">
+                <v-list v-else-if="$store.getters.isDO">
                   <v-list-tile
-                    v-if="$store.state.payload.is_univ_manager"
-                    :to="`${$store.state.homeUrl}/admin`"
+                    v-if="$store.getters.getIsUnivManager"
+                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/admin`"
                     class="dropdown-menu-item"
                   >
-                    <v-icon class="menu-icon">fas fa-cog</v-icon>Manage
+                    <v-icon class="fa">settings</v-icon>Manage
                   </v-list-tile>
                   <v-list-tile
-                    :to="`${$store.state.homeUrl}/submitted-forms`"
+                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/submitted-forms`"
                     class="dropdown-menu-item"
                   >
-                    <v-icon class="menu-icon">mail</v-icon>In-progress forms
+                    <v-icon class="fa">mail</v-icon>In-progress forms
                   </v-list-tile>
                 </v-list>
               </v-menu>
             </template>
 
-            <template v-if="/*$store.state.authType === 'ac' &&*/ (isAC || isStudent)">
+            <template
+              v-if="($store.getters.isAC || $store.getters.isStudent || $store.getters.isNA)"
+            >
               <v-menu offset-y transition="fade-transition" bottom>
                 <v-btn class="white--text" flat slot="activator">
-                  <v-icon class="menu-icon">assessment</v-icon>
+                  <v-icon class="fa">assessment</v-icon>
                   <span class="white--text">Assessment Centre</span>
                 </v-btn>
                 <v-list>
-                  <v-list-tile to="/assessment-centre/ac-forms" class="dropdown-menu-item">
-                    <v-icon class="menu-icon">insert_drive_file</v-icon>
-                    <span>{{isAC ? 'Assessment Forms' : 'My Assessment Form'}}</span>
+                  <v-list-tile
+                    v-if="$store.getters.getRegistrations.ac"
+                    to="/assessment-centre/calendar"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">today</v-icon>
+                    <span>{{ $store.getters.isStudent ? 'Bookings' : 'Calendar' }}</span>
+                  </v-list-tile>
+                  <v-list-tile
+                    v-if="$store.getters.isAC"
+                    to="/assessment-centre/submitted-forms"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">insert_drive_file</v-icon>
+                    <span>Submitted Forms</span>
+                  </v-list-tile>
+                  <v-list-tile
+                    v-if="$store.getters.isAC"
+                    to="/assessment-centre/students"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">person</v-icon>
+                    <span>Students</span>
+                  </v-list-tile>
+                  <v-list-tile
+                    v-if="$store.getters.isAC || $store.getters.isNA"
+                    to="/assessment-centre/settings"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">settings</v-icon>
+                    <span>Settings</span>
+                  </v-list-tile>
+
+                  <v-list-tile
+                    v-if="$store.getters.isAC"
+                    to="/assessment-centre/services"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">room_service</v-icon>
+                    <span>Services</span>
+                  </v-list-tile>
+
+                  <v-list-tile
+                    v-if="$store.getters.isAC"
+                    to="/assessment-centre/needs-assessors"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">assignment_ind</v-icon>
+                    <span>Needs Assessors</span>
                   </v-list-tile>
                 </v-list>
               </v-menu>
+            </template>
 
-              <template v-if="isAC">
-                <v-btn flat to="/assessment-centre/customers">
-                  <v-icon class="white--text">person</v-icon>
-                  <span class="white--text">Students</span>
+            <v-menu offset-y bottom :close-on-content-click="false">
+              <template v-slot:activator="{ on }">
+                <v-btn color="primary" class="white--text" flat v-on="on">
+                  <v-badge
+                    id="badge_notif"
+                    ref="badge_notif"
+                    v-model="showNotificationsCount"
+                    color="red"
+                  >
+                    <span slot="badge">{{ notificationsCount }}</span>
+                    <v-icon v-if="notificationsCount > 0" medium color="white">notifications_active</v-icon>
+                    <v-icon v-else medium color="white">notifications_none</v-icon>
+                  </v-badge>
                 </v-btn>
               </template>
-            </template>
-            
-            <v-menu offset-y transition="slide-down" bottom :close-on-content-click="false">
-              <v-btn color="primary" class="white--text" flat slot="activator">
-                <v-badge
-                  id="badge_notif"
-                  ref="badge_notif"
-                  v-model="showNotificationsCount"
-                  color="red"
-                >
-                  <span slot="badge">{{notificationsCount}}</span>
-                  <v-icon v-if="notificationsCount > 0" medium color="white">notifications_active</v-icon>
-                  <v-icon v-else medium color="white">notifications_none</v-icon>
-                </v-badge>
-              </v-btn>
 
               <v-list class="general-notif-container">
                 <v-tabs
@@ -178,29 +215,31 @@
                   color="transparent"
                   slider-color="primary"
                 >
-                  <v-tab href="#notifications-list" class="primary--text">Notifications
+                  <v-tab href="#notifications-list" class="primary--text">
+                    Notifications
                     <v-icon>notifications_none</v-icon>
                   </v-tab>
-                  <v-tab href="#activities-list" class="primary--text">Activities
+                  <v-tab href="#activities-list" class="primary--text">
+                    Activities
                     <v-icon>alarm</v-icon>
                   </v-tab>
                 </v-tabs>
 
-                <v-tabs-items v-model="tabs" class="white">
-                  <v-tab-item id="notifications-list">
-                    <v-card>
+                <v-tabs-items v-model="tabs" class="white animated fadeIn">
+                  <v-tab-item value="notifications-list">
+                    <v-card class="elevation-0">
                       <template v-if="notifications.length === 0">
                         <v-card-text>
                           <v-list-tile-content>
                             <v-list-tile-title class="text-xs-center info--text">
-                              <icon name="info-circle" class="fa"></icon>No items found
+                              <v-icon small class="info--text fa">warning</v-icon>No items found
                             </v-list-tile-title>
                           </v-list-tile-content>
                         </v-card-text>
                       </template>
 
                       <template v-else>
-                        <div v-for="(item, index) in notifications" :key="`N-${index}`">
+                        <div v-for="(item, index) in notifications" :key="`notif-${index}`">
                           <v-container
                             class="text-xs-left notif-container"
                             :class="selectedNotifications.indexOf(index) >= 0 ? 'selected' : ''"
@@ -212,19 +251,21 @@
                                     <span class="primary--text notif-title" v-html="item.title"></span>
                                     <a class="notif-dismiss" @click="deleteNotification(index)">
                                       <v-tooltip left>
-                                        <icon
+                                        <v-progress-circular
+                                          size="15"
+                                          :width="2"
                                           v-if="item.deleting"
+                                          indeterminate
+                                          color="primary"
                                           slot="activator"
-                                          name="circle-notch"
-                                          spin
                                           class="red--text"
-                                        ></icon>
-                                        <icon
+                                        ></v-progress-circular>
+                                        <v-icon
+                                          small
                                           v-else
                                           slot="activator"
-                                          name="times"
                                           class="red--text"
-                                        ></icon>
+                                        >delete</v-icon>
                                         <span>Remove</span>
                                       </v-tooltip>
                                     </a>
@@ -233,11 +274,11 @@
                                       v-if="selectedNotifications.indexOf(index) >= 0"
                                       class="red--text notif-check"
                                     >
-                                      <icon slot="activator" name="check-square"></icon>
+                                      <v-icon small slot="activator">check_box</v-icon>
                                       <span>Unselect</span>
                                     </v-tooltip>
                                     <v-tooltip left v-else class="grey--text notif-check">
-                                      <icon slot="activator" name="square"></icon>
+                                      <v-icon small slot="activator">check_box_outline_blank</v-icon>
                                       <span>Select</span>
                                     </v-tooltip>
                                   </v-flex>
@@ -245,15 +286,14 @@
                                 <v-layout row wrap>
                                   <v-flex xs6>
                                     <span class="notif-text grey--text">
-                                      <icon class="fa" name="calendar-alt"></icon>
+                                      <v-icon small>today</v-icon>
                                       <span v-html="item.created_at"></span>
                                     </span>
                                   </v-flex>
                                   <v-flex xs6>
                                     <span style="float:right;" class="notif-text grey--text">
-                                      <i>
-                                        <span v-html="item.headline"></span> ago
-                                      </i>
+                                      <i v-html="item.headline"></i>
+                                      <i v-html="' ago'"></i>
                                     </span>
                                   </v-flex>
                                 </v-layout>
@@ -273,7 +313,7 @@
                             <v-layout>
                               <v-flex lg6>
                                 <v-btn small flat color="info" style="margin-top: 10px;">
-                                  <icon name="bell" class="fa"></icon>View all
+                                  <v-icon small class="fa">room_service</v-icon>View all
                                 </v-btn>
                               </v-flex>
                             </v-layout>
@@ -287,12 +327,14 @@
                                   :disabled="selectedNotifications.length < 1 || deletingNotifications"
                                   color="error"
                                 >
-                                  <icon
+                                  <v-progress-circular
+                                    size="15"
+                                    :width="2"
                                     v-if="deletingNotifications"
-                                    name="circle-notch"
-                                    class="fa"
-                                    spin
-                                  ></icon>
+                                    indeterminate
+                                    color="gray"
+                                    class="white--text"
+                                  ></v-progress-circular>
                                   <v-icon size="large" v-else>notifications_off</v-icon>
                                 </v-btn>
                               </v-flex>
@@ -303,20 +345,20 @@
                     </v-card>
                   </v-tab-item>
 
-                  <v-tab-item id="activities-list">
-                    <v-card>
+                  <v-tab-item value="activities-list">
+                    <v-card class="elevation-0">
                       <template v-if="activities.length === 0">
                         <v-card-text>
                           <v-list-tile-content>
                             <v-list-tile-title class="text-xs-center info--text">
-                              <icon name="info-circle" class="fa"></icon>No items found
+                              <v-icon small class="info--text fa">warning</v-icon>No items found
                             </v-list-tile-title>
                           </v-list-tile-content>
                         </v-card-text>
                       </template>
 
                       <template v-else>
-                        <div v-for="(item, index) in activities" :key="`N-${index}`">
+                        <div v-for="(item, index) in activities" :key="`activ-${index}`">
                           <v-container
                             class="text-xs-left notif-container"
                             :class="selectedActivities.indexOf(index) >= 0 ? 'selected' : ''"
@@ -327,33 +369,35 @@
                                   <v-flex xs12 @click="selectActivity(index)">
                                     <span class="primary--text notif-title" v-html="item.title"></span>
                                     <a class="notif-dismiss" @click="deleteActivity(index)">
-                                      <v-tooltip left>
-                                        <icon
+                                      <v-tooltip bottom>
+                                        <v-progress-circular
+                                          size="15"
+                                          :width="2"
                                           v-if="item.deleting"
+                                          indeterminate
+                                          color="primary"
                                           slot="activator"
-                                          name="circle-notch"
-                                          spin
                                           class="red--text"
-                                        ></icon>
-                                        <icon
+                                        ></v-progress-circular>
+                                        <v-icon
+                                          small
                                           v-else
                                           slot="activator"
-                                          name="times"
                                           class="red--text"
-                                        ></icon>
+                                        >delete</v-icon>
                                         <span>Remove</span>
                                       </v-tooltip>
                                     </a>
                                     <v-tooltip
-                                      left
+                                      bottom
                                       v-if="selectedActivities.indexOf(index) >= 0"
                                       class="red--text notif-check"
                                     >
-                                      <icon slot="activator" name="check-square"></icon>
+                                      <v-icon small slot="activator">check_box</v-icon>
                                       <span>Unselect</span>
                                     </v-tooltip>
-                                    <v-tooltip left v-else class="grey--text notif-check">
-                                      <icon slot="activator" name="square"></icon>
+                                    <v-tooltip bottom v-else class="grey--text notif-check">
+                                      <v-icon small slot="activator">check_box_outline_blank</v-icon>
                                       <span>Select</span>
                                     </v-tooltip>
                                   </v-flex>
@@ -361,15 +405,14 @@
                                 <v-layout row wrap>
                                   <v-flex xs6>
                                     <span class="notif-text grey--text">
-                                      <icon class="fa" name="calendar-alt"></icon>
+                                      <v-icon small>today</v-icon>
                                       <span v-html="item.created_at"></span>
                                     </span>
                                   </v-flex>
                                   <v-flex xs6>
                                     <span style="float:right;" class="notif-text grey--text">
-                                      <i>
-                                        <span v-html="item.headline"></span> ago
-                                      </i>
+                                      <i v-html="item.headline"></i>
+                                      <i v-html="' ago'"></i>
                                     </span>
                                   </v-flex>
                                 </v-layout>
@@ -389,7 +432,7 @@
                             <v-layout row>
                               <v-flex lg6>
                                 <v-btn small flat color="info" style="margin-top: 10px;">
-                                  <icon name="bell" class="fa"></icon>View all
+                                  <v-icon class="fa">room_service</v-icon>
                                 </v-btn>
                               </v-flex>
                             </v-layout>
@@ -403,13 +446,15 @@
                                   :disabled="selectedActivities.length < 1 || deletingActivities"
                                   color="error"
                                 >
-                                  <icon
+                                  <v-progress-circular
+                                    size="15"
+                                    :width="2"
                                     v-if="deletingActivities"
-                                    name="circle-notch"
-                                    class="fa"
-                                    spin
-                                  ></icon>
-                                  <v-icon size="large" v-else>alarm_off</v-icon>
+                                    indeterminate
+                                    color="gray"
+                                    class="white--text fa"
+                                  ></v-progress-circular>
+                                  <v-icon small v-else>alarm_off</v-icon>
                                 </v-btn>
                               </v-flex>
                             </v-layout>
@@ -428,35 +473,25 @@
                 <span class="white--text">My Account</span>
               </v-btn>
               <v-list>
-                <v-list-tile to="/my-profile" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">person</v-icon>
+                <v-list-tile v-if="$store.getters.isDO" to="/my-profile" class="dropdown-menu-item">
+                  <v-icon class="fa">person</v-icon>
                   <span>My Profile</span>
                 </v-list-tile>
-
-                <v-list-tile v-if="isNA || isAC" to="/assessment-centre/settings" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">settings</v-icon>
-                  <span>Settings</span>
-                </v-list-tile>
-
-                <v-list-tile v-if="isAC" to="/assessment-centre/services" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">room_service</v-icon>
-                  <span>Services</span>
-                </v-list-tile>
-
-                <v-list-tile v-if="isAC" to="/assessment-centre/users" class="dropdown-menu-item">
-                  <v-icon class="menu-icon">assignment_ind</v-icon>
-                  <span>Assessors</span>
-                </v-list-tile>
-
-                <v-divider></v-divider>
 
                 <v-list-tile
                   :disabled="loggingOut"
                   v-on:click="logout()"
                   class="dropdown-menu-item"
                 >
-                  <icon v-if="loggingOut" class="menu-icon fa" name="circle-notch" spin></icon>
-                  <v-icon v-else class="menu-icon">power_settings_new</v-icon>
+                  <v-progress-circular
+                    small
+                    :width="2"
+                    v-if="loggingOut"
+                    indeterminate
+                    color="primary"
+                    class="red--text fa"
+                  ></v-progress-circular>
+                  <v-icon v-else class="fa">power_settings_new</v-icon>
                   <span>Log out</span>
                 </v-list-tile>
               </v-list>
@@ -472,19 +507,21 @@
         v-model="snackbar"
         :color="operationMessageType"
       >
-        <icon class="fa" name="info-circle"></icon>
+        <v-icon small class="white--text fa">info</v-icon>
         {{ operationMessage }}
         <v-btn flat @click.native="snackbar = false">
-          <icon name="times"></icon>
+          <v-icon>close</v-icon>
         </v-btn>
       </v-snackbar>
     </v-flex>
+
+    <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
   </v-layout>
 </template>
 
 <script>
-import axios from "axios";
 import classList from "classlist";
+import { mapGetters } from "vuex";
 
 export default {
   data() {
@@ -511,10 +548,24 @@ export default {
     };
   },
   mounted() {
-    this.updateNotifications();
-    this.timer = setInterval(this.updateNotifications, 3000);
+    this.toggleGetNotifications(this.$store.getters.isGuest);
+    this.$store.watch(
+      (state, getters) => getters.isGuest,
+      (newValue, oldValue) => {
+        this.toggleGetNotifications(newValue);
+      }
+    );
   },
   methods: {
+    toggleGetNotifications(isGuest) {
+      this.clearNotifications();
+      if (isGuest) {
+        clearInterval(this.timer);
+      } else {
+        this.updateNotifications();
+        this.timer = setInterval(this.updateNotifications, 5000);
+      }
+    },
     initAudioPlayer() {
       if (!this.audioPlayer) {
         this.audioPlayer = new Audio(this.$store.state.beepFile);
@@ -526,77 +577,121 @@ export default {
     },
     updateNotifications() {
       if (
-        !this.isGuest &&
+        !this.$store.getters.isGuest &&
         !this.loadingNotifications &&
         !this.deletingNotifications &&
         !this.deletingActivities
       ) {
-        this.getNotifications().then(data => {
-          this.loadingNotifications = false;
-          this.operationMessageType = data.operationMessageType;
-          this.operationMessage = data.operationMessage;
-          this.notificationsCount = data.notifsCount + data.activsCount;
-          var newNotifications = data.notifs;
-          var newActivities = data.activs;
+        this.getNotifications();
+      }
+    },
+    handleHttpResponse(event) {
+      this.loading = false;
 
-          if (this.operationMessageType === "success") {
-            var newNotif = false;
-            for (var i in newNotifications) {
-              var newNotification = newNotifications[i];
-              var notifIndex = -1;
-              for (var j in this.notifications) {
-                if (this.notifications[j].id === newNotification.id) {
-                  notifIndex = j;
-                  break;
+      if (event.data.result.code === 200) {
+        let response = event.data.result.response;
+        this.operationMessage = response.msg;
+        this.operationMessageType = response.code;
+        let action = event.url.substring(event.url.lastIndexOf("/") + 1);
+
+        switch (action) {
+          case "get-notifications":
+            this.loadingNotifications = false;
+
+            if (response.code === "success") {
+              let newNotifications = response.data.notif.items;
+              let notifsCount = response.data.notif.count;
+              let newActivities = response.data.activ.items;
+              let activsCount = response.data.activ.count;
+
+              var newNotif = false;
+              for (var i in newNotifications) {
+                var newNotification = newNotifications[i];
+                var notifIndex = -1;
+                for (var j in this.notifications) {
+                  if (this.notifications[j].id === newNotification.id) {
+                    notifIndex = j;
+                    break;
+                  }
+                }
+                if (notifIndex < 0) {
+                  this.notifications.push(newNotification);
+                  newNotif = true;
+                  this.showNotificationsCount = true;
+                } else {
+                  this.notifications[notifIndex].headline =
+                    newNotification.headline;
                 }
               }
-              if (notifIndex < 0) {
-                this.notifications.push(newNotification);
-                newNotif = true;
-                this.showNotificationsCount = true;
-              } else {
-                this.notifications[notifIndex].headline =
-                  newNotification.headline;
-              }
-            }
-            if (newNotif) {
-              this.notifications.sort(function(a, b) {
-                return b.id - a.id;
-              });
-              if (!this.isGuest) {
-                this.playNotifSound();
-                var badge_notif = document.getElementById("badge_notif");
-                var list = classList(badge_notif);
-                list.add("animated");
-                list.add("rubberBand");
-              }
-            }
-
-            var newActiv = false;
-            for (var i in newActivities) {
-              var newActivity = newActivities[i];
-              var activIndex = -1;
-              for (var j in this.activities) {
-                if (this.activities[j].id === newActivity.id) {
-                  activIndex = j;
-                  break;
+              if (newNotif) {
+                this.notifications.sort(function(a, b) {
+                  return b.id - a.id;
+                });
+                if (!this.$store.getters.isGuest) {
+                  this.playNotifSound();
+                  var badge_notif = document.getElementById("badge_notif");
+                  var list = classList(badge_notif);
+                  list.add("animated");
+                  list.add("rubberBand");
                 }
               }
-              if (activIndex < 0) {
-                this.activities.push(newActivity);
-                newActiv = true;
-                this.showNotificationsCount = true;
-              } else {
-                this.activities[activIndex].headline = newActivity.headline;
+
+              var newActiv = false;
+              for (var i in newActivities) {
+                var newActivity = newActivities[i];
+                var activIndex = -1;
+                for (var j in this.activities) {
+                  if (this.activities[j].id === newActivity.id) {
+                    activIndex = j;
+                    break;
+                  }
+                }
+                if (activIndex < 0) {
+                  this.activities.push(newActivity);
+                  newActiv = true;
+                  this.showNotificationsCount = true;
+                } else {
+                  this.activities[activIndex].headline = newActivity.headline;
+                }
               }
+              if (newActiv) {
+                this.activities.sort(function(a, b) {
+                  return b.id - a.id;
+                });
+              }
+              this.notificationsCount =
+                this.notifications.length + this.activities.length;
+            } else {
+              this.snackbar = true;
             }
-            if (newActiv) {
-              this.activities.sort(function(a, b) {
-                return b.id - a.id;
-              });
+            break;
+          case "delete-notifications":
+          case "delete-activities":
+            if (action === "delete-notifications") {
+              this.deletingNotifications = false;
+              this.selectedNotifications = [];
+            } else {
+              this.deletingActivities = false;
+              this.selectedActivities = [];
             }
-          }
-        });
+            if (response.code === "success") {
+              this.notifications = response.data.notif.items;
+              this.activities = response.data.activ.items;
+              this.notificationsCount =
+                response.data.notif.count + response.data.activ.count;
+              this.showNotificationsCount = this.notificationsCount > 0;
+            } else {
+              this.snackbar = true;
+            }
+            break;
+          default:
+            this.snackbar = true;
+            break;
+        }
+      } else {
+        this.operationMessage = "Your request could not be executed.";
+        this.operationMessageType = "error";
+        this.snackbar = true;
       }
     },
     deleteActivity(index) {
@@ -605,46 +700,17 @@ export default {
       this.deleteActivities();
     },
     deleteActivities() {
-      var requestConfig = {
-        headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
-      };
-      var requestParams = {
-        data: []
-      };
-      this.selectedActivities.forEach(element => {
-        requestParams.data.push(this.activities[element].id);
-      });
       this.deletingActivities = true;
-      var that = this;
-      axios
-        .post(
-          this.$store.state.baseUrl +
-            "delete-activities?XDEBUG_SESSION_START=netbeans-xdebug",
-          requestParams,
-          requestConfig
-        )
-        .then(function(response) {
-          if (response.data.code === "success") {
-            that.notifications = response.data.data.notif.items;
-            that.notificationsCount =
-              response.data.data.notif.count + response.data.data.activ.count;
-            that.activities = response.data.data.activ.items;
-            that.showNotificationsCount = that.notificationsCount > 0;
-            that.selectedActivities = [];
-          } else {
-            that.snackbar = true;
-          }
-          that.deletingActivities = false;
-          that.operationMessage = response.data.msg;
-          that.operationMessageType = response.data.code;
-        })
-        .catch(function(error) {
-          that.deletingActivities = false;
-          that.operationMessage =
-            "There was an error on the remote endpoint. Try again later.";
-          that.operationMessageType = "error";
-          that.snackbar = true;
-        });
+      let params = [];
+      this.selectedActivities.forEach(element => {
+        params.push(this.activities[element].id);
+      });
+      let config = {
+        method: "post",
+        url: "delete-activities",
+        params: { data: params }
+      };
+      this.$refs.axios.submit(config);
     },
     deleteNotification(index) {
       this.notifications[index].deleting = true;
@@ -652,46 +718,17 @@ export default {
       this.deleteNotifications();
     },
     deleteNotifications() {
-      var requestConfig = {
-        headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
-      };
-      var requestParams = {
-        data: []
-      };
-      this.selectedNotifications.forEach(element => {
-        requestParams.data.push(this.notifications[element].id);
-      });
       this.deletingNotifications = true;
-      var that = this;
-      axios
-        .post(
-          this.$store.state.baseUrl +
-            "delete-notifications?XDEBUG_SESSION_START=netbeans-xdebug",
-          requestParams,
-          requestConfig
-        )
-        .then(function(response) {
-          if (response.data.code === "success") {
-            that.notifications = response.data.data.notif.items;
-            that.notificationsCount =
-              response.data.data.notif.count + response.data.data.activ.count;
-            that.activities = response.data.data.activ.items;
-            that.showNotificationsCount = that.notificationsCount > 0;
-            that.selectedNotifications = [];
-          } else {
-            that.snackbar = true;
-          }
-          that.deletingNotifications = false;
-          that.operationMessage = response.data.msg;
-          that.operationMessageType = response.data.code;
-        })
-        .catch(function(error) {
-          that.deletingNotifications = false;
-          that.operationMessage =
-            "There was an error on the remote endpoint. Try again later.";
-          that.operationMessageType = "error";
-          that.snackbar = true;
-        });
+      let params = [];
+      this.selectedNotifications.forEach(element => {
+        params.push(this.notifications[element].id);
+      });
+      let config = {
+        method: "post",
+        url: "delete-notifications",
+        params: { data: params }
+      };
+      this.$refs.axios.submit(config);
     },
     selectNotification(index) {
       const i = this.selectedNotifications.indexOf(index);
@@ -711,62 +748,11 @@ export default {
     },
     getNotifications() {
       this.loadingNotifications = true;
-
-      return new Promise((resolve, reject) => {
-        var requestConfig = {
-          headers: {
-            Authorization: "Bearer " + this.$store.state.payload.jwt
-          }
-        };
-        var requestParams = {};
-
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "get-notifications?XDEBUG_SESSION_START=netbeans-xdebug",
-            requestParams,
-            requestConfig
-          )
-          .then(function(response) {
-            var operationMessageType = response.data.code;
-            var operationMessage = response.data.msg;
-            var notifs = [],
-              activs = [];
-            var notifsCount = 0,
-              activsCount = 0;
-
-            if (operationMessageType === "success") {
-              notifs = response.data.data.notif.items;
-              notifsCount = response.data.data.notif.count;
-              activs = response.data.data.activ.items;
-              activsCount = response.data.data.activ.count;
-            }
-            resolve({
-              operationMessageType,
-              operationMessage,
-              notifs,
-              notifsCount,
-              activs,
-              activsCount
-            });
-          })
-          .catch(function(error) {
-            var operationMessageType = "error";
-            var operationMessage = "Notifications could not be loaded.";
-            var notifs = [],
-              activs = [];
-            var notifsCount = 0,
-              activsCount = 0;
-            resolve({
-              operationMessageType,
-              operationMessage,
-              notifs,
-              notifsCount,
-              activs,
-              activsCount
-            });
-          });
-      });
+      let config = {
+        url: "get-notifications",
+        params: {}
+      };
+      this.$refs.axios.submit(config);
     },
     clearNotifications() {
       this.notifications = [];
@@ -775,82 +761,27 @@ export default {
       this.showNotificationsCount = false;
       this.selectedNotifications = [];
       this.selectedActivities = [];
-      console.log("Notifications cleared");
     },
     logout() {
       clearInterval(this.timer);
-      axios
-        .get(this.$store.state.eaUrl + "user/logout", {
-          params: { XDEBUG_SESSION_START: "netbeans-xdebug" }
-        })
-        .then(function(response) {})
-        .catch(function(error) {});
-      this.$store.commit("logout");
-      this.$router.push(
-        this.isStudent ? `${this.$store.state.homeUrl}/index` : "/auth/login"
-      );
-
-      /*
-      clearInterval(that.timer);
-      var requestConfig = {
-        headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
+      /*let config = {
+        api: "ea",
+        url: "user/logout",
+        params: {}
       };
-      this.loggingOut = true;
-      var requestParams = {};
-      var that = this;
-      axios
-        .post(
-          this.$store.state.baseUrl +
-            "logout?XDEBUG_SESSION_START=netbeans-xdebug",
-          requestParams,
-          requestConfig
-        )
-        .then(function(response) {
-          that.loading = false;
-          that.operationMessage = response.data.msg;
-          that.operationMessageType = response.data.code;
-          that.snackbar = true;
-          that.loggingOut = false;
-          if (response.data.code === "success") {
-            that.notifications = [];
-            that.notificationsCount = 0;
-            that.showNotificationsCount = false;
-            that.selectedNotifications = [];
-            //clearInterval(that.timer);
-            that.$store.commit("logout");
-            that.$router.push("/login");
-          }
-        })
-        .catch(function(error) {
-          that.loading = false;
-          that.operationMessage =
-            "There was an error on the remote endpoint. Try again later.";
-          that.operationMessageType = "error";
-          that.snackbar = true;
-          that.loggingOut = false;
-        });*/
+      this.$refs.axios.submit(config);*/
+      let redirect = this.$store.getters.isStudent
+        ? `${this.$store.getters.getHomeUrl}/login`
+        : "/auth/login";
+      this.$store.commit("logout");
+      this.$router.push(redirect);
     }
   },
   computed: {
-    isStudent() {
-      return this.$store.state.payload.roles.includes("student");
-    },
-    isDO() {
-      return this.$store.state.payload.roles.includes("do");
-    },
-    isAC() {
-      return this.$store.state.payload.roles.includes("ac");
-    },
-    isNA() {
-      return this.$store.state.payload.roles.includes("na");
-    },
-    isGuest() {
-      return this.$store.state.payload.is_guest;
-    },
     notificationsCountClass() {
       return this.showNotificationsCount ? "animated rubberBand" : "";
     }
-  },
+  } /*,
   watch: {
     isGuest: function(newValue, oldValue) {
       this.clearNotifications();
@@ -858,7 +789,7 @@ export default {
         this.timer = setInterval(this.updateNotifications, 15000);
       }
     }
-  }
+  }*/
 };
 </script>
 
@@ -868,10 +799,6 @@ a {
 }
 .white--text {
   margin-left: 5px;
-}
-.dropdown-menu-item a .menu-icon {
-  margin-right: 5px;
-  margin-bottom: 1px;
 }
 .dropdown-menu-item:hover {
   color: #fff;

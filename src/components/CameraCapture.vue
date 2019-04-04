@@ -1,6 +1,5 @@
 <template>
   <v-container class="text-lg-center">
-
     <v-layout row>
       <v-flex xs12>
         <video ref="video" id="video" width="480" height="360" autoplay></video>
@@ -15,9 +14,11 @@
               <v-icon class="fa">fas fa-camera</v-icon>Device
             </v-btn>
             <v-list>
-              <v-list-tile v-for="(item, index) in videoDevices" :key="`dev-${index}`" @click="switchVideoDevice(index)">
-                {{item.label}}
-              </v-list-tile>
+              <v-list-tile
+                v-for="(item, index) in videoDevices"
+                :key="`dev-${index}`"
+                @click="switchVideoDevice(index)"
+              >{{item.label}}</v-list-tile>
             </v-list>
           </v-menu>
           <!--<v-menu offset-y transition="fade-transition" bottom dark>
@@ -34,9 +35,9 @@
             <v-icon>camera</v-icon>Shoot
           </v-btn>
         </template>
-        
+
         <v-btn flat dark v-on:click="close()">
-          <v-icon>close</v-icon> Close
+          <v-icon>close</v-icon>Close
         </v-btn>
       </v-flex>
     </v-layout>
@@ -47,9 +48,19 @@
       </v-flex>
     </v-layout>
 
-    <v-snackbar class="mt-4" :timeout="5000" :top="true" :center="true" v-model="snackbar" color="error">
-      <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
-      <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
+    <v-snackbar
+      class="mt-4"
+      :timeout="5000"
+      :top="true"
+      :center="true"
+      v-model="snackbar"
+      color="error"
+    >
+      <v-icon size="22" class="fa">info</v-icon>
+      {{ operationMessage }}
+      <v-btn flat @click.native="snackbar = false">
+        <v-icon size="22" class="fa">close</v-icon>
+      </v-btn>
     </v-snackbar>
 
     <!--<template v-if="captures.length > 0">
@@ -196,7 +207,7 @@ export default {
         this.operationMessage = error.name;
       }
     },
-    selectSnap(i) {
+    /*selectSnap(i) {
       this.captures.forEach(element => {
         element.color = "default";
       });
@@ -209,7 +220,7 @@ export default {
         this.image = null;
       }
       this.captures.splice(i, 1);
-    },
+    },*/
     close() {
       this.$emit("close");
     },

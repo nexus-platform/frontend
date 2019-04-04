@@ -1,21 +1,13 @@
 <template>
-  <v-container fluid mt-5>
-    <v-flex lg12>
-      <img class="img-fluid" src="static/img/404.png" />
-      <p>Your request got lost in outer space...</p>
+  <v-flex xs12>
+    <v-img :src="require('../assets/img/404.png')" contain height="300"></v-img>
+    <p class="text-xs-center mt-3">
+      <span class="title">Your request got lost in outer space...</span><br />
       <router-link to="/">
-        <v-btn color="primary text-lg-center"><icon name="home" class="gray--text"></icon>&nbsp;Go to Homepage</v-btn>
+        <v-btn color="primary" class="mt-2">
+          <v-icon class="fa">home</v-icon>Go to Homepage
+        </v-btn>
       </router-link>
-    </v-flex>
-  </v-container>
+    </p>
+  </v-flex>
 </template>
-
-<style scoped>
-a {
-  text-decoration: none;
-}
-.img-fluid {
-  max-width: 100%;
-  height: auto;
-}
-</style>

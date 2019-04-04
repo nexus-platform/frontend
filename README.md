@@ -1,15 +1,29 @@
-INSTALLATION INSTRUCTIONS
---------------------------------------------------------------------------------------
+# verga
 
-- Install project dependencies using npm<br/>
-<code>npm install</code>
+## Project setup
+```
+yarn install
+```
 
-- Edit src/store.js file and update the variable baseUrl from the Vuex Store with the home URL of your recently configured backend endpoint (ie: http://backend-server/api/)
+### Compiles and hot-reloads for development
+```
+yarn run serve
+```
 
-- Run development server<br/>
-<code>npm run dev</code>
+### Compiles and minifies for production
+```
+yarn run build
+```
 
-- Use admin/a as the user/password combination.
+### Run your tests
+```
+yarn run test
+```
 
-- Building for deployment. (compiled sources will be located under the /dist directory).<br/>
-<code>npm run build</code>
+### Lints and fixes files
+```
+yarn run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).

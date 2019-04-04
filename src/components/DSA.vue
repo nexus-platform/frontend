@@ -1,60 +1,55 @@
 <template>
-  <v-container fluid mt-5 class="animated fadeIn">
+  <v-flex xs12>
+    <VProgress v-if="loadingInitialElements" message="Validating DSA information" class="mt-3"/>
 
-    <template v-if="loadingInitialElements">
-      <v-layout row wrap mt-2>
-        <v-flex xs12 sm8 offset-sm2 mt-4>
-          <h3 class="primary--text" :class="loadingInitialElements ? 'uppercase' : ''">{{ dsaName }}</h3>
-        </v-flex>
-        <v-flex xs12 mt-3>
-          <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
-        </v-flex>
-      </v-layout>
-    </template>
-    
     <template v-else>
-
       <v-layout align-center justify-center class="animated fadeIn">
         <v-flex md10 mt-3>
           <template v-if="operationMessageType === 'warning'">
             <v-alert :value="true" color="warning">
-              <img src="static/img/403.png" />
+              <img src="static/img/403.png">
               <h4>{{ operationMessage }}</h4>
             </v-alert>
           </template>
 
           <template v-else>
-            <template v-if="isGuest">
-              <auth-component ref="auth" v-on:finish="handleHttpResponse($event)" target="dsa" :currTab="currTab" :parentName="dsaName" :apiUrls="apiUrls" :slug="dsaSlug" />
+            <template v-if="$store.getters.isGuest">
+              <AuthComponent
+                ref="auth"
+                v-on:finish="handleHttpResponse($event)"
+                target="dsa"
+                :currTab="currTab"
+                :parentName="dsaName"
+                :apiUrls="apiUrls"
+                :slug="dsaSlug"
+              />
             </template>
 
             <template v-else>
-              <template v-if="action === 'admin' && isDO">
-                <v-card><my-institute></my-institute></v-card>
+              <template v-if="action === 'admin' && $store.getters.isDO">
+                <DsaAdmin/>
               </template>
 
-              <template v-else-if="action === 'submitted-forms' && isDO">
-                <v-card><submitted-forms></submitted-forms></v-card>
+              <template v-else-if="action === 'submitted-forms' && $store.getters.isDO">
+                <SubmittedForms/>
               </template>
 
-              <template v-else-if="action === 'dsa-forms' && (isDO || isStudent)">
+              <template
+                v-else-if="action === 'dsa-forms' && ($store.getters.isDO || $store.getters.isStudent)"
+              >
+                <DsaForms v-if="parameter === 'index'"/>
+                <DsaForm v-else/>
+              </template>
+
+              <template v-else-if="action === 'my-dsa-forms' && $store.getters.isStudent">
                 <v-card v-if="parameter === 'index'">
-                  <dsa-forms></dsa-forms>
-                </v-card>
-                <v-card v-else>
-                  <dsa-form></dsa-form>
+                  <DsaStudentForms/>
                 </v-card>
               </template>
 
-              <template v-else-if="action === 'my-dsa-forms' && isStudent">
-                <v-card v-if="parameter === 'index'">
-                  <my-dsa-forms></my-dsa-forms>
-                </v-card>
-              </template>
-              
               <template v-else>
                 <v-card-text>
-                  <h3>Welcome to {{ dsaName }}</h3>
+                  <h3 class="text-xs-center">Welcome to {{ dsaName }}'s DSA Office</h3>
                 </v-card-text>
               </template>
             </template>
@@ -63,30 +58,46 @@
       </v-layout>
     </template>
     
-    <axios-component ref="axios" v-on:finish="handleHttpResponse($event)" />
-
-    <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="capsLockAlert" color="warning">
-      <v-icon class="fa" color="white">warning</v-icon>Caps Lock is active
-      <v-btn flat @click.native="capsLockAlert = false"><icon name="times"></icon></v-btn>
+    <v-snackbar
+      :timeout="5000"
+      :bottom="true"
+      :right="true"
+      v-model="capsLockAlert"
+      color="warning"
+    >
+      <v-icon class="fa white--text" color="white">warning</v-icon>Caps Lock is active
+      <v-btn flat @click.native="capsLockAlert = false">
+        <v-icon>close</v-icon>
+      </v-btn>
     </v-snackbar>
 
-    <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
-      <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
-      <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
+    <v-snackbar
+      :timeout="5000"
+      :bottom="true"
+      :right="true"
+      v-model="snackbar"
+      :color="operationMessageType"
+    >
+      <v-icon class="fa white--text">warning</v-icon>
+      {{ operationMessage }}
+      <v-btn flat @click.native="snackbar = false">
+        <v-icon>close</v-icon>
+      </v-btn>
     </v-snackbar>
 
-	</v-container>
+    <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
+
+  </v-flex>
 </template>
 
 <script>
-import axios from "axios";
-import AxiosComponent from "@/components/AxiosComponent";
-import MyInstitute from "@/components/MyInstitute";
+import DsaAdmin from "@/components/DSAAdmin";
 import DsaForms from "@/components/DSAForms";
-import MyDsaForms from "@/components/MyDSAForms";
+import DsaStudentForms from "@/components/DSAStudentForms";
 import DsaForm from "@/components/DSAForm";
 import SubmittedForms from "@/components/DOSubmittedForms";
-import AuthComponent from "@/components/AuthComponent";
+import AuthComponent from "@/components/Auth";
+import { mapGetters } from "vuex";
 
 export default {
   data() {
@@ -104,7 +115,7 @@ export default {
       loadingPostcodeInfo: false,
       operationMessage: null,
       operationMessageType: null,
-      dsaName: "Validating Institute",
+      dsaName: null,
       loadingInitialElements: true,
       componentMounted: false,
       anonymActions: ["login", "signup", "reset-password"],
@@ -117,13 +128,12 @@ export default {
     };
   },
   components: {
-    AxiosComponent,
-    MyInstitute,
+    DsaAdmin,
     DsaForms,
     DsaForm,
     SubmittedForms,
     AuthComponent,
-    MyDsaForms
+    DsaStudentForms
   },
   mounted() {
     this.refreshInterface(this.$route);
@@ -134,15 +144,20 @@ export default {
   },
   methods: {
     refreshInterface(route) {
-      this.$store.state.authType = 'dsa';
       this.dsaSlug = route.params.dsa_slug;
       this.action = route.params.action;
       this.parameter = route.params.parameter;
       this.id = route.params.id;
 
-      if (this.isGuest && this.authActions.includes(this.action)) {
-        this.$store.state.authRouteRequested = route.path;
-      } else if (!this.isGuest && this.anonymActions.includes(this.action)) {
+      if (
+        this.$store.getters.isGuest &&
+        this.authActions.includes(this.action)
+      ) {
+        this.$store.commit("setAuthRouteRequested", route.path);
+      } else if (
+        !this.$store.getters.isGuest &&
+        this.anonymActions.includes(this.action)
+      ) {
         this.action = "index";
       } else {
         this.currTab = `tab-${this.action}`;
@@ -173,8 +188,11 @@ export default {
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case "get-dsa-info":
             if (response.code === "success") {
-              this.$store.state.homeUrl = `/dsa/${this.$route.params.dsa_slug}`;
               this.dsaName = response.data.dsaName;
+              this.$store.commit(
+                "setHomeUrl",
+                `/dsa/${this.$route.params.dsa_slug}`
+              );
             } else if (response.code === "warning") {
               this.dsaName = response.data.dsaName;
             } else {
@@ -184,11 +202,14 @@ export default {
           case this.apiUrls.login:
             if (response.code === "success") {
               this.$store.commit("updatePayload", response.data);
-              var redirect = this.$store.state.authRouteRequested;
-              this.$store.state.authRouteRequested = null;
+              var redirect = this.$store.getters.getAuthRouteRequested;
+              this.$store.commit("setAuthRouteRequested", null);
+              this.$store.commit(
+                "setHomeUrl",
+                `/dsa/${this.$route.params.dsa_slug}`
+              );
               this.$router.push(
-                redirect ? redirect : `${this.$store.state.homeUrl}/index`
-                //redirect ? redirect : '/dashboard'
+                redirect ? redirect : `/dashboard`
               );
             } else {
               this.snackbar = true;
@@ -207,17 +228,6 @@ export default {
         this.operationMessageType = "error";
         this.snackbar = true;
       }
-    }
-  },
-  computed: {
-    isGuest() {
-      return this.$store.state.payload.is_guest;
-    },
-    isDO() {
-      return this.$store.state.payload.roles.includes("do");
-    },
-    isStudent() {
-      return this.$store.state.payload.roles.includes("student");
     }
   }
 };

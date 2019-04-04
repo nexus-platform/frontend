@@ -1,74 +1,70 @@
 <template>
-  <v-container fluid mt-5 class="animated fadeIn">
-    <v-layout v-if="loadingEA" row wrap mt-4>
-      <v-flex xs12 sm10 offset-sm1>
-        <h3 class="primary--text uppercase">Loading your calendar</h3>
-      </v-flex>
-      <v-flex xs12 mt-3>
-        <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
-      </v-flex>
-    </v-layout>
+  <v-layout>
+    <template v-if="$store.getters.isStudent && !ac.user_data.ac_form_full_submit">
+      <v-card>
+        <v-card-text>
+          <h3>You need to register with your Assessment Centre first.</h3>
+        </v-card-text>
+      </v-card>
+    </template>
 
-    <v-layout row wrap mt-4>
-      <iframe-component :style="loadingEA ? 'opacity: 0;' : 'opacity: 1'" :eaUrl="eaUrl"/>
-    </v-layout>
+    <template v-else-if="$store.getters.isStudent && !ac.user_data.ac_booking_enabled">
+      <v-layout row wrap mt-3 class="animated fadeIn">
+        <v-flex md6 offset-md3>
+          <v-toolbar tabs color="indigo">
+            <v-toolbar-title class="white--text">
+              <v-icon class="white--text fa">school</v-icon>
+              {{ ac.name }}
+            </v-toolbar-title>
+          </v-toolbar>
+          <v-card>
+            <v-card-text>
+              <h3>
+                Your request form has been successfully submitted.
+                <br>You'll be notified when the Manager approves or denies it.
+              </h3>
+            </v-card-text>
+          </v-card>
+        </v-flex>
+      </v-layout>
+    </template>
 
-    <axios-component ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-container>
+    <IframeComponent v-else :eaUrl="eaUrl"/>
+  </v-layout>
 </template>
 
 <script>
-import AxiosComponent from "@/components/AxiosComponent";
-import IframeComponent from "@/components/IframeComponent";
+import IframeComponent from "@/components/Iframe";
 
 export default {
   data() {
     return {
-      loadingEA: false,
       acSlug: "",
       eaUrl: "",
-      registrations: []
+      ac: null
     };
   },
   components: {
-    AxiosComponent,
     IframeComponent
   },
-  mounted() {
-    this.registrations = this.$store.state.registrations;
-    this.acSlug = this.registrations[0].slug;
-    this.switchAC();
-    if (window.addEventListener) {
-      window.addEventListener("message", this.eaFrameResize, false);
+  created() {
+    if (this.$store.getters.isStudent) {
+      this.ac = this.$store.getters.getACInfo;
     }
+  },
+  mounted() {
+    this.acSlug = this.$store.getters.getRegistrations.ac[0].slug;
+    this.switchAC();
   },
   methods: {
-    test() {
-      console.log("test");
-    },
     switchAC() {
-      this.loadingEA = true;
-      this.eaUrl =
-      this.$store.state.eaUrl +
-      "backend/index" + `?ac=${this.acSlug}&jwt=${
-      this.$store.state.payload.jwt
-    }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
-      this.$store.state.baseUrl
-    }`;
-    },
-    eaFrameResize(event) {
-      this.loadingEA = false;
-      if (this.$refs.iframe) {
-        this.$refs.iframe.style.height = event.data.height + "px";
-      }
-    }
-  },
-  computed: {
-    isNA() {
-      return this.$store.state.payload.roles.includes("na");
-    },
-    isAC() {
-      return this.$store.state.payload.roles.includes("ac");
+      this.eaUrl = `${process.env.VUE_APP_EA_API}${
+        this.$store.getters.isStudent ? "appointments" : "backend"
+      }/index?ac=${this.acSlug}&jwt=${
+        this.$store.getters.getJWT
+      }&XDEBUG_SESSION_START=netbeans-xdebug&base_url=${
+        process.env.VUE_APP_BASE_API
+      }`;
     }
   }
 };

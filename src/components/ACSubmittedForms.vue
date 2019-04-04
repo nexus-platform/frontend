@@ -1,81 +1,109 @@
 <template>
-  <v-container class="animated fadeIn">
-    <v-layout row wrap>
-      <v-flex xs12>
-        <v-card-title>
-          <strong>Submitted Forms</strong>
-        </v-card-title>
+  <v-flex xs12>
+    <v-card-title>
+      <strong>Submitted Forms</strong>
+    </v-card-title>
 
-        <v-data-table :headers="headers" :items="desserts" :pagination.sync="pagination" :total-items="totalDesserts" :loading="loading" class="elevation-0">
-          
-          <template slot="items" slot-scope="props">
-            <td class="text-xs-left">{{ props.item.student_name }}</td>
-            <td class="text-xs-left">{{ props.item.univ_name }}</td>
-            <td class="text-xs-left">{{ props.item.status_desc }}</td>
-            <td class="text-xs-left">
-              <v-tooltip bottom color="black">
-                <v-btn @click="redirect(props.item.route)" small flat slot="activator" class="btn-sm" color="info">
-                  <icon class="fa" name="arrow-right"></icon>
-                </v-btn>
-                <span>View form</span>
-              </v-tooltip>
-              <v-tooltip bottom color="black" v-if="isAC">
-                <v-btn @click="showApproveDialog(props.item.token, props.index)" small flat slot="activator" class="btn-sm" color="success">
-                  <icon class="fa" name="thumbs-up"></icon>
-                </v-btn>
-                <span>Approve</span>
-              </v-tooltip>
-            </td>
-          </template>
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      :pagination.sync="pagination"
+      :total-items="totalItems"
+      :loading="loading"
+      class="elevation-0"
+    >
+      <template slot="items" slot-scope="props">
+        <td class="text-xs-left">{{ props.item.student_name }}</td>
+        <td class="text-xs-left">{{ props.item.univ_name }}</td>
+        <td class="text-xs-left">{{ props.item.status_desc }}</td>
+        <td class="text-xs-left">
+          <v-tooltip bottom color="black">
+            <v-btn
+              @click="redirect(props.item.route)"
+              small
+              flat
+              slot="activator"
+              class="btn-sm"
+              color="info"
+            >
+              <v-icon class="fa">arrow_forward</v-icon>
+            </v-btn>
+            <span>View form</span>
+          </v-tooltip>
+          <v-tooltip bottom color="black" v-if="$store.getters.isAC">
+            <v-btn
+              :disabled="props.item.status"
+              @click="showApproveDialog(props.item.token, props.index)"
+              small
+              flat
+              slot="activator"
+              class="btn-sm"
+              color="success"
+            >
+              <v-icon class="fa">thumb_up</v-icon>
+            </v-btn>
+            <span>Approve</span>
+          </v-tooltip>
+        </td>
+      </template>
 
-          <template slot="no-data">
-            <v-alert :value="true" class="black--text" color="default">
-              <h3 v-if="loading">Loading data...</h3> 
-              <span v-if="!loading">There are no items to display</span> 
-            </v-alert>
-          </template>
+      <template slot="no-data">
+        <v-alert :value="true" class="black--text text-xs-center" color="default">
+          <v-progress-circular :width="2" v-if="loading" indeterminate color="blue-grey"></v-progress-circular>
+          <span v-if="!loading">There are no items to display</span>
+        </v-alert>
+      </template>
+    </v-data-table>
 
-        </v-data-table>
-
-      </v-flex>
-    </v-layout>
-    
     <v-dialog width="500" v-model="approveDialog" persistent>
-      <v-card>
+      <v-card class="text-xs-center">
         <v-card-title class="headline grey lighten-2">
           Approve Form
           <v-spacer></v-spacer>
-          <a @click="approveDialog = false"><icon name="times" class="fa"></icon></a>
+          <a @click="approveDialog = false">
+            <v-icon class="fa">close</v-icon>
+          </a>
         </v-card-title>
         <v-container>
           <h3>Are you sure you want to approve this form?</h3>
           <v-btn :disabled="approvingForm" @click="approveForm()" color="info">
-            <icon v-if="!approvingForm" class="fa" name="thumbs-up"></icon>
-            <icon v-if="approvingForm" class="fa" name="circle-notch" spin></icon>Yes
+            <v-icon v-if="!approvingForm" class="fa">thumb_up</v-icon>
+            <v-progress-circular v-else size="18" indeterminate :width="2" class="grey--text fa"></v-progress-circular>
+            Yes
           </v-btn>
-          <v-btn @click="approveDialog = false" color="error"><icon class="fa" name="thumbs-down"></icon>Not yet</v-btn>
+          <v-btn @click="approveDialog = false" color="error">
+            <v-icon class="fa">thumb_down</v-icon>Not yet
+          </v-btn>
         </v-container>
       </v-card>
     </v-dialog>
 
-    <v-snackbar :timeout="5000" :bottom="true" :right="true" v-model="snackbar" :color="operationMessageType">
-      <icon class="fa" name="info-circle"></icon> {{ operationMessage }}
-      <v-btn flat @click.native="snackbar = false"><icon name="times"></icon></v-btn>
+    <v-snackbar
+      :timeout="5000"
+      :bottom="true"
+      :right="true"
+      v-model="snackbar"
+      :color="operationMessageType"
+    >
+      <v-icon class="fa">info</v-icon>
+      {{ operationMessage }}
+      <v-btn flat @click.native="snackbar = false">
+        <v-icon>close</v-icon>
+      </v-btn>
     </v-snackbar>
 
-  </v-container>  
+    <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
+  </v-flex>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   data() {
     return {
       formIndex: null,
       formId: null,
-      totalDesserts: 0,
-      desserts: [],
+      totalItems: 0,
+      items: [],
       loading: true,
       approvingForm: false,
       downloading: false,
@@ -96,21 +124,13 @@ export default {
   watch: {
     pagination: {
       handler() {
-        this.getDataFromApi().then(data => {
-          this.desserts = data.items;
-          this.totalDesserts = data.total;
-          this.loading = false;
-        });
+        this.getDataFromApi();
       },
       deep: true
     }
   },
   mounted() {
-    this.getDataFromApi().then(data => {
-      this.desserts = data.items;
-      this.totalDesserts = data.total;
-      this.loading = false;
-    });
+    this.getDataFromApi();
   },
   computed: {
     pages() {
@@ -122,80 +142,40 @@ export default {
       return Math.ceil(
         this.pagination.totalItems / this.pagination.rowsPerPage
       );
-    },
-    isAC() {
-      return this.$store.state.payload.roles.includes("ac");
-    },
+    }
   },
   methods: {
-    redirect(route) {
-      this.$router.push(route);
-      this.$emit('show-ac-submitted-form', this.$route.params.token);
-    },
-    approveForm() {
-      if (!this.approvingForm && this.formId) {
-        this.approvingForm = true;
-        var requestConfig = {
-          headers: { Authorization: "Bearer " + this.$store.state.payload.jwt }
-        };
-        var requestParams = {
-          slug: this.slug,
-          form_id: this.formId
-        };
-        var that = this;
-        axios
-          .post(
-            this.$store.state.baseUrl +
-              "ac-approve-form?XDEBUG_SESSION_START=netbeans-xdebug",
-            requestParams,
-            requestConfig
-          )
-          .then(function(response) {
-            that.approvingForm = false;
-            that.operationMessage = response.data.msg;
-            that.operationMessageType = response.data.code;
-            that.snackbar = true;
-            if (response.data.code === "success") {
-              that.desserts[that.formIndex].status = response.data.data;
-              that.approveDialog = false;
-            }
-          })
-          .catch(function(error) {
-            that.approvingForm = false;
-            that.operationMessage =
-              "There was an error on the remote endpoint. Try again later.";
-            that.operationMessageType = "error";
-            that.snackbar = true;
-          });
-      }
-    },
     showApproveDialog(formId, index) {
       this.formId = formId;
       this.formIndex = index;
       this.approveDialog = true;
     },
-    getDataFromApi() {
-      this.loading = true;
-      return new Promise((resolve, reject) => {
-        const { sortBy, descending, page, rowsPerPage } = this.pagination;
-        let config = {
-          headers: { Authorization: "Bearer " + this.$store.state.payload.jwt },
-          params: {
-            slug: this.slug
-          }
-        };
-        var that = this;
+    redirect(route) {
+      this.$router.push(route);
+      //this.$emit("show-ac-submitted-form", this.$route.params.token);
+    },
+    handleHttpResponse(event) {
+      this.loading = false;
 
-        axios
-          .get(
-            this.$store.state.baseUrl +
-              "get-ac-forms?XDEBUG_SESSION_START=netbeans-xdebug",
-            config
-          )
-          .then(function(response) {
-            let items = response.data.data;
+      if (event.data.result.code === 200) {
+        var response = event.data.result.response;
+        this.operationMessage = response.msg;
+        this.operationMessageType = response.code;
+
+        switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
+          case "ac-approve-form":
+            this.approvingForm = false;
+            if (response.code === "success") {
+              this.items[this.formIndex].status = response.data;
+              this.approveDialog = false;
+            }
+            this.snackbar = true;
+            break;
+          case "get-ac-forms":
+            const { sortBy, descending, page, rowsPerPage } = this.pagination;
+            let items = response.data;
             const total = items.length;
-            if (that.pagination.sortBy) {
+            if (this.pagination.sortBy) {
               items = items.sort((a, b) => {
                 const sortA = a[sortBy];
                 const sortB = b[sortBy];
@@ -214,20 +194,39 @@ export default {
             if (rowsPerPage > 0) {
               items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
             }
-            resolve({
-              items,
-              total
-            });
-          })
-          .catch(function(error) {
-            let items = {};
-            const total = items.length;
-            resolve({
-              items,
-              total
-            });
-          });
-      });
+            this.items = items;
+            this.totalItems = items.length;
+            break;
+          default:
+            this.snackbar = true;
+            break;
+        }
+      } else {
+        this.operationMessage = "Your request could not be executed.";
+        this.operationMessageType = "error";
+        this.snackbar = true;
+      }
+    },
+    getDataFromApi() {
+      this.loading = true;
+      var config = {
+        url: "get-ac-forms",
+        params: {}
+      };
+      this.$refs.axios.submit(config);
+    },
+    approveForm() {
+      if (!this.approvingForm && this.formId) {
+        this.approvingForm = true;
+        var config = {
+          method: "post",
+          url: "ac-approve-form",
+          params: {
+            form_id: this.formId
+          }
+        };
+        this.$refs.axios.submit(config);
+      }
     }
   }
 };

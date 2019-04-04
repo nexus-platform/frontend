@@ -1,9 +1,9 @@
 <template>
-  <v-container fluid mt-5 class="animated fadeIn">
+  <v-content>
     <v-layout row wrap>
       <v-flex md-8>
         <template>
-          <auth-component
+          <AuthComponent
             ref="auth"
             v-on:finish="handleHttpResponse($event)"
             target="public"
@@ -24,21 +24,19 @@
       v-model="snackbar"
       :color="operationMessageType"
     >
-      <icon class="fa" name="info-circle"></icon>
+      <v-icon class="fa">info</v-icon>
       {{ operationMessage }}
       <v-btn flat @click.native="snackbar = false">
-        <icon name="times"></icon>
+        <v-icon>close</v-icon>
       </v-btn>
     </v-snackbar>
 
-    <axios-component ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-container>
+    <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
+  </v-content>
 </template>
 
 <script>
-import AxiosComponent from "@/components/AxiosComponent";
-import Vue from "vue";
-import AuthComponent from "@/components/AuthComponent";
+import AuthComponent from '@/components/Auth'
 
 export default {
   data() {
@@ -57,7 +55,6 @@ export default {
     };
   },
   components: {
-    AxiosComponent,
     AuthComponent
   },
   beforeRouteUpdate(to, from, next) {
@@ -70,7 +67,7 @@ export default {
   methods: {
     refreshInterface(route) {
       this.action = route.params.action;
-      this.$store.state.homeUrl = `/auth`;
+      this.$store.commit('setHomeUrl', '/auth')
       if (!this.actions.includes(this.action)) {
         this.action = "login";
         this.$router.push("/auth/login");
@@ -89,21 +86,18 @@ export default {
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case this.apiUrls.login:
             if (response.code === "success") {
-              this.ac = response.data.ac_info;
-              this.$store.commit("updatePayload", response.data);
-              var redirect = this.$store.state.authRouteRequested;
-              this.$store.state.authRouteRequested = null;
-              this.$router.push(redirect ? redirect : "/dashboard");
+              this.ac = response.data.ac_info
+              this.$store.commit("updatePayload", response.data)
+              var redirect = this.$store.getters.getAuthRouteRequested
+              this.$store.commit('setAuthRouteRequested', null)
+              this.$router.push(redirect ? redirect : "/dashboard")
             } else {
-              this.snackbar = true;
-              this.$store.commit("logout");
+              this.snackbar = true
+              this.$store.commit("logout")
             }
             break;
-          case this.apiUrls.resetPassword:
-            this.snackbar = true;
-            break;
           default:
-            this.snackbar = true;
+            this.snackbar = true
             break;
         }
       } else {

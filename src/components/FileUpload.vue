@@ -13,8 +13,8 @@
           <v-divider></v-divider>
         </v-flex>
         <v-flex>
-          <v-btn color="info" v-on:click="setFile()"><icon name="check" class="fa"></icon> Use this file</v-btn>
-          <v-btn color="warning" v-on:click="removeFile()"><icon name="trash" class="fa"></icon>Discard</v-btn>
+          <v-btn color="info" v-on:click="setFile()"><v-icon class="fa">check</v-icon> Use this file</v-btn>
+          <v-btn color="warning" v-on:click="removeFile()"><v-icon class="fa">delete</v-icon>Discard</v-btn>
         </v-flex>
       </v-flex>
     </v-layout>

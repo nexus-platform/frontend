@@ -1,30 +1,28 @@
 <template>
   <v-app>
-    <toolbar></toolbar>
-    <router-view />
+    <Toolbar/>
+    <v-container mt-5 pt-5>
+      <v-layout row wrap class="animated fadeIn">
+        <router-view/>
+      </v-layout>
+    </v-container>
   </v-app>
 </template>
 
 <script>
-import Toolbar from "./components/Toolbar";
-import axios from "axios";
+import Toolbar from './views/Toolbar'
+import Vue from 'vue'
+import animate from 'animate.css'
+//import { scrypt } from 'crypto';
+Vue.use(animate);
 
 export default {
-  name: "Nexus",
-  data() {
-    return {
-    };
+  name: "App",
+  components: {
+    Toolbar
   },
-  components: { Toolbar }
+  data() {
+    return {};
+  }
 };
 </script>
-
-<style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-</style>

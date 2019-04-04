@@ -1,47 +1,49 @@
 <template>
-    <v-container class="animated fadeIn mt-3">
-      <v-card-text class="text-lg-center">
-        <a class="forms-list-header">{{ operationMessage }}</a>
+  <v-flex xs12>
+
+    <VProgress v-if="loading" message="Loading forms"/>
+
+    <p v-else class="text-uppercase subheading text-xs-center primary--text">
+      <span>{{ operationMessage }}</span>
+    </p>
+
+    <transition name="slide-fade">
+      <v-card-text v-if="!loading">
+        <v-layout row v-for="(item) in items" :key="`form-${item.id}`">
+          <v-flex lg8 offset-lg2>
+            <button class="btn primary" style="padding: 5px; height: auto;">
+              <router-link
+                :to="item.route"
+                class="white--text"
+                style="text-transform: none; text-decoration: none;"
+              >
+                <v-icon size="20" class="white--text fa">picture_as_pdf</v-icon>
+                <span class="white--text">{{item.name}}</span>
+              </router-link>
+            </button>
+          </v-flex>
+        </v-layout>
       </v-card-text>
-      <v-card-text v-if="loading">
-        <v-progress-circular indeterminate color="blue-grey"></v-progress-circular>
-      </v-card-text>
+    </transition>
 
-      <transition name="slide-fade">
-        <v-card-text v-if="!loading">
-          <v-layout row v-for="(item) in items" :key="`form-${item.id}`">
-            <v-flex lg8 offset-lg2>
-              <button class="btn primary" style="padding: 5px; height: auto;">
-                <router-link :to="item.route" class="white--text" style="text-transform: none; text-decoration: none;">
-                  <icon name="file-alt" class="white--text"></icon><span class="white--text"> {{item.name}}</span>
-                </router-link>
-              </button>
-            </v-flex>
-          </v-layout>
-        </v-card-text>
-      </transition>
-
-      <axios-component ref="axios" v-on:finish="handleHttpResponse($event)" />
-
-    </v-container>
+    <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
+  </v-flex>
 </template>
 
 <script>
-import AxiosComponent from "@/components/AxiosComponent";
 
 export default {
   data: () => ({
     loading: true,
     snackbar: false,
-    operationMessage: "Loading available forms...",
+    operationMessage: "Loading forms",
     items: []
   }),
-  components: { AxiosComponent },
   mounted() {
     var config = {
       url: "get-dsa-forms",
       params: {
-        XDEBUG_SESSION_START: "netbeans-xdebug"
+        
       }
     };
     this.$refs.axios.submit(config);
@@ -60,7 +62,9 @@ export default {
             if (response.code === "success") {
               this.items = response.data;
               this.loading = false;
-              this.operationMessage = "Available forms: " + this.items.length;
+              this.operationMessage = `You have ${
+                this.items.length
+              } available forms`;
             } else {
               this.snackbar = true;
             }

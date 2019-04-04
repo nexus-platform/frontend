@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     switchAC() {
-      this.eaUrl = `${process.env.VUE_APP_EA_API}backend/${this.$store.getters.isAC ? 'settings' : 'profile'}?ac=${
+      this.eaUrl = `${process.env.VUE_APP_EA_API}backend/users?ac=${
         this.acSlug
       }&jwt=${
         this.$store.getters.getJWT

@@ -78,8 +78,14 @@ export default new Vuex.Store({
     getRoles: state => {
       return state.payload.roles
     },
+    getPayload: state => {
+      return state.payload
+    },
     getAuthRouteRequested: state => {
       return state.authRouteRequested
+    },
+    getBeepFile: state => {
+      return state.beepFile
     },
     getHomeUrl: state => {
       return state.payload.frontend_home_url

@@ -81,6 +81,16 @@ let routes = [{
     }
   },
   {
+    path: '/activate-account/:token',
+    name: 'activate-account',
+    meta: {
+      requiresAnon: true
+    },
+    component: function () {
+      return import('@/components/ActivateAccount')
+    }
+  },
+  {
     path: '/assessment-centre/calendar',
     name: 'ac-calendar',
     meta: {

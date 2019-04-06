@@ -74,7 +74,7 @@
         </v-tab>
         <v-tab-item key="service-points" class="pt-3 pb-5">
           <!--DSA Office tile-->
-          <v-layout row wrap>
+          <v-layout v-if="registrations.dsa" row wrap>
             <v-flex xs12 sm6 offset-sm3 mb-3>
               <v-card class="elevation-1">
                 <v-toolbar dark color="blue">

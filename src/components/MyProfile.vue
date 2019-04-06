@@ -268,7 +268,7 @@
                     <v-flex sm10>
                       <v-btn @click="dlgCancelReg = true" color="error">
                         <v-icon class="fa">cancel</v-icon>
-                        Cancel registration with {{ this.$store.state.payload.institute.name }}
+                        Cancel registration with {{ this.$store.getters.getPayload }}
                       </v-btn>
                     </v-flex>
                   </v-layout>
@@ -391,8 +391,8 @@ export default {
         url: "cancel-registration",
         method: "post",
         params: {
-          type: this.$store.state.payload.institute.type,
-          slug: this.$store.state.payload.institute.slug
+          type: this.$store.getters.getPayload.institute.type,
+          slug: this.$store.getters.getPayload.institute.slug
         }
       };
       this.$refs.axios.submit(config);
@@ -506,7 +506,7 @@ export default {
             if (response.code === "success") {
               this.dlgCancelReg = false;
               this.$store.commit("logout");
-              this.$router.push(this.$store.state.homeUrl);
+              this.$router.push(this.$store.getters.getHomeUrl);
             }
             break;
           default:

@@ -1,14 +1,6 @@
 <template>
   <v-layout>
-    <template v-if="$store.getters.isStudent && !ac.user_data.ac_form_full_submit">
-      <v-card>
-        <v-card-text>
-          <h3>You need to register with your Assessment Centre first.</h3>
-        </v-card-text>
-      </v-card>
-    </template>
-
-    <template v-else-if="$store.getters.isStudent && !ac.user_data.ac_booking_enabled">
+    <template v-if="$store.getters.isStudent && !ac.user_data.ac_booking_enabled">
       <v-layout row wrap mt-3 class="animated fadeIn">
         <v-flex md6 offset-md3>
           <v-toolbar tabs color="indigo">
@@ -19,8 +11,7 @@
           </v-toolbar>
           <v-card>
             <v-card-text>
-              <h3>
-                Your request form has been successfully submitted.
+              <h3>Your request form has been successfully submitted.
                 <br>You'll be notified when the Manager approves or denies it.
               </h3>
             </v-card-text>
@@ -50,6 +41,9 @@ export default {
   created() {
     if (this.$store.getters.isStudent) {
       this.ac = this.$store.getters.getACInfo;
+      if (!this.ac.user_data.ac_form_full_submit) {
+        this.$router.push(`/assessment-centre/${this.ac.slug}/index`);
+      }
     }
   },
   mounted() {

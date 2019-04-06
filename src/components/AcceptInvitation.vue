@@ -77,20 +77,6 @@ export default {
       };
       this.$refs.axios.submit(config);
     }
-  },
-  computed: {
-    validationMessage: function() {
-      return this.validationStatus ? "Good to go!" : "Incomplete data";
-    },
-    validationIcon: function() {
-      return this.validationStatus ? "check" : "clear";
-    },
-    validationColor: function() {
-      return this.validationStatus ? "indigo" : "red";
-    },
-    isGuest() {
-      return this.$store.state.payload.is_guest;
-    }
   }
 };
 </script>

@@ -88,7 +88,9 @@
               <span class="white--text">Dashboard</span>
             </v-btn>
 
-            <template v-if="($store.getters.isStudent && $store.getters.getRegistrations.dsa) || $store.getters.isDO">
+            <template
+              v-if="($store.getters.isStudent && $store.getters.getRegistrations.dsa) || $store.getters.isDO"
+            >
               <v-menu offset-y transition="fade-transition" bottom>
                 <v-btn class="white--text" flat slot="activator">
                   <v-icon class="fa">school</v-icon>
@@ -131,17 +133,18 @@
             <template
               v-if="($store.getters.isAC || $store.getters.isStudent || $store.getters.isNA)"
             >
-              <v-menu offset-y transition="fade-transition" bottom>
+              <v-menu
+                v-if="$store.getters.getRegistrations.ac"
+                offset-y
+                transition="fade-transition"
+                bottom
+              >
                 <v-btn class="white--text" flat slot="activator">
                   <v-icon class="fa">assessment</v-icon>
                   <span class="white--text">Assessment Centre</span>
                 </v-btn>
                 <v-list>
-                  <v-list-tile
-                    v-if="$store.getters.getRegistrations.ac"
-                    to="/assessment-centre/calendar"
-                    class="dropdown-menu-item"
-                  >
+                  <v-list-tile to="/assessment-centre/calendar" class="dropdown-menu-item">
                     <v-icon class="fa">today</v-icon>
                     <span>{{ $store.getters.isStudent ? 'Bookings' : 'Calendar' }}</span>
                   </v-list-tile>
@@ -215,12 +218,10 @@
                   color="transparent"
                   slider-color="primary"
                 >
-                  <v-tab href="#notifications-list" class="primary--text">
-                    Notifications
+                  <v-tab href="#notifications-list" class="primary--text">Notifications
                     <v-icon>notifications_none</v-icon>
                   </v-tab>
-                  <v-tab href="#activities-list" class="primary--text">
-                    Activities
+                  <v-tab href="#activities-list" class="primary--text">Activities
                     <v-icon>alarm</v-icon>
                   </v-tab>
                 </v-tabs>
@@ -568,7 +569,7 @@ export default {
     },
     initAudioPlayer() {
       if (!this.audioPlayer) {
-        this.audioPlayer = new Audio(this.$store.state.beepFile);
+        this.audioPlayer = new Audio(this.$store.getters.getBeepFile);
       }
     },
     playNotifSound() {

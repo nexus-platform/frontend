@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-flex xs12>
     <v-layout justify-center class="animated fadeIn">
       <v-flex md10>
         <v-toolbar tabs color="indigo">
@@ -267,7 +267,7 @@
     </v-layout>
 
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-container>
+  </v-flex>
 </template>
 
 <script>
@@ -375,9 +375,8 @@ export default {
         );
         var homeUrl = window.location.href.replace(
           this.$route.path,
-          `${this.$store.state.homeUrl}/index`
+          `${this.$store.getters.getHomeUrl}/index`
         );
-        //var homeUrl = `${this.$store.state.homeUrl}/index`;
         var config = {
           url: this.apiUrls.signup,
           method: "post",
@@ -392,8 +391,8 @@ export default {
             activation_url: activationUrl,
             home_url: homeUrl,
             slug: this.slug,
-            redirect_url: this.$store.state.authRouteRequested
-              ? this.$store.state.authRouteRequested
+            redirect_url: this.$store.getters.getAuthRouteRequested
+              ? this.$store.getters.getAuthRouteRequested
               : homeUrl,
             target: this.target,
             invitation_token: this.invitationToken
@@ -417,7 +416,7 @@ export default {
             activation_url: activationUrl,
             home_url: window.location.href.replace(
               this.$route.path,
-              this.$store.state.homeUrl
+              this.$store.getters.getHomeUrl
             )
           }
         };

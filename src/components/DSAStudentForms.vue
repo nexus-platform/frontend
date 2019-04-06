@@ -100,9 +100,6 @@ export default {
       deep: true
     }
   },
-  mounted() {
-    this.getDataFromApi();
-  },
   computed: {
     pages() {
       if (

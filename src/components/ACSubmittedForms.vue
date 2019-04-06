@@ -13,9 +13,9 @@
       class="elevation-0"
     >
       <template slot="items" slot-scope="props">
-        <td class="text-xs-left">{{ props.item.student_name }}</td>
-        <td class="text-xs-left">{{ props.item.univ_name }}</td>
-        <td class="text-xs-left">{{ props.item.status_desc }}</td>
+        <td class="text-xs-left"><v-icon small class="fa">person</v-icon>{{ props.item.student_name }}</td>
+        <td class="text-xs-left"><v-icon small class="fa">school</v-icon>{{ props.item.univ_name }}</td>
+        <td class="text-xs-left"><v-icon v-if="props.item.status === 0" small class="error--text fa">error</v-icon><v-icon v-else small class="primary--text fa">check</v-icon>{{ props.item.status_desc }}</td>
         <td class="text-xs-left">
           <v-tooltip bottom color="black">
             <v-btn
@@ -32,7 +32,7 @@
           </v-tooltip>
           <v-tooltip bottom color="black" v-if="$store.getters.isAC">
             <v-btn
-              :disabled="props.item.status"
+              :disabled="props.item.status === 1"
               @click="showApproveDialog(props.item.token, props.index)"
               small
               flat
@@ -129,9 +129,6 @@ export default {
       deep: true
     }
   },
-  mounted() {
-    this.getDataFromApi();
-  },
   computed: {
     pages() {
       if (
@@ -167,11 +164,12 @@ export default {
             this.approvingForm = false;
             if (response.code === "success") {
               this.items[this.formIndex].status = response.data;
+              this.items[this.formIndex].status_desc = 'Approved';
               this.approveDialog = false;
             }
             this.snackbar = true;
             break;
-          case "get-ac-forms":
+          case "get-ac-submitted-forms":
             const { sortBy, descending, page, rowsPerPage } = this.pagination;
             let items = response.data;
             const total = items.length;
@@ -210,7 +208,7 @@ export default {
     getDataFromApi() {
       this.loading = true;
       var config = {
-        url: "get-ac-forms",
+        url: "get-ac-submitted-forms",
         params: {}
       };
       this.$refs.axios.submit(config);

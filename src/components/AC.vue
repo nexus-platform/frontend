@@ -172,7 +172,6 @@ export default {
       this.snackbar = true;
     },
     refreshInterface(route) {
-      this.$store.state.authType = "ac";
       this.activationUrl = window.location.href.replace(
         route.path,
         "/activate-account"
@@ -190,7 +189,7 @@ export default {
         this.$store.getters.isGuest &&
         this.authActions.includes(this.acAction)
       ) {
-        this.$store.state.authRouteRequested = route.path;
+        this.$store.commit('setAuthRouteRequested', route.path);
       } else if (
         !this.$store.getters.isGuest &&
         this.anonymActions.includes(this.acAction)
@@ -266,7 +265,7 @@ export default {
                 this.$router.push(urlOk ? url : "/");
               }
             } else {
-              this.$store.commit("setHomeUrl", "/auth/login");
+              //this.$store.commit("setHomeUrl", "/auth/login");
               this.$router.push("/not-found");
             }
             break;

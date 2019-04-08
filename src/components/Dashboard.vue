@@ -106,10 +106,16 @@
                   >Assessment Centre: {{ registration.name }}</v-toolbar-title>
                 </v-toolbar>
                 <v-container>
-                  <v-btn flat :to="`/assessment-centre/submitted-forms/${$store.getters.getUserToken}`">
+                  <v-btn
+                    flat
+                    :to="`/assessment-centre/submitted-forms/${$store.getters.getUserToken}`"
+                  >
                     <v-icon small class="fa">arrow_forward</v-icon>Registration form
                   </v-btn>
-                  <v-btn flat :to="`/assessment-centre/needs-assessor-report/${$store.getters.getUserToken}`">
+                  <v-btn
+                    flat
+                    :to="`/assessment-centre/needs-assessor-report/${$store.getters.getUserToken}`"
+                  >
                     <v-icon small class="fa">arrow_forward</v-icon>Needs Assessor Report
                   </v-btn>
                   <v-btn flat>
@@ -122,7 +128,8 @@
         </v-tab-item>
         <v-tab-item key="bookings" class="pa-3">
           <v-flex sm12 lg10 offset-lg1>
-            <v-card flat class="text-xs-center mt-3"></v-card>
+              <v-checkbox label="Show all" v-model="flagShowAllBookings" @change="getBookings()"></v-checkbox>
+              
           </v-flex>
         </v-tab-item>
       </v-tabs>
@@ -141,6 +148,7 @@ export default {
       activeStudentTab: null,
       acSlug: null,
       loading: false,
+      flagShowAllBookings: false,
       registrations: [],
       items: [],
       totalItems: 0,
@@ -156,12 +164,15 @@ export default {
       deep: true
     }
   },
-  created() {
+  mounted() {
     if (this.$store.getters.isNA) {
       this.registrations = this.$store.getters.getRegistrations.ac;
       this.acSlug = this.registrations[0].slug;
     } else {
       this.registrations = this.$store.getters.getRegistrations;
+      if (this.$store.getters.isStudent) {
+        this.getBookings();
+      }
     }
   },
   computed: {
@@ -177,6 +188,13 @@ export default {
     }
   },
   methods: {
+    getBookings() {
+      var config = {
+        url: "get-my-bookings",
+        params: { show_all: this.flagShowAllBookings }
+      };
+      this.$refs.axios.submit(config);
+    },
     getStudentsByAC() {
       this.loading = true;
       this.items = [];
@@ -191,13 +209,14 @@ export default {
     },
     handleHttpResponse(event) {
       this.loading = false;
-
       if (event.data.result.code === 200) {
         var response = event.data.result.response;
         this.operationMessage = response.msg;
         this.operationMessageType = response.code;
-
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
+          case "get-my-bookings":
+            this.bookings = response.data;
+            break;
           case "get-ac-students":
             const { sortBy, descending, page, rowsPerPage } = this.pagination;
             let items = response.data;

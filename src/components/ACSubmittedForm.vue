@@ -5,8 +5,8 @@
     <v-flex v-else xs12 mt-3>
       <v-form ref="acForm">
         <v-layout row wrap>
-          <v-flex sm12>
-            <v-card class="animated fadeIn elevation-0">
+          <v-flex xs12>
+            <v-card v-if="items.length > 0" class="animated fadeIn elevation-0">
               <v-tabs
                 color="blue-grey darken-3"
                 v-model="active"
@@ -36,7 +36,12 @@
                   <v-card flat>
                     <div class="text-xs-justify padding-20 pa-3">
                       <p class="header-title hidden-sm-and-up">{{item.title}}</p>
-                      <v-layout row wrap v-for="(row, rowIndex) in item.components" :key="`row-${rowIndex}`">
+                      <v-layout
+                        row
+                        wrap
+                        v-for="(row, rowIndex) in item.components"
+                        :key="`row-${rowIndex}`"
+                      >
                         <v-flex
                           v-for="(col, colIndex) in row"
                           :key="`row-${rowIndex}-col-${colIndex}`"
@@ -226,10 +231,10 @@ export default {
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
           case "get-ac-submitted-form":
             if (response.code === "success") {
-              this.messag = response.msg;
+              this.message = response.msg;
               this.items = response.data;
             } else {
-              this.pdfName =
+              this.message =
                 "There was an error while trying to load your form.";
             }
             break;

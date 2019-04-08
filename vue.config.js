@@ -10,5 +10,8 @@ module.exports = {
     // where to output built files
     outputDir: 'dist',
     // where to put static assets (js/css/img/font/...)
-    assetsDir: ''
+    assetsDir: '',
+    devServer: {
+        host: 'localhost'
+    }
 }

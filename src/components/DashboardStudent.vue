@@ -83,24 +83,26 @@
               <v-flex xs12 v-if="bookings.length === 0">
                 <v-card-text class="text-xs-center subheading">No results found</v-card-text>
               </v-flex>
-              <v-flex xs12 lg8 offset-lg2>
-                <v-toolbar height="30" tabs color="deep-purple">
+              <v-flex xs12 lg8 offset-lg2 v-for="(item, index) in bookings" :key="`bk-${index}`">
+                <v-toolbar height="30" :color="item.target_type === 1 ? 'deep-purple' : 'primary'">
                   <v-toolbar-title class="white--text body-2">
-                    <v-icon small class="white--text fa">school</v-icon>Centre
+                    <v-icon v-if="item.target_type === 1" small class="white--text fa">assessment</v-icon>
+                    <v-icon v-else small class="white--text fa">school</v-icon>
+                    {{ item.institute }}
                   </v-toolbar-title>
                 </v-toolbar>
                 <v-card>
                   <v-card-text class="pt-2">
                     <span>
-                      <v-icon size="18" class="fa">room_service</v-icon>Service:
+                      <v-icon size="18" class="fa">room_service</v-icon>Service: <span v-html="item.service"></span>
                     </span>
                     <br>
                     <span>
-                      <v-icon size="18" class="fa">person</v-icon>Provider:
+                      <v-icon size="18" class="fa">person</v-icon>Provider: <span v-html="item.provider"></span>
                     </span>
                     <br>
                     <span>
-                      <v-icon size="18" class="fa">today</v-icon>Datetime:
+                      <v-icon size="18" class="fa">today</v-icon>Datetime: <span v-html="item.start"></span> to <span v-html="item.end"></span>
                     </span>
                     <br>
                   </v-card-text>
@@ -139,6 +141,7 @@ export default {
     getBookings() {
       if (!this.loading) {
         this.loading = true;
+        this.bookings = [];
         this.flagShowAllBookings = !this.flagShowAllBookings;
         var config = {
           url: "get-my-bookings",

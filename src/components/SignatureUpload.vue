@@ -15,7 +15,7 @@
         <v-flex>
           <v-btn color="warning" v-on:click="removeImage()"><icon name="trash" class="fa"></icon>Discard</v-btn>
           <v-btn color="info" v-on:click="setSignature()">
-            <icon name="check" class="fa"></icon>
+            <v-icon size="20" class="fa">check</v-icon>
             Use image
           </v-btn>
         </v-flex>

@@ -55,7 +55,7 @@ let routes = [{
       requiresAuth: false
     },
     component: function () {
-      return import('@/components/DSA')
+      return import('@/components/dsa/DSA')
     }
   },
   {
@@ -73,8 +73,7 @@ let routes = [{
     path: '/dashboard',
     name: 'dashboard',
     meta: {
-      requiresAuth: true,
-      roles: ['ac', 'na', 'student']
+      requiresAuth: true
     },
     component: function () {
       return import('@/components/Dashboard')
@@ -98,7 +97,7 @@ let routes = [{
       roles: ['ac', 'na', 'student']
     },
     component: function () {
-      return import('@/components/ACCalendar')
+      return import('@/components/ac/ACCalendar')
     }
   },
   {
@@ -109,7 +108,7 @@ let routes = [{
       roles: ['ac', 'student']
     },
     component: function () {
-      return import('@/components/ACSubmittedForms')
+      return import('@/components/ac/ACSubmittedForms')
     }
   },
   {
@@ -120,7 +119,7 @@ let routes = [{
       roles: ['ac']
     },
     component: function () {
-      return import('@/components/ACStudents')
+      return import('@/components/ac/ACStudents')
     }
   },
   {
@@ -131,7 +130,7 @@ let routes = [{
       roles: ['ac', 'na']
     },
     component: function () {
-      return import('@/components/ACSettings')
+      return import('@/components/ac/ACSettings')
     }
   },
   {
@@ -142,7 +141,7 @@ let routes = [{
       roles: ['ac']
     },
     component: function () {
-      return import('@/components/ACAssessors')
+      return import('@/components/ac/ACAssessors')
     }
   },
   {
@@ -153,7 +152,7 @@ let routes = [{
       roles: ['ac']
     },
     component: function () {
-      return import('@/components/ACServices')
+      return import('@/components/ac/ACServices')
     }
   },
   {
@@ -164,18 +163,40 @@ let routes = [{
       roles: ['ac', 'student']
     },
     component: function () {
-      return import('@/components/ACSubmittedForm')
+      return import('@/components/ac/ACSubmittedForm')
     }
   },
   {
-    path: '/assessment-centre/student/:token',
+    path: '/assessment-centre/student/:token/:tab?',
     name: 'student-page',
     meta: {
       requiresAuth: true,
-      roles: ['na']
+      roles: ['ac', 'na', 'student']
     },
     component: function () {
-      return import('@/components/ACStudentPage')
+      return import('@/components/ac/ACStudentPage')
+    }
+  },
+  {
+    path: '/assessment-centre/application',
+    name: 'ac-application',
+    meta: {
+      requiresAuth: true,
+      roles: ['ac']
+    },
+    component: function () {
+      return import('@/components/ac/application/Application')
+    }
+  },
+  {
+    path: '/invoicing',
+    name: 'invoicing',
+    meta: {
+      requiresAuth: true,
+      roles: ['ac', 'nmh']
+    },
+    component: function () {
+      return import('@/components/Invoicing')
     }
   },
   {
@@ -186,7 +207,7 @@ let routes = [{
       roles: ['na', 'student']
     },
     component: function () {
-      return import('@/components/AC')
+      return import('@/components/ac/AC')
     }
   }
 ]

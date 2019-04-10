@@ -1,45 +1,37 @@
 <template>
   <v-flex xs12>
-    <v-layout row wrap>
-      <v-flex xs12 sm6 md4>
-        <v-select
-          :disabled="loading"
-          :items="registrations"
-          item-text="name"
-          item-value="slug"
-          label="Select an Assessment Centre"
-          v-model="acSlug"
-          @change="getStudentsByAC()"
-        ></v-select>
-      </v-flex>
-    </v-layout>
-
+    <!--<v-btn class="primary mb-3" :disabled="loading" @click="fetchData()">
+      <v-icon size="20" class="fa">autorenew</v-icon>Reload
+    </v-btn>-->
     <v-data-table
-      :headers="[{text: 'Name', value: 'name'}, {text: 'Email', value: 'email'}, {text: 'Actions', value: 'actions'}]"
+      :headers="[{text: 'Service', value: 'service'}, {text: 'Provider', value: 'provider'}, {text: 'Date', value: 'start'}, {text: 'Student', value: 'student'}]"
       :items="items"
       :pagination.sync="pagination"
-      :total-items="totalItems"
+      :total-items="items.length"
       :loading="loading"
-      class="elevation-0"
+      class="elevation-1 ml-2"
       :no-results-text="loading ? 'Loading records' : 'No matching records found'"
       :no-data-text="loading ? 'Loading records' : 'No matching records found'"
     >
       <template slot="items" slot-scope="props">
-        <td class="text-xs-left">{{ props.item.name }}</td>
-        <td class="text-xs-left">{{ props.item.email }}</td>
+        <td class="text-xs-left">
+          <v-icon size="18" class="fa">room_service</v-icon>
+          {{ props.item.service }}
+        </td>
+        <td class="text-xs-left">
+          <v-icon size="18" class="fa">person</v-icon>
+          {{ props.item.provider }}
+        </td>
+        <td class="text-xs-left">
+          <v-icon size="18" class="fa">today</v-icon>
+          {{ props.item.start }}
+        </td>
         <td class="text-xs-left">
           <v-tooltip bottom color="black">
-            <v-btn
-              @click="redirect(props.item.token)"
-              small
-              flat
-              slot="activator"
-              class="btn-sm"
-              color="info"
-            >
-              <v-icon class="fa">person</v-icon>
-            </v-btn>
-            <span>Student Page</span>
+            <a slot="activator" @click="redirect(props.item.user_token)">
+              {{ props.item.student}}
+            </a>
+            <span>Open Student Page</span>
           </v-tooltip>
         </td>
       </template>
@@ -50,37 +42,26 @@
         </v-alert>
       </template>
     </v-data-table>
-
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
   </v-flex>
 </template>
 
 <script>
-import ACCalendar from "@/components/ACCalendar";
-
 export default {
   data() {
     return {
-      acSlug: null,
       loading: false,
-      registrations: [],
       items: [],
-      totalItems: 0,
       pagination: {}
     };
   },
-  components: { ACCalendar },
   watch: {
     pagination: {
       handler() {
-        this.getStudentsByAC();
+        this.fetchData();
       },
       deep: true
     }
-  },
-  mounted() {
-      this.registrations = this.$store.getters.getRegistrations.ac;
-      this.acSlug = this.registrations[0].slug;
   },
   computed: {
     pages() {
@@ -95,12 +76,12 @@ export default {
     }
   },
   methods: {
-    getStudentsByAC() {
+    fetchData() {
       this.loading = true;
       this.items = [];
       var config = {
-        url: "get-ac-students",
-        params: { slug: this.acSlug }
+        url: "get-pending-reports",
+        params: {}
       };
       this.$refs.axios.submit(config);
     },
@@ -114,7 +95,7 @@ export default {
         this.operationMessage = response.msg;
         this.operationMessageType = response.code;
         switch (event.url.substring(event.url.lastIndexOf("/") + 1)) {
-          case "get-ac-students":
+          case "get-pending-reports":
             const { sortBy, descending, page, rowsPerPage } = this.pagination;
             let items = response.data;
             const total = items.length;
@@ -138,7 +119,6 @@ export default {
               items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage);
             }
             this.items = items;
-            this.totalItems = items.length;
             break;
           default:
             this.snackbar = true;

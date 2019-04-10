@@ -1,5 +1,5 @@
 <template>
-  <v-container class="animated fadeIn">
+  <v-layout>
     <v-data-table
       :headers="headers"
       :items="items"
@@ -115,7 +115,7 @@
     </v-snackbar>
 
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-container>
+  </v-layout>
 </template>
 
 <script>

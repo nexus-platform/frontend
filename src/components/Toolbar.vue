@@ -192,6 +192,17 @@
                   </v-list-tile>
                 </v-list>
               </v-menu>
+
+              <template v-if="$store.getters.isAC">
+                <v-btn flat to="/invoicing">
+                  <v-icon class="white--text">assignment</v-icon>
+                  <span class="white--text">Invoicing</span>
+                </v-btn>
+                <v-btn flat to="/assessment-centre/application">
+                  <v-icon class="white--text">assignment_ind</v-icon>
+                  <span class="white--text">Application</span>
+                </v-btn>
+              </template>
             </template>
 
             <v-menu offset-y bottom :close-on-content-click="false">
@@ -218,10 +229,12 @@
                   color="transparent"
                   slider-color="primary"
                 >
-                  <v-tab href="#notifications-list" class="primary--text">Notifications
+                  <v-tab href="#notifications-list" class="primary--text">
+                    Notifications
                     <v-icon>notifications_none</v-icon>
                   </v-tab>
-                  <v-tab href="#activities-list" class="primary--text">Activities
+                  <v-tab href="#activities-list" class="primary--text">
+                    Activities
                     <v-icon>alarm</v-icon>
                   </v-tab>
                 </v-tabs>
@@ -543,9 +556,7 @@ export default {
       notifications: [],
       activities: [],
       audioPlayer: null,
-      tabs: null,
-      text:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+      tabs: null
     };
   },
   mounted() {

@@ -51,7 +51,7 @@
         slider-color="info"
       >
         <v-tab
-          :disabled="loading"
+          :disabled="submitting"
           v-for="(item, i) in items"
           :key="`v-tab-${i + 1}`"
           ripple
@@ -360,17 +360,17 @@
                   large
                   v-if="!loadingInitialElements && $store.getters.isStudent"
                   v-on:click="submit(true, 0)"
-                  :disabled="loading || validationErrors() || formSent"
+                  :disabled="submitting || validationErrors() || formSent"
                   color="primary"
                 >
                   <v-progress-circular
-                    v-if="loading"
+                    v-if="submitting"
                     :width="2"
                     size="18"
                     indeterminate
                     class="gray--text fa"
                   ></v-progress-circular>
-                  <v-icon v-if="!loading" class="fa white--text">check</v-icon>I have completed my form
+                  <v-icon v-else class="fa white--text">check</v-icon>I have completed my form
                 </v-btn>
               </p>
             </template>
@@ -409,7 +409,8 @@
 
     <v-dialog width="500" v-model="commentsDialog" persistent>
       <v-card>
-        <v-card-title class="headline grey lighten-2">Comments
+        <v-card-title class="headline grey lighten-2">
+          Comments
           <v-spacer></v-spacer>
           <a @click="commentsDialog = false">
             <v-icon size="22" class="fa">close</v-icon>
@@ -492,7 +493,8 @@
 
     <v-dialog width="500" v-model="uploadDialog" persistent>
       <v-card>
-        <v-card-title class="headline grey lighten-2">Upload Signature
+        <v-card-title class="headline grey lighten-2">
+          Upload Signature
           <v-spacer></v-spacer>
           <a @click="uploadDialog = false">
             <v-icon size="22" class="fa">close</v-icon>
@@ -519,7 +521,8 @@
 
     <v-dialog width="500" v-model="qrCodeDialog" persistent>
       <v-card>
-        <v-card-title class="headline grey lighten-2">QR Code
+        <v-card-title class="headline grey lighten-2">
+          QR Code
           <v-spacer></v-spacer>
           <a @click="qrCodeDialog = false">
             <v-icon size="22" class="fa">close</v-icon>
@@ -580,7 +583,8 @@
 
     <v-dialog v-model="previousSignatureDialog" persistent width="500">
       <v-card>
-        <v-card-title class="headline grey lighten-2">Previous Signature
+        <v-card-title class="headline grey lighten-2">
+          Previous Signature
           <v-spacer></v-spacer>
           <a @click="previousSignatureDialog = false">
             <v-icon size="22" class="fa">close</v-icon>
@@ -619,7 +623,6 @@
     </v-snackbar>
 
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
-    
   </v-flex>
 </template>
 
@@ -676,6 +679,7 @@ export default {
       newCommentText: "",
       commentsDialog: false,
       sendingComment: false,
+      submitting: false,
       scannerUrl: "",
       active: null,
       i: -1,
@@ -766,23 +770,20 @@ export default {
             break;
           case "send-dsa-form-comment":
             this.sendingComment = false;
-            this.snackbar = true;
-
             if (response.code === "success") {
-              let index = response.data.index;
+              let index = response.index;
               let currComponent = this.items[this.i].components[this.j][this.k];
               this.entityId = response.data;
-
               if (currComponent.content_type === "input") {
                 currComponent.input.comments[index].status = 2;
                 currComponent.input.comments[index].headline =
-                  response.data.headline;
+                  response.headline;
               } else {
                 currComponent.comments[index].status =
-                  response.data.code === "success" ? 2 : 0;
+                  response.code === "success" ? 2 : 0;
                 currComponent.comments[index].headline =
-                  response.data.code === "success"
-                    ? response.data.headline
+                  response.code === "success"
+                    ? response.headline
                     : "Comment could not be sent.";
               }
             } /*else {
@@ -822,9 +823,10 @@ export default {
             } 
             }*/
             break;
-            case "fill-pdf-form":
+          case "fill-pdf-form":
             this.snackbar = true;
-            if (response.code === 'success') {
+            this.submitting = false;
+            if (response.code === "success") {
               if (response.data.full_submit) {
                 this.formSent = true;
               } else {
@@ -1165,21 +1167,17 @@ export default {
     },
     submit(fullSubmit, step) {
       if ((step != this.active || fullSubmit) && !this.$store.getters.isDO) {
-        
-
         let config = {
           method: "post",
           url: "fill-pdf-form",
           params: {
             form_slug: this.formSlug,
-          univ_slug: this.univSlug,
-          entity_id: this.entityId,
-          data: {},
-          signaturesInfo: {}
+            univ_slug: this.univSlug,
+            entity_id: this.entityId,
+            data: {},
+            signaturesInfo: {}
           }
         };
-
-        
 
         let totalInputs = 0;
         let filledInputs = 0;
@@ -1294,11 +1292,8 @@ export default {
           config.params.data.full_submit = fullSubmit;
           config.params.data.total_inputs = totalInputs;
           config.params.data.filled_inputs = filledInputs;
-          this.loading = true;
-          
-          
-        this.$refs.axios.submit(config);
-
+          this.submitting = true;
+          this.$refs.axios.submit(config);
         } else if (fullSubmit) {
           this.snackbar = true;
           this.operationMessage = "Your form is completely empty.";

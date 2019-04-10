@@ -8,37 +8,46 @@
       centered
       class="elevation-1"
     >
-      <v-tab ripple key="ac-form">
+      <v-tab ripple href="#ac-form">
         <v-icon class="fa">picture_as_pdf</v-icon>Assessment Form
       </v-tab>
-      <v-tab ripple key="report-form">
+      <v-tab ripple href="#report-form">
         <v-icon class="fa">picture_as_pdf</v-icon>Report Form
       </v-tab>
-      <v-tab-item key="ac-form" class="pt-3 pb-5">
+      <v-tab v-if="$store.getters.isAC" ripple href="#assessment">
+        <v-icon class="fa">assessment</v-icon>Assessment
+      </v-tab>
+      
+      <v-tab-item value="ac-form" class="pt-3 pb-5">
         <v-flex sm12 lg10 offset-lg1>
           <ACSubmitedForm/>
         </v-flex>
       </v-tab-item>
-      <v-tab-item key="report-form" class="pa-3">
+
+      <v-tab-item value="report-form" class="pa-3">
         <VProgress v-if="loading" message="Loading report" />
         <v-flex v-else mt-3 sm12 lg10 offset-lg1 class="animated fadeIn">
-          <v-form ref="repForm">
-            <v-textarea
+          <p v-if="reportForm.status !== 2" class="text-xs-center title">
+            No report has been submitted yet.
+          </p>
+          <v-form v-else ref="repForm">
+            <v-textarea :readonly="!$store.getters.isNA"
               outline
               label="Assessment Venue Address (if different from main centre)"
               v-model="reportForm.content.venue_address"
             ></v-textarea>
-            <v-textarea
+            <v-textarea :readonly="!$store.getters.isNA"
               outline
               label="Reason for Assessment conducted as an ISR"
               v-model="reportForm.content.reason_isr"
             ></v-textarea>
-            <v-textarea
+            <v-textarea :readonly="!$store.getters.isNA"
               outline
               label="Assessor / Assessment Centre Disclosure"
               v-model="reportForm.content.disclosure"
             ></v-textarea>
             <v-btn
+            v-if="$store.getters.isNA"
               large
               class="primary"
               :disabled="!validReportForm || sendingReport"
@@ -48,6 +57,16 @@
               <v-progress-circular size="18" v-else :width="2" indeterminate class="grey--text fa"></v-progress-circular>Submit Report
             </v-btn>
           </v-form>
+        </v-flex>
+      </v-tab-item>
+      
+      <v-tab-item value="assessment" class="pt-3 pb-5">
+        <v-flex sm12 lg10 offset-lg1>
+          <p>Datetime:</p>
+          <p>Location:</p>
+          <p>Assessor:</p>
+          <p>Invoicing balance:</p>
+          <p>Status:</p>
         </v-flex>
       </v-tab-item>
     </v-tabs>
@@ -71,12 +90,12 @@
 </template>
 
 <script>
-import ACSubmitedForm from "@/components/ACSubmittedForm";
+import ACSubmitedForm from "@/components/ac/ACSubmittedForm";
 
 export default {
   data() {
     return {
-      activeTab: null,
+      activeTab: 'ac-form',
       activeReportFormStep: null,
       token: null,
       loading: false,
@@ -103,6 +122,9 @@ export default {
         this.reportForm.content.disclosure
       );
     }
+  },
+  created() {
+    this.activeTab = this.$route.params.tab;
   },
   mounted() {
     this.token = this.$route.params.token;

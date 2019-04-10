@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import ACCalendar from "@/components/ACCalendar";
+import ACCalendar from "@/components/ac/ACCalendar";
 
 export default {
   components: { ACCalendar }

@@ -97,9 +97,9 @@ import moment from "moment";
 import Vue from "vue";
 import AuthComponent from "@/components/Auth";
 import AcceptInvitation from "@/components/AcceptInvitation";
-import AcSubmittedForms from "@/components/ACSubmittedForms";
-import AcSubmittedForm from "@/components/ACSubmittedForm";
-import AcForm from "@/components/ACForm";
+import AcSubmittedForms from "@/components/ac/ACSubmittedForms";
+import AcSubmittedForm from "@/components/ac/ACSubmittedForm";
+import AcForm from "@/components/ac/ACForm";
 import IframeComponent from "@/components/Iframe";
 
 export default {

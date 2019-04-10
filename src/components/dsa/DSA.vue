@@ -7,7 +7,6 @@
         <v-flex md10 mt-3>
           <template v-if="operationMessageType === 'warning'">
             <v-alert :value="true" color="warning">
-              <img src="static/img/403.png">
               <h4>{{ operationMessage }}</h4>
             </v-alert>
           </template>
@@ -91,11 +90,11 @@
 </template>
 
 <script>
-import DsaAdmin from "@/components/DSAAdmin";
-import DsaForms from "@/components/DSAForms";
-import DsaStudentForms from "@/components/DSAStudentForms";
-import DsaForm from "@/components/DSAForm";
-import SubmittedForms from "@/components/DOSubmittedForms";
+import DsaAdmin from "@/components/dsa/DSAAdmin";
+import DsaForms from "@/components/dsa/DSAForms";
+import DsaStudentForms from "@/components/dsa/DSAStudentForms";
+import DsaForm from "@/components/dsa/DSAForm";
+import SubmittedForms from "@/components/dsa/DOSubmittedForms";
 import AuthComponent from "@/components/Auth";
 import { mapGetters } from "vuex";
 

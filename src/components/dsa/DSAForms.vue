@@ -1,6 +1,5 @@
 <template>
   <v-flex xs12>
-
     <VProgress v-if="loading" message="Loading forms"/>
 
     <p v-else class="text-uppercase subheading text-xs-center primary--text">
@@ -31,7 +30,6 @@
 </template>
 
 <script>
-
 export default {
   data: () => ({
     loading: true,
@@ -42,9 +40,7 @@ export default {
   mounted() {
     var config = {
       url: "get-dsa-forms",
-      params: {
-        
-      }
+      params: {}
     };
     this.$refs.axios.submit(config);
   },

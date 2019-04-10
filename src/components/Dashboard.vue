@@ -1,18 +1,17 @@
 <template>
   <v-flex xs12>
-    <DashboardStudent v-if="$store.getters.isStudent"/>
-    <DashboardNA v-else-if="$store.getters.isNA"/>
-    <DashboardAC v-else-if="$store.getters.isAC"/>
+    <StudentDashboard v-if="$store.getters.isStudent"/>
+    <NADashboard v-else-if="$store.getters.isNA"/>
+    <ACDashboard v-else-if="$store.getters.isAC"/>
   </v-flex>
 </template>
 
 <script>
-import ACCalendar from "@/components/ACCalendar";
-import DashboardAC from "@/components/DashboardAC";
-import DashboardNA from "@/components/DashboardNA";
-import DashboardStudent from "@/components/DashboardStudent";
+import ACDashboard from "@/components/ac/ACDashboard";
+import NADashboard from "@/components/ac/NADashboard";
+import StudentDashboard from "@/components/StudentDashboard";
 
 export default {
-  components: { ACCalendar, DashboardAC, DashboardNA, DashboardStudent }
+  components: { ACDashboard, NADashboard, StudentDashboard }
 };
 </script>

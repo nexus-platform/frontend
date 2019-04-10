@@ -1,22 +1,23 @@
 <template>
   <v-container fluid>
-    <canvas class="signature"></canvas>
-    <div class="clearfix"></div>
-    <v-container>
-      <v-layout row>
-        <v-flex>
-          <v-btn color="warning" v-on:click="clearPad()">
-            <v-icon size="22" class="fa">delete</v-icon>Clear
-          </v-btn>
-          <v-btn color="info" v-on:click="setSignature()">
-            <v-icon size="22" class="fa">check</v-icon>Use signature
-          </v-btn>
-          <v-btn color="error" v-on:click="closeDialog()">
-            <v-icon size="22" class="fa">close</v-icon>Close
-          </v-btn>
-        </v-flex>
-      </v-layout>
-    </v-container>
+    <v-layout row wrap>
+      <v-flex xs12>
+        <canvas style="width: 100%" class="signature"></canvas>
+      </v-flex>
+    </v-layout>
+    <v-layout row wrap>
+      <v-flex xs12 class="text-sm-center">
+        <v-btn color="warning" v-on:click="clearPad()">
+          <v-icon size="22" class="fa">delete</v-icon>Clear
+        </v-btn>
+        <v-btn color="info" v-on:click="setSignature()">
+          <v-icon size="22" class="fa">check</v-icon>Use signature
+        </v-btn>
+        <v-btn color="error" v-on:click="closeDialog()">
+          <v-icon size="22" class="fa">close</v-icon>Close
+        </v-btn>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
 

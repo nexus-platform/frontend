@@ -1,5 +1,5 @@
 <template>
-  <v-container class="animated fadeIn" mt-3>
+  <v-layout>
     <v-card-title>
       <strong>My DSA Forms</strong>
       <!--<v-spacer></v-spacer>
@@ -72,7 +72,7 @@
     </v-data-table>
 
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-container>
+  </v-layout>
 </template>
 
 <script>

@@ -1,12 +1,5 @@
 <template>
-  <v-layout>
-    <v-card-title>
-      <strong>My DSA Forms</strong>
-      <!--<v-spacer></v-spacer>
-      <v-spacer></v-spacer>
-      <v-text-field v-model="search" append-icon="search" label="Search" hint="Enter your criteria and press Enter..." single-line v-on:keyup.enter="searchItems"></v-text-field>-->
-    </v-card-title>
-
+  <v-flex xs12>
     <v-data-table
       :headers="headers"
       :items="items"
@@ -72,7 +65,7 @@
     </v-data-table>
 
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-layout>
+  </v-flex>
 </template>
 
 <script>

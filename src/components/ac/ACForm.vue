@@ -32,9 +32,16 @@
     <template v-else>
       <v-layout row wrap>
         <v-flex sm12>
-          <v-alert :value="this.localFormErrors.length > 0" type="error" transition="scale-transition">
+          <v-alert
+            :value="this.localFormErrors.length > 0"
+            type="error"
+            transition="scale-transition"
+          >
             <h4>Your form contains the following errors:</h4>
-            <div v-for="(acError, acErrorIndex) in this.localFormErrors" :key="`acError-${acErrorIndex}`">
+            <div
+              v-for="(acError, acErrorIndex) in this.localFormErrors"
+              :key="`acError-${acErrorIndex}`"
+            >
               <a class="white--text" @click="setActiveTab(acError.tab)" v-html="acError.error"></a>
             </div>
           </v-alert>
@@ -289,7 +296,7 @@
           </a>
         </v-card-title>
         <v-container>
-          <file-upload v-on:set-file="setDSALetter($event)"></file-upload>
+          <FileUpload v-on:set-file="setDSALetter($event)"/>
         </v-container>
       </v-card>
     </v-dialog>
@@ -335,7 +342,7 @@ export default {
       operationMessageType: "warning",
       dsaLetterName: "",
       localAC: null,
-      localItems: [],
+      localItems: []
     };
   },
   components: {
@@ -383,7 +390,7 @@ export default {
                 response.data.ac_form_full_submit;
               this.localAC.user_data.ac_booking_enabled =
                 response.data.ac_booking_enabled;
-                this.$emit("submit-ac-form", response.data);
+              this.$emit("submit-ac-form", response.data);
             }
             break;
           default:

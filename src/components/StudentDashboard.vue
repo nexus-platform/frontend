@@ -30,7 +30,7 @@
                 <v-btn flat :to="`/dsa/${registrations.dsa.slug}/dsa-forms/index`">
                   <v-icon small class="fa">arrow_forward</v-icon>Available DSA forms
                 </v-btn>
-                <v-btn flat>
+                <v-btn flat :to="`/dsa/${registrations.dsa.slug}/files`">
                   <v-icon small class="fa">arrow_forward</v-icon>Attached files
                 </v-btn>
               </v-container>
@@ -61,7 +61,7 @@
                 >
                   <v-icon small class="fa">arrow_forward</v-icon>Assessment Report
                 </v-btn>
-                <v-btn flat>
+                <v-btn flat :to="`/assessment-centre/files`">
                   <v-icon small class="fa">arrow_forward</v-icon>Attached files
                 </v-btn>
               </v-container>

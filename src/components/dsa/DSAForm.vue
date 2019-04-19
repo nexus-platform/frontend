@@ -591,19 +591,10 @@
           </a>
         </v-card-title>
         <v-container>
-          <v-layout row v-if="loadingPreviousSignature">
-            <v-flex xs12>
-              <h3>Loading your previously saved signature...</h3>
-              <v-progress-circular :width="2" size="18" indeterminate class="gray--text fa"></v-progress-circular>
-            </v-flex>
-          </v-layout>
-          <template v-else>
-            <v-layout row>
-              <v-flex xs12>
-                <v-alert :value="true" :type="operationMessageType">{{operationMessage}}</v-alert>
-              </v-flex>
-            </v-layout>
-          </template>
+          <v-flex v-if="loadingPreviousSignature" xs12 class="text-xs-center">
+            <h3 class="primary--text">Loading your saved signature</h3>
+            <v-progress-circular :width="2" indeterminate class="primary--text mt-3"></v-progress-circular>
+          </v-flex>
         </v-container>
       </v-card>
     </v-dialog>
@@ -757,6 +748,7 @@ export default {
             this.snackbar = true;
             this.loadingSignatureByQrCode = false;
             this.loadingPreviousSignature = false;
+            this.previousSignatureDialog = false;
             break;
           case "generate-qr-code":
             this.loadingQrCode = false;

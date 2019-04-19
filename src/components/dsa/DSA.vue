@@ -46,6 +46,10 @@
                 </v-card>
               </template>
 
+              <template v-else-if="action === 'files'">
+                <AttachedFiles targetType="dsa" />
+              </template>
+
               <template v-else>
                 <v-card-text>
                   <h3 class="text-xs-center">Welcome to {{ dsaName }}'s DSA Office</h3>
@@ -96,7 +100,7 @@ import DsaStudentForms from "@/components/dsa/DSAStudentForms";
 import DsaForm from "@/components/dsa/DSAForm";
 import SubmittedForms from "@/components/dsa/DOSubmittedForms";
 import AuthComponent from "@/components/Auth";
-import { mapGetters } from "vuex";
+import AttachedFiles from "@/components/AttachedFiles";
 
 export default {
   data() {
@@ -132,7 +136,8 @@ export default {
     DsaForm,
     SubmittedForms,
     AuthComponent,
-    DsaStudentForms
+    DsaStudentForms,
+    AttachedFiles
   },
   mounted() {
     this.refreshInterface(this.$route);

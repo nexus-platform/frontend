@@ -1,12 +1,12 @@
 <template>
-  <v-layout>
+  <v-flex xs12>
     <v-data-table
       :headers="headers"
       :items="items"
       :pagination.sync="pagination"
       :total-items="totalItems"
       :loading="loading"
-      class="elevation-0"
+      class="elevation-1"
     >
       <template slot="items" slot-scope="props">
         <td>{{ props.item.student_name }}</td>
@@ -115,7 +115,7 @@
     </v-snackbar>
 
     <AxiosComponent ref="axios" v-on:finish="handleHttpResponse($event)"/>
-  </v-layout>
+  </v-flex>
 </template>
 
 <script>
@@ -215,19 +215,13 @@ export default {
             this.items = items;
             this.totalItems = items.length;
             break;
-          case "get-file":
+          case "get-filled-pdf":
             this.downloading = false;
             if (response) {
               let blob = new Blob([response], {
                 type: "application/pdf"
               });
               saveAs(blob, this.currFileName);
-              /*var link = document.createElement("a");
-              link.href = window.URL.createObjectURL(blob);
-              link.setAttribute("download", this.currFileName);
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);*/
             } else {
               this.snackbar = true;
               this.operationMessage = "Your file could not be downloaded.";
@@ -285,7 +279,7 @@ export default {
         this.currFileName = filename;
         var config = {
           method: "get",
-          url: "get-file",
+          url: "get-filled-pdf",
           params: {
             file: id
           },
@@ -297,6 +291,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-</style>

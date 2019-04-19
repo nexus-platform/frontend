@@ -26,6 +26,13 @@ let routes = [{
   },
   {
     path: '/',
+    name: 'root',
+    component: function () {
+      return import('@/components/PublicAuth')
+    }
+  },
+  {
+    path: '/home',
     name: 'home',
     component: function () {
       return import('@/components/Home')
@@ -187,6 +194,18 @@ let routes = [{
     component: function () {
       return import('@/components/ac/application/Application')
     }
+  },
+  {
+    path: '/assessment-centre/files',
+    name: 'ac-files',
+    meta: {
+      requiresAuth: true,
+      roles: ['student']
+    },
+    component: function () {
+      return import('@/components/AttachedFiles')
+    },
+    props: { targetType: 'ac' }
   },
   {
     path: '/invoicing',

@@ -74,7 +74,7 @@
         <v-toolbar-side-icon @click.stop="drawer = !drawer" class="white--text hidden-md-and-up"></v-toolbar-side-icon>
 
         <v-toolbar-title class="white--text">
-          <router-link to="/" tag="span" style="cursor: pointer">
+          <router-link to="/home" tag="span" style="cursor: pointer">
             <img :src="require('../assets/img/logo_text.png')" alt="Nexus">
           </router-link>
         </v-toolbar-title>
@@ -98,21 +98,28 @@
                 </v-btn>
                 <v-list v-if="$store.getters.isStudent">
                   <v-list-tile
+                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/my-dsa-forms/index`"
+                    class="dropdown-menu-item"
+                  >
+                    <v-icon class="fa">cloud_upload</v-icon>
+                    <span>Submitted forms</span>
+                  </v-list-tile>
+                  <v-list-tile
                     :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/dsa-forms/index`"
                     class="dropdown-menu-item"
                   >
                     <v-icon class="fa">picture_as_pdf</v-icon>
-                    <span>DSA Forms</span>
+                    <span>Available forms</span>
                   </v-list-tile>
                   <v-list-tile
-                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/my-dsa-forms/index`"
+                    :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/files`"
                     class="dropdown-menu-item"
                   >
-                    <v-icon class="fa">picture_as_pdf</v-icon>
-                    <span>In-progress forms</span>
+                    <v-icon class="fa">attach_file</v-icon>
+                    <span>Attached files</span>
                   </v-list-tile>
                 </v-list>
-                <v-list v-else-if="$store.getters.isDO">
+                <v-list v-else>
                   <v-list-tile
                     v-if="$store.getters.getIsUnivManager"
                     :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/admin`"
@@ -124,7 +131,8 @@
                     :to="`/dsa/${$store.getters.getRegistrations.dsa.slug}/submitted-forms`"
                     class="dropdown-menu-item"
                   >
-                    <v-icon class="fa">mail</v-icon>In-progress forms
+                    <v-icon class="fa">cloud_upload</v-icon>
+                    <span>Submitted forms</span>
                   </v-list-tile>
                 </v-list>
               </v-menu>

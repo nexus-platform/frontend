@@ -1,4 +1,4 @@
-# verga
+# NEXUS
 
 ## Project setup
 ```
